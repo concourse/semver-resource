@@ -84,6 +84,12 @@ var _ = Describe("In", func() {
 					It("reports "+resultLocal+" as the version", func() {
 						Ω(response.Version.Number).Should(Equal(resultLocal))
 					})
+
+					It("writes the version to the destination", func() {
+						contents, err := ioutil.ReadFile(path.Join(destination, "number"))
+						Ω(err).ShouldNot(HaveOccurred())
+						Ω(string(contents)).Should(Equal(resultLocal))
+					})
 				})
 			}
 
@@ -109,6 +115,12 @@ var _ = Describe("In", func() {
 
 						It("reports "+resultLocal+" as the version", func() {
 							Ω(response.Version.Number).Should(Equal(resultLocal))
+						})
+
+						It("writes the version to the destination", func() {
+							contents, err := ioutil.ReadFile(path.Join(destination, "number"))
+							Ω(err).ShouldNot(HaveOccurred())
+							Ω(string(contents)).Should(Equal(resultLocal))
 						})
 					})
 				}
@@ -138,6 +150,12 @@ var _ = Describe("In", func() {
 					It("reports "+resultLocal+" as the version", func() {
 						Ω(response.Version.Number).Should(Equal(resultLocal))
 					})
+
+					It("writes the version to the destination", func() {
+						contents, err := ioutil.ReadFile(path.Join(destination, "number"))
+						Ω(err).ShouldNot(HaveOccurred())
+						Ω(string(contents)).Should(Equal(resultLocal))
+					})
 				})
 			}
 
@@ -163,6 +181,12 @@ var _ = Describe("In", func() {
 
 						It("reports "+resultLocal+" as the version", func() {
 							Ω(response.Version.Number).Should(Equal(resultLocal))
+						})
+
+						It("writes the version to the destination", func() {
+							contents, err := ioutil.ReadFile(path.Join(destination, "number"))
+							Ω(err).ShouldNot(HaveOccurred())
+							Ω(string(contents)).Should(Equal(resultLocal))
 						})
 					})
 				}
@@ -191,6 +215,12 @@ var _ = Describe("In", func() {
 						It("reports "+resultLocal+" as the version", func() {
 							Ω(response.Version.Number).Should(Equal(resultLocal))
 						})
+
+						It("writes the version to the destination", func() {
+							contents, err := ioutil.ReadFile(path.Join(destination, "number"))
+							Ω(err).ShouldNot(HaveOccurred())
+							Ω(string(contents)).Should(Equal(resultLocal))
+						})
 					})
 				}
 
@@ -217,6 +247,12 @@ var _ = Describe("In", func() {
 							It("reports "+resultLocal+" as the version", func() {
 								Ω(response.Version.Number).Should(Equal(resultLocal))
 							})
+
+							It("writes the version to the destination", func() {
+								contents, err := ioutil.ReadFile(path.Join(destination, "number"))
+								Ω(err).ShouldNot(HaveOccurred())
+								Ω(string(contents)).Should(Equal(resultLocal))
+							})
 						})
 					}
 
@@ -242,6 +278,12 @@ var _ = Describe("In", func() {
 
 								It("reports "+resultLocal+" as the version", func() {
 									Ω(response.Version.Number).Should(Equal(resultLocal))
+								})
+
+								It("writes the version to the destination", func() {
+									contents, err := ioutil.ReadFile(path.Join(destination, "number"))
+									Ω(err).ShouldNot(HaveOccurred())
+									Ω(string(contents)).Should(Equal(resultLocal))
 								})
 							})
 						}

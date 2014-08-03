@@ -2,7 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/blang/semver"
 	"github.com/concourse/semver-resource/models"
@@ -65,6 +67,18 @@ func main() {
 
 	inVersion := request.Version
 	inVersion.Number = v.String()
+
+	numberFile, err := os.Create(filepath.Join(destination, "number"))
+	if err != nil {
+		fatal("opening number file", err)
+	}
+
+	defer numberFile.Close()
+
+	_, err = fmt.Fprintf(numberFile, "%s", v.String())
+	if err != nil {
+		fatal("writing to number file", err)
+	}
 
 	json.NewEncoder(os.Stdout).Encode(models.InResponse{
 		Version: inVersion,

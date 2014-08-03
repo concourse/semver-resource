@@ -1,0 +1,23 @@
+{
+	"ImportPath": "github.com/concourse/semver-resource",
+	"GoVersion": "go1.3",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/blang/semver",
+			"Comment": "v1.0.4",
+			"Rev": "f1812354c1e8d37e777294a36b09d35a5b5d031d"
+		},
+		{
+			"ImportPath": "github.com/onsi/ginkgo",
+			"Comment": "v1.0.0-16-g12446bb",
+			"Rev": "12446bbcc74950944c897e32ea99cc8d058f9c92"
+		},
+		{
+			"ImportPath": "github.com/onsi/gomega",
+			"Rev": "036273e6f643552b16fe7a6464afd2ae0324992e"
+		}
+	]
+}

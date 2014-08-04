@@ -9,7 +9,7 @@ import (
 	"github.com/onsi/gomega/gexec"
 )
 
-var inPath string
+var outPath string
 
 var accessKeyID = os.Getenv("SEMVER_TESTING_ACCESS_KEY_ID")
 var secretAccessKey = os.Getenv("SEMVER_TESTING_SECRET_ACCESS_KEY")
@@ -22,7 +22,7 @@ var _ = BeforeSuite(func() {
 	Ω(secretAccessKey).ShouldNot(BeEmpty(), "must specify $SEMVER_TESTING_SECRET_ACCESS_KEY")
 	Ω(bucketName).ShouldNot(BeEmpty(), "must specify $SEMVER_TESTING_BUCKET")
 
-	inPath, err = gexec.Build("github.com/concourse/semver-resource/in")
+	outPath, err = gexec.Build("github.com/concourse/semver-resource/out")
 	Ω(err).ShouldNot(HaveOccurred())
 })
 
@@ -30,7 +30,7 @@ var _ = AfterSuite(func() {
 	gexec.CleanupBuildArtifacts()
 })
 
-func TestIn(t *testing.T) {
+func TestOut(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "In Suite")
+	RunSpecs(t, "Out Suite")
 }

@@ -7,7 +7,11 @@ import (
 	"path/filepath"
 
 	"github.com/blang/semver"
+	"github.com/mitchellh/goamz/aws"
+	"github.com/mitchellh/goamz/s3"
+
 	"github.com/concourse/semver-resource/models"
+	"github.com/concourse/semver-resource/version"
 )
 
 func main() {
@@ -29,44 +33,33 @@ func main() {
 		fatal("reading request", err)
 	}
 
+	auth := aws.Auth{
+		AccessKey: request.Source.AccessKeyID,
+		SecretKey: request.Source.SecretAccessKey,
+	}
+
+	client := s3.New(auth, aws.USEast)
+	bucket := client.Bucket(request.Source.Bucket)
+
 	versionNumber := request.Version.Number
 	if len(versionNumber) == 0 {
-		versionNumber = "0.0.0"
+		bucketNumber, err := bucket.Get(request.Source.Key)
+		if err == nil {
+			versionNumber = string(bucketNumber)
+		} else {
+			versionNumber = "0.0.0"
+		}
 	}
+
+	inVersion := request.Version
+	inVersion.Number = versionNumber
 
 	v, err := semver.Parse(versionNumber)
 	if err != nil {
 		fatal("parsing semantic version", err)
 	}
 
-	if len(request.Params.Pre) > 0 {
-		if len(v.Pre) == 2 {
-			if !v.Pre[0].IsNum && v.Pre[0].VersionStr == request.Params.Pre && v.Pre[1].IsNumeric() {
-				v.Pre[1].VersionNum++
-			} else {
-				v.Pre[0] = &semver.PRVersion{
-					VersionStr: request.Params.Pre,
-				}
-
-				v.Pre[1] = &semver.PRVersion{
-					VersionNum: 1,
-					IsNum:      true,
-				}
-			}
-		} else {
-			bump(v, request.Params.Bump)
-
-			v.Pre = []*semver.PRVersion{
-				{VersionStr: request.Params.Pre},
-				{VersionNum: 1, IsNum: true},
-			}
-		}
-	} else {
-		bump(v, request.Params.Bump)
-	}
-
-	inVersion := request.Version
-	inVersion.Number = v.String()
+	version.Bump(v, request.Params)
 
 	numberFile, err := os.Create(filepath.Join(destination, "number"))
 	if err != nil {
@@ -83,28 +76,9 @@ func main() {
 	json.NewEncoder(os.Stdout).Encode(models.InResponse{
 		Version: inVersion,
 		Metadata: models.Metadata{
-			{"number", v.String()},
+			{"number", inVersion.Number},
 		},
 	})
-}
-
-func bump(v *semver.Version, t string) {
-	switch t {
-	case "major":
-		v.Major++
-		v.Minor = 0
-		v.Patch = 0
-		v.Pre = nil
-	case "minor":
-		v.Minor++
-		v.Patch = 0
-		v.Pre = nil
-	case "patch":
-		v.Patch++
-		v.Pre = nil
-	case "final":
-		v.Pre = nil
-	}
 }
 
 func fatal(doing string, err error) {

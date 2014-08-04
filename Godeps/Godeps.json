@@ -11,6 +11,18 @@
 			"Rev": "f1812354c1e8d37e777294a36b09d35a5b5d031d"
 		},
 		{
+			"ImportPath": "github.com/mitchellh/goamz/aws",
+			"Rev": "593841f11feba33e324f62d3d2002072bde9387c"
+		},
+		{
+			"ImportPath": "github.com/mitchellh/goamz/s3",
+			"Rev": "593841f11feba33e324f62d3d2002072bde9387c"
+		},
+		{
+			"ImportPath": "github.com/nu7hatch/gouuid",
+			"Rev": "179d4d0c4d8d407a32af483c2354df1d2c91e6c3"
+		},
+		{
 			"ImportPath": "github.com/onsi/ginkgo",
 			"Comment": "v1.0.0-16-g12446bb",
 			"Rev": "12446bbcc74950944c897e32ea99cc8d058f9c92"

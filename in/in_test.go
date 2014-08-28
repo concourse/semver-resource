@@ -58,7 +58,10 @@ var _ = Describe("In", func() {
 				SecretKey: secretAccessKey,
 			}
 
-			client := s3.New(auth, aws.USEast)
+			region, ok := aws.Regions[regionName]
+			Ω(ok).Should(BeTrue())
+
+			client := s3.New(auth, region)
 
 			bucket = client.Bucket(bucketName)
 
@@ -69,6 +72,7 @@ var _ = Describe("In", func() {
 					Key:             key,
 					AccessKeyID:     accessKeyID,
 					SecretAccessKey: secretAccessKey,
+					RegionName:      regionName,
 				},
 				Params: models.InParams{},
 			}

@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -42,7 +44,12 @@ func main() {
 		SecretKey: request.Source.SecretAccessKey,
 	}
 
-	client := s3.New(auth, aws.USEast)
+	regionName := request.Source.RegionName
+	region, ok := aws.Regions[regionName]
+	if !ok {
+		fatal("resolving region name", errors.New(fmt.Sprintf("No such region '%s'", regionName)))
+	}
+	client := s3.New(auth, region)
 	bucket := client.Bucket(request.Source.Bucket)
 
 	outVersion := models.Version{

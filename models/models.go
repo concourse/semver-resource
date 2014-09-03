@@ -48,6 +48,7 @@ type Source struct {
 	Key             string `json:"key"`
 	AccessKeyID     string `json:"access_key_id"`
 	SecretAccessKey string `json:"secret_access_key"`
+	RegionName      string `json:"region_name"`
 }
 
 type Metadata []MetadataField

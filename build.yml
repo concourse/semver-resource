@@ -1,5 +1,11 @@
 ---
 image: docker:///mischief/docker-golang
 
+params:
+  SEMVER_TESTING_ACCESS_KEY_ID:
+  SEMVER_TESTING_SECRET_ACCESS_KEY:
+  SEMVER_TESTING_BUCKET:
+  SEMVER_TESTING_REGION:
+          
 run:
   path: semver-resource/scripts/test

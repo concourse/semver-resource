@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+
 	"github.com/onsi/ginkgo/config"
 	"github.com/onsi/ginkgo/internal/leafnodes"
 	"github.com/onsi/ginkgo/internal/spec"
@@ -104,17 +105,14 @@ func (runner *SpecRunner) runSpecs() bool {
 		if skipRemainingSpecs {
 			spec.Skip()
 		}
-		runner.writer.Truncate()
-
 		runner.reportSpecWillRun(spec)
 
 		if !spec.Skipped() && !spec.Pending() {
 			runner.runningSpec = spec
-			spec.Run()
+			spec.Run(runner.writer)
 			runner.runningSpec = nil
 			if spec.Failed() {
 				suiteFailed = true
-				runner.writer.DumpOut()
 			}
 		} else if spec.Pending() && runner.config.FailOnPending {
 			suiteFailed = true
@@ -146,8 +144,16 @@ func (runner *SpecRunner) registerForInterrupts() {
 	signal.Stop(c)
 	runner.markInterrupted()
 	go runner.registerForHardInterrupts()
+	runner.writer.DumpOutWithHeader(`
+Received interrupt.  Emitting contents of GinkgoWriter...
+---------------------------------------------------------
+`)
 	if runner.afterSuiteNode != nil {
-		fmt.Fprintln(os.Stderr, "\nReceived interrupt.  Running AfterSuite...\n^C again to terminate immediately")
+		fmt.Fprint(os.Stderr, `
+---------------------------------------------------------
+Received interrupt.  Running AfterSuite...
+^C again to terminate immediately
+`)
 		runner.runAfterSuite()
 	}
 	runner.reportSuiteDidEnd(false)
@@ -206,6 +212,8 @@ func (runner *SpecRunner) reportAfterSuite(summary *types.SetupSummary) {
 }
 
 func (runner *SpecRunner) reportSpecWillRun(spec *spec.Spec) {
+	runner.writer.Truncate()
+
 	summary := spec.Summary(runner.suiteID)
 	for _, reporter := range runner.reporters {
 		reporter.SpecWillRun(summary)
@@ -214,9 +222,15 @@ func (runner *SpecRunner) reportSpecWillRun(spec *spec.Spec) {
 
 func (runner *SpecRunner) reportSpecDidComplete(spec *spec.Spec) {
 	summary := spec.Summary(runner.suiteID)
-	for _, reporter := range runner.reporters {
-		reporter.SpecDidComplete(summary)
+	for i := len(runner.reporters) - 1; i >= 1; i-- {
+		runner.reporters[i].SpecDidComplete(summary)
 	}
+
+	if spec.Failed() {
+		runner.writer.DumpOut()
+	}
+
+	runner.reporters[0].SpecDidComplete(summary)
 }
 
 func (runner *SpecRunner) reportSuiteDidEnd(success bool) {

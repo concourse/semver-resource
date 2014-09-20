@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/concourse/semver-resource",
-	"GoVersion": "go1.3",
+	"GoVersion": "go1.3.1",
 	"Packages": [
 		"./..."
 	],
@@ -12,11 +12,11 @@
 		},
 		{
 			"ImportPath": "github.com/mitchellh/goamz/aws",
-			"Rev": "593841f11feba33e324f62d3d2002072bde9387c"
+			"Rev": "dd7c2af2dfa4aed175d35dc3f06edbf101bdcf9a"
 		},
 		{
 			"ImportPath": "github.com/mitchellh/goamz/s3",
-			"Rev": "593841f11feba33e324f62d3d2002072bde9387c"
+			"Rev": "dd7c2af2dfa4aed175d35dc3f06edbf101bdcf9a"
 		},
 		{
 			"ImportPath": "github.com/nu7hatch/gouuid",
@@ -30,6 +30,10 @@
 		{
 			"ImportPath": "github.com/onsi/gomega",
 			"Rev": "036273e6f643552b16fe7a6464afd2ae0324992e"
+		},
+		{
+			"ImportPath": "github.com/vaughan0/go-ini",
+			"Rev": "a98ad7ee00ec53921f08832bc06ecf7fd600e6a1"
 		}
 	]
 }

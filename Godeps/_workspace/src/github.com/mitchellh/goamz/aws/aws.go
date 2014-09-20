@@ -15,6 +15,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+
+	"github.com/vaughan0/go-ini"
 )
 
 // Region defines the URLs where AWS services may be accessed.
@@ -190,6 +192,23 @@ var SAEast = Region{
 	"https://route53.amazonaws.com",
 }
 
+var CNNorth = Region{
+	"cn-north-1",
+	"https://ec2.cn-north-1.amazonaws.com.cn",
+	"https://s3.cn-north-1.amazonaws.com.cn",
+	"",
+	true,
+	true,
+	"",
+	"https://sns.cn-north-1.amazonaws.com.cn",
+	"https://sqs.cn-north-1.amazonaws.com.cn",
+	"https://iam.cn-north-1.amazonaws.com.cn",
+	"https://elasticloadbalancing.cn-north-1.amazonaws.com.cn",
+	"https://autoscaling.cn-north-1.amazonaws.com.cn",
+	"https://rds.cn-north-1.amazonaws.com.cn",
+	"https://route53.amazonaws.com",
+}
+
 var Regions = map[string]Region{
 	APNortheast.Name:  APNortheast,
 	APSoutheast.Name:  APSoutheast,
@@ -200,6 +219,7 @@ var Regions = map[string]Region{
 	USWest2.Name:      USWest2,
 	SAEast.Name:       SAEast,
 	USGovWest.Name:    USGovWest,
+	CNNorth.Name:      CNNorth,
 }
 
 type Auth struct {
@@ -279,6 +299,13 @@ func GetAuth(accessKey string, secretKey string) (auth Auth, err error) {
 	}
 
 	// Next try to get auth from the environment
+	auth, err = SharedAuth()
+	if err == nil {
+		// Found auth, return
+		return
+	}
+
+	// Next try to get auth from the environment
 	auth, err = EnvAuth()
 	if err == nil {
 		// Found auth, return
@@ -298,8 +325,53 @@ func GetAuth(accessKey string, secretKey string) (auth Auth, err error) {
 	return
 }
 
+// SharedAuth creates an Auth based on shared credentials stored in
+// $HOME/.aws/credentials. The AWS_PROFILE environment variables is used to
+// select the profile.
+func SharedAuth() (auth Auth, err error) {
+	var profileName = os.Getenv("AWS_PROFILE")
+
+	if profileName == "" {
+		profileName = "default"
+	}
+
+	var credentialsFile = os.Getenv("AWS_CREDENTIAL_FILE")
+	if credentialsFile == "" {
+		var homeDir = os.Getenv("HOME")
+		if homeDir == "" {
+			err = errors.New("Could not get HOME")
+			return
+		}
+		credentialsFile = homeDir + "/.aws/credentials"
+	}
+
+	file, err := ini.LoadFile(credentialsFile)
+	if err != nil {
+		err = errors.New("Couldn't parse AWS credentials file")
+		return
+	}
+
+	var profile = file[profileName]
+	if profile == nil {
+		err = errors.New("Couldn't find profile in AWS credentials file")
+		return
+	}
+
+	auth.AccessKey = profile["aws_access_key_id"]
+	auth.SecretKey = profile["aws_secret_access_key"]
+
+	if auth.AccessKey == "" {
+		err = errors.New("AWS_ACCESS_KEY_ID not found in environment in credentials file")
+	}
+	if auth.SecretKey == "" {
+		err = errors.New("AWS_SECRET_ACCESS_KEY not found in credentials file")
+	}
+	return
+}
+
 // EnvAuth creates an Auth based on environment information.
 // The AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment
+// For accounts that require a security token, it is read from AWS_SECURITY_TOKEN
 // variables are used.
 func EnvAuth() (auth Auth, err error) {
 	auth.AccessKey = os.Getenv("AWS_ACCESS_KEY_ID")
@@ -311,6 +383,9 @@ func EnvAuth() (auth Auth, err error) {
 	if auth.SecretKey == "" {
 		auth.SecretKey = os.Getenv("AWS_SECRET_KEY")
 	}
+
+	auth.Token = os.Getenv("AWS_SECURITY_TOKEN")
+
 	if auth.AccessKey == "" {
 		err = errors.New("AWS_ACCESS_KEY_ID or AWS_ACCESS_KEY not found in environment")
 	}

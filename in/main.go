@@ -40,10 +40,12 @@ func main() {
 	}
 
 	regionName := request.Source.RegionName
+
 	region, ok := aws.Regions[regionName]
 	if !ok {
 		fatal("resolving region name", errors.New(fmt.Sprintf("No such region '%s'", regionName)))
 	}
+
 	client := s3.New(auth, region)
 	bucket := client.Bucket(request.Source.Bucket)
 
@@ -52,8 +54,10 @@ func main() {
 		bucketNumber, err := bucket.Get(request.Source.Key)
 		if err == nil {
 			versionNumber = string(bucketNumber)
-		} else {
+		} else if s3err, ok := err.(*s3.Error); ok && s3err.StatusCode == 404 {
 			versionNumber = "0.0.0"
+		} else {
+			fatal("fetching current version", err)
 		}
 	}
 

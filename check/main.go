@@ -40,8 +40,10 @@ func main() {
 		bucketNumber = string(bucketNumberPayload)
 	} else if len(request.Source.InitialVersion) > 0 {
 		bucketNumber = request.Source.InitialVersion
-	} else {
+	} else if s3err, ok := err.(*s3.Error); ok && s3err.StatusCode == 404 {
 		bucketNumber = "0.0.0"
+	} else {
+		fatal("getting initial version", err)
 	}
 
 	bucketVer, err := semver.Parse(bucketNumber)

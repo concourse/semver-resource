@@ -6,6 +6,9 @@ params:
   SEMVER_TESTING_SECRET_ACCESS_KEY:
   SEMVER_TESTING_BUCKET:
   SEMVER_TESTING_REGION:
-          
+
+paths:
+  semver-resource: gopath/src/github.com/concourse/semver-resource
+
 run:
-  path: semver-resource/scripts/test
+  path: gopath/src/github.com/concourse/semver-resource/scripts/test

@@ -1,17 +1,15 @@
 #!/bin/bash
 # vim: set ft=sh
 
+set -e
+
 export GOROOT=/usr/local/go
-export GOPATH=/tmp/gopath
-
 export PATH=$GOROOT/bin:$PATH
+
+export GOPATH=$PWD/gopath
 export PATH=$GOPATH/bin:$PATH
-export REPO_DIR=$GOPATH/src/github.com/concourse/semver-resource
 
-mkdir -p $(dirname $REPO_DIR)
-ln -s $PWD/$(basename $REPO_DIR) $REPO_DIR
-
-cd $REPO_DIR
+cd $GOPATH/src/github.com/concourse/semver-resource
 
 export GOPATH=${PWD}/Godeps/_workspace:$GOPATH
 export PATH=${PWD}/Godeps/_workspace/bin:$PATH
@@ -19,3 +17,8 @@ export PATH=${PWD}/Godeps/_workspace/bin:$PATH
 go install github.com/onsi/ginkgo/ginkgo
 
 ginkgo -r -p "$@"
+
+# must not use dynamic linking
+CGO_ENABLED=0 go install -a net
+
+make

@@ -18,6 +18,4 @@ go install github.com/onsi/ginkgo/ginkgo
 
 ginkgo -r -p "$@"
 
-go build -o built-in in/main.go
-go build -o built-out out/main.go
-go build -o built-check check/main.go
+$(dirname $0)/build

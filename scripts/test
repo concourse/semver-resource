@@ -3,7 +3,7 @@
 
 set -e
 
-export GOROOT=/usr/local/go
+export GOROOT=/usr/src/go
 export PATH=$GOROOT/bin:$PATH
 
 export GOPATH=$PWD/gopath
@@ -18,7 +18,6 @@ go install github.com/onsi/ginkgo/ginkgo
 
 ginkgo -r -p "$@"
 
-# must not use dynamic linking
-CGO_ENABLED=0 go install -a net
-
-make
+go build -o built-in in/main.go
+go build -o built-out out/main.go
+go build -o built-check check/main.go

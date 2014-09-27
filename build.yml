@@ -1,5 +1,5 @@
 ---
-image: docker:///mischief/docker-golang
+image: docker:///concourse/static-golang
 
 params:
   SEMVER_TESTING_ACCESS_KEY_ID:

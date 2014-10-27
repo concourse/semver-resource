@@ -16,9 +16,8 @@ type InResponse struct {
 }
 
 type InParams struct {
-	Bump  string `json:"bump"`
-	Pre   string `json:"pre"`
-	Final bool   `json:"final"`
+	Bump string `json:"bump"`
+	Pre  string `json:"pre"`
 }
 
 type OutRequest struct {

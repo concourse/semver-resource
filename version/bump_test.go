@@ -135,4 +135,34 @@ var _ = Describe("Bump", func() {
 			})
 		})
 	})
+
+	Context("when bumping from a prerelease", func() {
+		BeforeEach(func() {
+			version.Pre = []*semver.PRVersion{
+				{VersionStr: "rc"},
+				{VersionNum: 1, IsNum: true},
+			}
+		})
+
+		for bump, result := range map[string]string{
+			"":      "1.2.3-rc.1",
+			"final": "1.2.3",
+			"patch": "1.2.4",
+			"minor": "1.3.0",
+			"major": "2.0.0",
+		} {
+			bumpLocal := bump
+			resultLocal := result
+
+			Context(fmt.Sprintf("when bumping %s", bumpLocal), func() {
+				BeforeEach(func() {
+					params.Bump = bumpLocal
+				})
+
+				It("bumps to "+resultLocal, func() {
+					Ω(version.String()).Should(Equal(resultLocal))
+				})
+			})
+		}
+	})
 })

@@ -11,11 +11,11 @@ func Bump(v *semver.Version, params models.InParams) {
 			if !v.Pre[0].IsNum && v.Pre[0].VersionStr == params.Pre && v.Pre[1].IsNumeric() {
 				v.Pre[1].VersionNum++
 			} else {
-				v.Pre[0] = &semver.PRVersion{
+				v.Pre[0] = semver.PRVersion{
 					VersionStr: params.Pre,
 				}
 
-				v.Pre[1] = &semver.PRVersion{
+				v.Pre[1] = semver.PRVersion{
 					VersionNum: 1,
 					IsNum:      true,
 				}
@@ -23,7 +23,7 @@ func Bump(v *semver.Version, params models.InParams) {
 		} else {
 			bump(v, params.Bump)
 
-			v.Pre = []*semver.PRVersion{
+			v.Pre = []semver.PRVersion{
 				{VersionStr: params.Pre},
 				{VersionNum: 1, IsNum: true},
 			}

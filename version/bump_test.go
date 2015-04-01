@@ -80,7 +80,7 @@ var _ = Describe("Bump", func() {
 
 		Context("when it's already a prerelease", func() {
 			BeforeEach(func() {
-				version.Pre = []*semver.PRVersion{
+				version.Pre = []semver.PRVersion{
 					{VersionStr: "rc"},
 					{VersionNum: 1, IsNum: true},
 				}
@@ -138,7 +138,7 @@ var _ = Describe("Bump", func() {
 
 	Context("when bumping from a prerelease", func() {
 		BeforeEach(func() {
-			version.Pre = []*semver.PRVersion{
+			version.Pre = []semver.PRVersion{
 				{VersionStr: "rc"},
 				{VersionNum: 1, IsNum: true},
 			}

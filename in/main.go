@@ -40,6 +40,9 @@ func main() {
 	}
 
 	regionName := request.Source.RegionName
+	if len(regionName) == 0 {
+		regionName = aws.USEast.Name
+	}
 
 	region, ok := aws.Regions[regionName]
 	if !ok {

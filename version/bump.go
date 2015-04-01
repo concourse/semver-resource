@@ -5,7 +5,7 @@ import (
 	"github.com/concourse/semver-resource/models"
 )
 
-func Bump(v *semver.Version, params models.InParams) {
+func Bump(v semver.Version, params models.InParams) {
 	if len(params.Pre) > 0 {
 		if len(v.Pre) == 2 {
 			if !v.Pre[0].IsNum && v.Pre[0].VersionStr == params.Pre && v.Pre[1].IsNumeric() {
@@ -33,7 +33,7 @@ func Bump(v *semver.Version, params models.InParams) {
 	}
 }
 
-func bump(v *semver.Version, t string) {
+func bump(v semver.Version, t string) {
 	switch t {
 	case "major":
 		v.Major++

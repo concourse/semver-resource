@@ -72,7 +72,7 @@ func main() {
 		fatal("parsing semantic version", err)
 	}
 
-	version.Bump(v, request.Params)
+	version.Bump(&v, request.Params)
 
 	numberFile, err := os.Create(filepath.Join(destination, "number"))
 	if err != nil {

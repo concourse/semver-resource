@@ -22,6 +22,7 @@ the bucket.
 
 * `region_name`: *Optional. Default `us-east-1`.* The region the bucket is in.
 
+* `endpoint`: *Optional.* Custom endpoint for using S3 compatible provider.
 
 ## Behavior
 

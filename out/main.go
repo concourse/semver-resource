@@ -53,6 +53,11 @@ func main() {
 	if !ok {
 		fatal("resolving region name", errors.New(fmt.Sprintf("No such region '%s'", regionName)))
 	}
+
+	if len(request.Source.Endpoint) != 0 {
+		region = aws.Region{S3Endpoint: fmt.Sprintf("https://%s", request.Source.Endpoint)}
+	}
+
 	client := s3.New(auth, region)
 	bucket := client.Bucket(request.Source.Bucket)
 
@@ -60,7 +65,7 @@ func main() {
 		Number: v.String(),
 	}
 
-	err = bucket.Put(request.Source.Key, []byte(outVersion.Number), "text/plain", "")
+	err = bucket.Put(request.Source.Key, []byte(outVersion.Number), "text/plain", s3.Private)
 	if err != nil {
 		fatal("saving to bucket", err)
 	}

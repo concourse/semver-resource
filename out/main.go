@@ -65,7 +65,7 @@ func main() {
 		Number: v.String(),
 	}
 
-	err = bucket.Put(request.Source.Key, []byte(outVersion.Number), "text/plain", s3.BucketOwnerFull)
+	err = bucket.Put(request.Source.Key, []byte(outVersion.Number), "text/plain", s3.Private)
 	if err != nil {
 		fatal("saving to bucket", err)
 	}

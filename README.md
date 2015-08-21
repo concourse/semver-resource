@@ -24,6 +24,15 @@ the bucket.
 
 * `endpoint`: *Optional.* Custom endpoint for using S3 compatible provider.
 
+
+### Example
+
+``` yaml
+- name: version
+  type: semver
+  source:
+```
+
 ## Behavior
 
 ### `check`: Report the current version number.

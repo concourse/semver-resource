@@ -31,6 +31,20 @@ the bucket.
 - name: version
   type: semver
   source:
+    bucket: version-numbers
+    key: product-version
+    access_key_id: AKIANOTAKEY
+    secret_access_key: li984n9sd0nfgns833rwwsd\s293
+```
+
+``` yaml
+- get: version
+  params:
+    bump: minor
+- task: a-thing-that-needs-a-version
+- put: version
+  params:
+    file: version/number
 ```
 
 ## Behavior

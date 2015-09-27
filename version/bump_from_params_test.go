@@ -11,14 +11,14 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("BumpParams", func() {
+var _ = Describe("BumpForParams", func() {
 	var (
-		version *semver.Version
+		version semver.Version
 		params  models.InParams
 	)
 
 	BeforeEach(func() {
-		version = &semver.Version{
+		version = semver.Version{
 			Major: 1,
 			Minor: 2,
 			Patch: 3,
@@ -28,7 +28,7 @@ var _ = Describe("BumpParams", func() {
 	})
 
 	JustBeforeEach(func() {
-		BumpParams(version, params)
+		version = BumpFromParams(params).Apply(version)
 	})
 
 	for bump, result := range map[string]string{

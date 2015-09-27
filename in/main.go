@@ -2,14 +2,11 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/blang/semver"
-	"github.com/mitchellh/goamz/aws"
-	"github.com/mitchellh/goamz/s3"
 
 	"github.com/concourse/semver-resource/models"
 	"github.com/concourse/semver-resource/version"
@@ -33,28 +30,6 @@ func main() {
 	if err != nil {
 		fatal("reading request", err)
 	}
-
-	auth := aws.Auth{
-		AccessKey: request.Source.AccessKeyID,
-		SecretKey: request.Source.SecretAccessKey,
-	}
-
-	regionName := request.Source.RegionName
-	if len(regionName) == 0 {
-		regionName = aws.USEast.Name
-	}
-
-	region, ok := aws.Regions[regionName]
-	if !ok {
-		fatal("resolving region name", errors.New(fmt.Sprintf("No such region '%s'", regionName)))
-	}
-
-	if len(request.Source.Endpoint) != 0 {
-		region = aws.Region{S3Endpoint: fmt.Sprintf("https://%s", request.Source.Endpoint)}
-	}
-
-	client := s3.New(auth, region)
-	bucket := client.Bucket(request.Source.Bucket)
 
 	inputVersion, err := semver.Parse(request.Version.Number)
 	if err != nil {

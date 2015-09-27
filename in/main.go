@@ -63,6 +63,10 @@ func main() {
 
 	bumped := version.BumpFromParams(request.Params).Apply(inputVersion)
 
+	if !bumped.Equals(inputVersion) {
+		fmt.Printf("bumped locally from %s to %s\n", inputVersion, bumped)
+	}
+
 	numberFile, err := os.Create(filepath.Join(destination, "number"))
 	if err != nil {
 		fatal("opening number file", err)

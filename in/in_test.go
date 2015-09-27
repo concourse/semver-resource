@@ -66,7 +66,9 @@ var _ = Describe("In", func() {
 			bucket = client.Bucket(bucketName)
 
 			request = models.InRequest{
-				Version: models.Version{},
+				Version: models.Version{
+					Number: "1.2.3",
+				},
 				Source: models.Source{
 					Bucket:          bucketName,
 					Key:             key,
@@ -102,106 +104,31 @@ var _ = Describe("In", func() {
 			Ω(err).ShouldNot(HaveOccurred())
 		})
 
-		Context("with no version", func() {
-			BeforeEach(func() {
-				request.Version.Number = ""
-			})
+		for bump, result := range map[string]string{
+			"":      "1.2.3",
+			"final": "1.2.3",
+			"patch": "1.2.4",
+			"minor": "1.3.0",
+			"major": "2.0.0",
+		} {
+			bumpLocal := bump
+			resultLocal := result
 
-			Context("when the version is present in the source", func() {
+			Context(fmt.Sprintf("when bumping %s", bumpLocal), func() {
 				BeforeEach(func() {
-					err := bucket.Put(key, []byte("1.2.3"), "text/plain", "")
+					request.Params.Bump = bumpLocal
+				})
+
+				It("reports the original version as the version", func() {
+					Ω(response.Version.Number).Should(Equal(request.Version.Number))
+				})
+
+				It("writes the version to the destination", func() {
+					contents, err := ioutil.ReadFile(path.Join(destination, "number"))
 					Ω(err).ShouldNot(HaveOccurred())
+					Ω(string(contents)).Should(Equal(resultLocal))
 				})
-
-				for bump, result := range map[string]string{
-					"":      "1.2.3",
-					"final": "1.2.3",
-					"patch": "1.2.4",
-					"minor": "1.3.0",
-					"major": "2.0.0",
-				} {
-					bumpLocal := bump
-					resultLocal := result
-
-					Context(fmt.Sprintf("when bumping %s", bumpLocal), func() {
-						BeforeEach(func() {
-							request.Params.Bump = bumpLocal
-						})
-
-						It("reports the original version as the version", func() {
-							Ω(response.Version.Number).Should(Equal("1.2.3"))
-						})
-
-						It("writes the version to the destination", func() {
-							contents, err := ioutil.ReadFile(path.Join(destination, "number"))
-							Ω(err).ShouldNot(HaveOccurred())
-							Ω(string(contents)).Should(Equal(resultLocal))
-						})
-					})
-				}
 			})
-
-			Context("when no version is present at the source", func() {
-				for bump, result := range map[string]string{
-					"":      "0.0.0",
-					"final": "0.0.0",
-					"patch": "0.0.1",
-					"minor": "0.1.0",
-					"major": "1.0.0",
-				} {
-					bumpLocal := bump
-					resultLocal := result
-
-					Context(fmt.Sprintf("when bumping %s", bumpLocal), func() {
-						BeforeEach(func() {
-							request.Params.Bump = bumpLocal
-						})
-
-						It("reports the original version as the version", func() {
-							Ω(response.Version.Number).Should(Equal("0.0.0"))
-						})
-
-						It("writes the version to the destination", func() {
-							contents, err := ioutil.ReadFile(path.Join(destination, "number"))
-							Ω(err).ShouldNot(HaveOccurred())
-							Ω(string(contents)).Should(Equal(resultLocal))
-						})
-					})
-				}
-			})
-		})
-
-		Context("with a version present", func() {
-			BeforeEach(func() {
-				request.Version.Number = "1.2.3"
-			})
-
-			for bump, result := range map[string]string{
-				"":      "1.2.3",
-				"final": "1.2.3",
-				"patch": "1.2.4",
-				"minor": "1.3.0",
-				"major": "2.0.0",
-			} {
-				bumpLocal := bump
-				resultLocal := result
-
-				Context(fmt.Sprintf("when bumping %s", bumpLocal), func() {
-					BeforeEach(func() {
-						request.Params.Bump = bumpLocal
-					})
-
-					It("reports the original version as the version", func() {
-						Ω(response.Version.Number).Should(Equal(request.Version.Number))
-					})
-
-					It("writes the version to the destination", func() {
-						contents, err := ioutil.ReadFile(path.Join(destination, "number"))
-						Ω(err).ShouldNot(HaveOccurred())
-						Ω(string(contents)).Should(Equal(resultLocal))
-					})
-				})
-			}
-		})
+		}
 	})
 })

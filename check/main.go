@@ -2,14 +2,12 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 
 	"github.com/blang/semver"
+	"github.com/concourse/semver-resource/driver"
 	"github.com/concourse/semver-resource/models"
-	"github.com/mitchellh/goamz/aws"
-	"github.com/mitchellh/goamz/s3"
 )
 
 func main() {
@@ -19,63 +17,45 @@ func main() {
 		fatal("reading request", err)
 	}
 
-	auth := aws.Auth{
-		AccessKey: request.Source.AccessKeyID,
-		SecretKey: request.Source.SecretAccessKey,
-	}
-
-	regionName := request.Source.RegionName
-	if len(regionName) == 0 {
-		regionName = aws.USEast.Name
-	}
-
-	region, ok := aws.Regions[regionName]
-	if !ok {
-		fatal("resolving region name", errors.New(fmt.Sprintf("No such region '%s'", regionName)))
-	}
-
-	if len(request.Source.Endpoint) != 0 {
-		region = aws.Region{S3Endpoint: fmt.Sprintf("https://%s", request.Source.Endpoint)}
-	}
-
-	client := s3.New(auth, region)
-	bucket := client.Bucket(request.Source.Bucket)
-
-	var bucketNumber string
-
-	bucketNumberPayload, err := bucket.Get(request.Source.Key)
-	if err == nil {
-		bucketNumber = string(bucketNumberPayload)
-	} else if len(request.Source.InitialVersion) > 0 {
-		bucketNumber = request.Source.InitialVersion
-	} else if s3err, ok := err.(*s3.Error); ok && s3err.StatusCode == 404 {
-		bucketNumber = "0.0.0"
-	} else {
-		fatal("getting initial version", err)
-	}
-
-	bucketVer, err := semver.Parse(bucketNumber)
+	driver, err := driver.FromSource(request.Source)
 	if err != nil {
-		fatal("parsing semantic version in bucket", err)
+		fatal("constructing driver", err)
+	}
+
+	var cursor *semver.Version
+	if request.Version.Number != "" {
+		v, err := semver.Parse(request.Version.Number)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "skipping invalid current version: %s", err)
+		} else {
+			cursor = &v
+		}
+	}
+
+	versions, err := driver.Check(cursor)
+	if err != nil {
+		fatal("checking for new versions", err)
+	}
+
+	if len(versions) == 0 && cursor == nil {
+		initialVersion := request.Source.InitialVersion
+		if len(initialVersion) == 0 {
+			initialVersion = "0.0.0"
+		}
+
+		v, err := semver.Parse(initialVersion)
+		if err != nil {
+			fatal("parsing initial version", err)
+		}
+
+		versions = append(versions, v)
 	}
 
 	delta := models.CheckResponse{}
-	versionNumber := request.Version.Number
-	if len(versionNumber) == 0 {
+	for _, v := range versions {
 		delta = append(delta, models.Version{
-			Number: bucketNumber,
+			Number: v.String(),
 		})
-	} else {
-		v, err := semver.Parse(versionNumber)
-		if err != nil {
-			fatal("parsing semantic version in request", err)
-		}
-
-		if bucketVer.GT(v) {
-			delta = append(delta, models.Version{
-				Number: bucketNumber,
-			})
-		}
 	}
 
 	json.NewEncoder(os.Stdout).Encode(delta)

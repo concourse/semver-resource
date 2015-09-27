@@ -43,12 +43,15 @@ type CheckRequest struct {
 type CheckResponse []Version
 
 type Source struct {
+	Driver Driver `json:"driver"`
+
+	InitialVersion string `json:"initial_version"`
+
 	Bucket          string `json:"bucket"`
 	Key             string `json:"key"`
 	AccessKeyID     string `json:"access_key_id"`
 	SecretAccessKey string `json:"secret_access_key"`
 	RegionName      string `json:"region_name"`
-	InitialVersion  string `json:"initial_version"`
 	Endpoint        string `json:"endpoint"`
 }
 
@@ -58,3 +61,10 @@ type MetadataField struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`
 }
+
+type Driver string
+
+const (
+	DriverUnspecified Driver = ""
+	DriverS3          Driver = "s3"
+)

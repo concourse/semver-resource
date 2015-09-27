@@ -56,27 +56,12 @@ func main() {
 	client := s3.New(auth, region)
 	bucket := client.Bucket(request.Source.Bucket)
 
-	versionNumber := request.Version.Number
-	if len(versionNumber) == 0 {
-		bucketNumber, err := bucket.Get(request.Source.Key)
-		if err == nil {
-			versionNumber = string(bucketNumber)
-		} else if s3err, ok := err.(*s3.Error); ok && s3err.StatusCode == 404 {
-			versionNumber = "0.0.0"
-		} else {
-			fatal("fetching current version", err)
-		}
-	}
-
-	inVersion := request.Version
-	inVersion.Number = versionNumber
-
-	v, err := semver.Parse(versionNumber)
+	inputVersion, err := semver.Parse(request.Version.Number)
 	if err != nil {
 		fatal("parsing semantic version", err)
 	}
 
-	version.Bump(&v, request.Params)
+	bumped := version.BumpFromParams(request.Params).Apply(inputVersion)
 
 	numberFile, err := os.Create(filepath.Join(destination, "number"))
 	if err != nil {
@@ -85,15 +70,15 @@ func main() {
 
 	defer numberFile.Close()
 
-	_, err = fmt.Fprintf(numberFile, "%s", v.String())
+	_, err = fmt.Fprintf(numberFile, "%s", bumped.String())
 	if err != nil {
 		fatal("writing to number file", err)
 	}
 
 	json.NewEncoder(os.Stdout).Encode(models.InResponse{
-		Version: inVersion,
+		Version: request.Version,
 		Metadata: models.Metadata{
-			{"number", inVersion.Number},
+			{"number", request.Version.Number},
 		},
 	})
 }

@@ -11,7 +11,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Bump", func() {
+var _ = Describe("BumpParams", func() {
 	var (
 		version *semver.Version
 		params  models.InParams
@@ -28,7 +28,7 @@ var _ = Describe("Bump", func() {
 	})
 
 	JustBeforeEach(func() {
-		Bump(version, params)
+		BumpParams(version, params)
 	})
 
 	for bump, result := range map[string]string{

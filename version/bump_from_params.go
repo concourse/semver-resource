@@ -1,11 +1,9 @@
 package version
 
-import "github.com/concourse/semver-resource/models"
-
-func BumpFromParams(params models.InParams) Bump {
+func BumpFromParams(bumpStr string, preStr string) Bump {
 	var semverBump Bump
 
-	switch params.Bump {
+	switch bumpStr {
 	case "major":
 		semverBump = MajorBump{}
 	case "minor":
@@ -17,13 +15,13 @@ func BumpFromParams(params models.InParams) Bump {
 	}
 
 	var bump Bump
-	if semverBump != nil && params.Pre != "" {
+	if semverBump != nil && preStr != "" {
 		bump = ConditionalPreBump{
 			ConditionalBump: semverBump,
-			Pre:             params.Pre,
+			Pre:             preStr,
 		}
-	} else if params.Pre != "" {
-		bump = PreBump{params.Pre}
+	} else if preStr != "" {
+		bump = PreBump{preStr}
 	} else if semverBump != nil {
 		bump = semverBump
 	} else {

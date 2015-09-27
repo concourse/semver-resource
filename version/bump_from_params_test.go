@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/blang/semver"
-	"github.com/concourse/semver-resource/models"
 	. "github.com/concourse/semver-resource/version"
 
 	. "github.com/onsi/ginkgo"
@@ -14,7 +13,9 @@ import (
 var _ = Describe("BumpForParams", func() {
 	var (
 		version semver.Version
-		params  models.InParams
+
+		bumpParam string
+		preParam  string
 	)
 
 	BeforeEach(func() {
@@ -24,11 +25,12 @@ var _ = Describe("BumpForParams", func() {
 			Patch: 3,
 		}
 
-		params = models.InParams{}
+		bumpParam = ""
+		preParam = ""
 	})
 
 	JustBeforeEach(func() {
-		version = BumpFromParams(params).Apply(version)
+		version = BumpFromParams(bumpParam, preParam).Apply(version)
 	})
 
 	for bump, result := range map[string]string{
@@ -43,7 +45,7 @@ var _ = Describe("BumpForParams", func() {
 
 		Context(fmt.Sprintf("when bumping %s", bumpLocal), func() {
 			BeforeEach(func() {
-				params.Bump = bumpLocal
+				bumpParam = bumpLocal
 			})
 
 			It("bumps to "+resultLocal, func() {
@@ -54,7 +56,7 @@ var _ = Describe("BumpForParams", func() {
 
 	Context("when bumping to a prerelease", func() {
 		BeforeEach(func() {
-			params.Pre = "rc"
+			preParam = "rc"
 		})
 
 		for bump, result := range map[string]string{
@@ -69,7 +71,7 @@ var _ = Describe("BumpForParams", func() {
 
 			Context(fmt.Sprintf("when bumping %s", bumpLocal), func() {
 				BeforeEach(func() {
-					params.Bump = bumpLocal
+					bumpParam = bumpLocal
 				})
 
 				It("bumps to "+resultLocal, func() {
@@ -98,7 +100,7 @@ var _ = Describe("BumpForParams", func() {
 
 				Context(fmt.Sprintf("when bumping %s", bumpLocal), func() {
 					BeforeEach(func() {
-						params.Bump = bumpLocal
+						bumpParam = bumpLocal
 					})
 
 					It("bumps to "+resultLocal, func() {
@@ -124,7 +126,7 @@ var _ = Describe("BumpForParams", func() {
 
 					Context(fmt.Sprintf("when bumping %s", bumpLocal), func() {
 						BeforeEach(func() {
-							params.Bump = bumpLocal
+							bumpParam = bumpLocal
 						})
 
 						It("bumps to "+resultLocal, func() {
@@ -156,7 +158,7 @@ var _ = Describe("BumpForParams", func() {
 
 			Context(fmt.Sprintf("when bumping %s", bumpLocal), func() {
 				BeforeEach(func() {
-					params.Bump = bumpLocal
+					bumpParam = bumpLocal
 				})
 
 				It("bumps to "+resultLocal, func() {

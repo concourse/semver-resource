@@ -33,6 +33,9 @@ type OutResponse struct {
 
 type OutParams struct {
 	File string `json:"file"`
+
+	Bump string `json:"bump"`
+	Pre  string `json:"pre"`
 }
 
 type CheckRequest struct {

@@ -10,6 +10,7 @@ import (
 
 	"github.com/concourse/semver-resource/driver"
 	"github.com/concourse/semver-resource/models"
+	"github.com/concourse/semver-resource/version"
 )
 
 func main() {
@@ -26,28 +27,41 @@ func main() {
 		fatal("reading request", err)
 	}
 
-	contents, err := ioutil.ReadFile(filepath.Join(sources, request.Params.File))
-	if err != nil {
-		fatal("reading version file", err)
-	}
-
-	v, err := semver.Parse(string(contents))
-	if err != nil {
-		fatal("parsing version", err)
-	}
-
 	driver, err := driver.FromSource(request.Source)
 	if err != nil {
 		fatal("constructing driver", err)
 	}
 
-	err = driver.Set(v)
-	if err != nil {
-		fatal("setting version", err)
+	var newVersion semver.Version
+	if request.Params.File != "" {
+		contents, err := ioutil.ReadFile(filepath.Join(sources, request.Params.File))
+		if err != nil {
+			fatal("reading version file", err)
+		}
+
+		newVersion, err = semver.Parse(string(contents))
+		if err != nil {
+			fatal("parsing version", err)
+		}
+
+		err = driver.Set(newVersion)
+		if err != nil {
+			fatal("setting version", err)
+		}
+	} else if request.Params.Bump != "" || request.Params.Pre != "" {
+		bump := version.BumpFromParams(request.Params.Bump, request.Params.Pre)
+
+		newVersion, err = driver.Bump(bump)
+		if err != nil {
+			fatal("bumping version", err)
+		}
+	} else {
+		println("no version bump specified")
+		os.Exit(1)
 	}
 
 	outVersion := models.Version{
-		Number: v.String(),
+		Number: newVersion.String(),
 	}
 
 	json.NewEncoder(os.Stdout).Encode(models.OutResponse{

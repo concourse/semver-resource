@@ -37,20 +37,6 @@ func main() {
 		fatal("checking for new versions", err)
 	}
 
-	if len(versions) == 0 && cursor == nil {
-		initialVersion := request.Source.InitialVersion
-		if len(initialVersion) == 0 {
-			initialVersion = "0.0.0"
-		}
-
-		v, err := semver.Parse(initialVersion)
-		if err != nil {
-			fatal("parsing initial version", err)
-		}
-
-		versions = append(versions, v)
-	}
-
 	delta := models.CheckResponse{}
 	for _, v := range versions {
 		delta = append(delta, models.Version{

@@ -6,16 +6,30 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/concourse/semver-resource/models"
+	"github.com/concourse/semver-resource/version"
 	"github.com/mitchellh/goamz/aws"
 	"github.com/mitchellh/goamz/s3"
 )
 
 type Driver interface {
+	Bump(version.Bump) (semver.Version, error)
 	Set(semver.Version) error
 	Check(*semver.Version) ([]semver.Version, error)
 }
 
 func FromSource(source models.Source) (Driver, error) {
+	var initialVersion semver.Version
+	if source.InitialVersion != "" {
+		version, err := semver.Parse(source.InitialVersion)
+		if err != nil {
+			return nil, fmt.Errorf("invalid initial version (%s): %s", source.InitialVersion, err)
+		}
+
+		initialVersion = version
+	} else {
+		initialVersion = semver.Version{Major: 0, Minor: 0, Patch: 0}
+	}
+
 	switch source.Driver {
 	case models.DriverUnspecified, models.DriverS3:
 		auth := aws.Auth{
@@ -43,6 +57,8 @@ func FromSource(source models.Source) (Driver, error) {
 		bucket := client.Bucket(source.Bucket)
 
 		return &S3Driver{
+			InitialVersion: initialVersion,
+
 			Bucket: bucket,
 			Key:    source.Key,
 		}, nil

@@ -36,7 +36,7 @@ func main() {
 		fatal("parsing semantic version", err)
 	}
 
-	bumped := version.BumpFromParams(request.Params).Apply(inputVersion)
+	bumped := version.BumpFromParams(request.Params.Bump, request.Params.Pre).Apply(inputVersion)
 
 	if !bumped.Equals(inputVersion) {
 		fmt.Fprintf(os.Stderr, "bumped locally from %s to %s\n", inputVersion, bumped)

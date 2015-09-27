@@ -2,6 +2,7 @@ package main_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -70,9 +71,7 @@ var _ = Describe("Out", func() {
 					SecretAccessKey: secretAccessKey,
 					RegionName:      regionName,
 				},
-				Params: models.OutParams{
-					File: "number",
-				},
+				Params: models.OutParams{},
 			}
 
 			response = models.OutResponse{}
@@ -100,21 +99,172 @@ var _ = Describe("Out", func() {
 			Ω(err).ShouldNot(HaveOccurred())
 		})
 
-		Context("when a valid version is in the file", func() {
+		Context("when setting the version", func() {
 			BeforeEach(func() {
-				err := ioutil.WriteFile(filepath.Join(source, "number"), []byte("1.2.3"), 0644)
+				request.Params.File = "number"
+			})
+
+			Context("when a valid version is in the file", func() {
+				BeforeEach(func() {
+					err := ioutil.WriteFile(filepath.Join(source, "number"), []byte("1.2.3"), 0644)
+					Ω(err).ShouldNot(HaveOccurred())
+				})
+
+				It("reports the version as the resource's version", func() {
+					Ω(response.Version.Number).Should(Equal("1.2.3"))
+				})
+
+				It("saves the contents of the file in the configured bucket", func() {
+					contents, err := bucket.Get(key)
+					Ω(err).ShouldNot(HaveOccurred())
+
+					Ω(string(contents)).Should(Equal("1.2.3"))
+				})
+			})
+		})
+
+		Context("when bumping the version", func() {
+			BeforeEach(func() {
+				err := bucket.Put(key, []byte("1.2.3"), "text/plain", s3.Private)
 				Ω(err).ShouldNot(HaveOccurred())
 			})
 
-			It("reports the version as the resource's version", func() {
-				Ω(response.Version.Number).Should(Equal("1.2.3"))
+			for bump, result := range map[string]string{
+				"final": "1.2.3",
+				"patch": "1.2.4",
+				"minor": "1.3.0",
+				"major": "2.0.0",
+			} {
+				bumpLocal := bump
+				resultLocal := result
+
+				Context(fmt.Sprintf("when bumping %s", bumpLocal), func() {
+					BeforeEach(func() {
+						request.Params.Bump = bumpLocal
+					})
+
+					It("reports the bumped version as the version", func() {
+						Ω(response.Version.Number).Should(Equal(resultLocal))
+					})
+
+					It("saves the contents of the file in the configured bucket", func() {
+						contents, err := bucket.Get(key)
+						Ω(err).ShouldNot(HaveOccurred())
+
+						Ω(string(contents)).Should(Equal(resultLocal))
+					})
+				})
+			}
+		})
+
+		Context("when bumping the version to a prerelease", func() {
+			BeforeEach(func() {
+				request.Params.Pre = "alpha"
 			})
 
-			It("saves the contents of the file in the configured bucket", func() {
-				contents, err := bucket.Get(key)
-				Ω(err).ShouldNot(HaveOccurred())
+			Context("when the version is not a prerelease", func() {
+				BeforeEach(func() {
+					err := bucket.Put(key, []byte("1.2.3"), "text/plain", s3.Private)
+					Ω(err).ShouldNot(HaveOccurred())
+				})
 
-				Ω(string(contents)).Should(Equal("1.2.3"))
+				It("reports the bumped version as the version", func() {
+					Ω(response.Version.Number).Should(Equal("1.2.3-alpha.1"))
+				})
+
+				It("saves the contents of the file in the configured bucket", func() {
+					contents, err := bucket.Get(key)
+					Ω(err).ShouldNot(HaveOccurred())
+
+					Ω(string(contents)).Should(Equal("1.2.3-alpha.1"))
+				})
+
+				Context("when doing a semantic bump at the same time", func() {
+					BeforeEach(func() {
+						request.Params.Bump = "minor"
+					})
+
+					It("reports the bumped version as the version", func() {
+						Ω(response.Version.Number).Should(Equal("1.3.0-alpha.1"))
+					})
+
+					It("saves the contents of the file in the configured bucket", func() {
+						contents, err := bucket.Get(key)
+						Ω(err).ShouldNot(HaveOccurred())
+
+						Ω(string(contents)).Should(Equal("1.3.0-alpha.1"))
+					})
+				})
+			})
+
+			Context("when the version is the same prerelease", func() {
+				BeforeEach(func() {
+					err := bucket.Put(key, []byte("1.2.3-alpha.2"), "text/plain", s3.Private)
+					Ω(err).ShouldNot(HaveOccurred())
+				})
+
+				It("reports the bumped version as the version", func() {
+					Ω(response.Version.Number).Should(Equal("1.2.3-alpha.3"))
+				})
+
+				It("saves the contents of the file in the configured bucket", func() {
+					contents, err := bucket.Get(key)
+					Ω(err).ShouldNot(HaveOccurred())
+
+					Ω(string(contents)).Should(Equal("1.2.3-alpha.3"))
+				})
+
+				Context("when doing a semantic bump at the same time", func() {
+					BeforeEach(func() {
+						request.Params.Bump = "minor"
+					})
+
+					It("reports the bumped version as the version", func() {
+						Ω(response.Version.Number).Should(Equal("1.2.3-alpha.3"))
+					})
+
+					It("saves the contents of the file in the configured bucket", func() {
+						contents, err := bucket.Get(key)
+						Ω(err).ShouldNot(HaveOccurred())
+
+						Ω(string(contents)).Should(Equal("1.2.3-alpha.3"))
+					})
+				})
+			})
+
+			Context("when the version is a different prerelease", func() {
+				BeforeEach(func() {
+					err := bucket.Put(key, []byte("1.2.3-beta.2"), "text/plain", s3.Private)
+					Ω(err).ShouldNot(HaveOccurred())
+				})
+
+				It("reports the bumped version as the version", func() {
+					Ω(response.Version.Number).Should(Equal("1.2.3-alpha.1"))
+				})
+
+				It("saves the contents of the file in the configured bucket", func() {
+					contents, err := bucket.Get(key)
+					Ω(err).ShouldNot(HaveOccurred())
+
+					Ω(string(contents)).Should(Equal("1.2.3-alpha.1"))
+				})
+
+				Context("when doing a semantic bump at the same time", func() {
+					BeforeEach(func() {
+						request.Params.Bump = "minor"
+					})
+
+					It("reports the bumped version as the version", func() {
+						Ω(response.Version.Number).Should(Equal("1.2.3-alpha.1"))
+					})
+
+					It("saves the contents of the file in the configured bucket", func() {
+						contents, err := bucket.Get(key)
+						Ω(err).ShouldNot(HaveOccurred())
+
+						Ω(string(contents)).Should(Equal("1.2.3-alpha.1"))
+					})
+				})
 			})
 		})
 	})

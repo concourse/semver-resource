@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -34,12 +34,20 @@ func main() {
 
 	var newVersion semver.Version
 	if request.Params.File != "" {
-		contents, err := ioutil.ReadFile(filepath.Join(sources, request.Params.File))
+		versionFile, err := os.Open(filepath.Join(sources, request.Params.File))
+		if err != nil {
+			fatal("opening version file", err)
+		}
+
+		defer versionFile.Close()
+
+		var versionStr string
+		_, err = fmt.Fscanf(versionFile, "%s", &versionStr)
 		if err != nil {
 			fatal("reading version file", err)
 		}
 
-		newVersion, err = semver.Parse(string(contents))
+		newVersion, err = semver.Parse(versionStr)
 		if err != nil {
 			fatal("parsing version", err)
 		}

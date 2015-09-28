@@ -63,6 +63,16 @@ func FromSource(source models.Source) (Driver, error) {
 			Key:    source.Key,
 		}, nil
 
+	case models.DriverGit:
+		return &GitDriver{
+			InitialVersion: initialVersion,
+
+			URI:        source.URI,
+			Branch:     source.Branch,
+			PrivateKey: source.PrivateKey,
+			File:       source.File,
+		}, nil
+
 	default:
 		return nil, fmt.Errorf("unknown driver: %s", source.Driver)
 	}

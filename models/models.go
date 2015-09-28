@@ -56,6 +56,11 @@ type Source struct {
 	SecretAccessKey string `json:"secret_access_key"`
 	RegionName      string `json:"region_name"`
 	Endpoint        string `json:"endpoint"`
+
+	URI        string `json:"uri"`
+	Branch     string `json:"branch"`
+	PrivateKey string `json:"private_key"`
+	File       string `json:"file"`
 }
 
 type Metadata []MetadataField
@@ -70,4 +75,5 @@ type Driver string
 const (
 	DriverUnspecified Driver = ""
 	DriverS3          Driver = "s3"
+	DriverGit         Driver = "git"
 )

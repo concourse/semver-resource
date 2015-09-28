@@ -1,17 +1,39 @@
 # Semver Resource
 
 A resource for managing a version number. Persists the version number in an
-S3 bucket, though more storage drivers will be coming soon.
+S3 bucket or a Git repository.
 
 
 ## Source Configuration
 
-* `driver`: *Optional. Default `s3`.* The driver to use for tracking the
-  version. Currently the only supported driver is `s3`, though `git` support is
-  coming soon.
-
 * `initial_version`: *Optional.* The version number to use when
 bootstrapping, i.e. when there is not a version number present in the source.
+
+* `driver`: *Optional. Default `s3`.* The driver to use for tracking the
+  version. Determines where the version is stored.
+
+There are two supported drivers, with their own sets of properties for
+configuring them.
+
+
+### `git` Driver
+
+The `git` driver works by modifying a file in a repository with every bump. The
+`git` driver has the advantage of being able to do atomic updates.
+
+* `uri`: *Required.* The repository URL.
+
+* `branch`: *Required.* The branch the file lives on.
+
+* `file`: *Required.* The name of the file in the repository.
+
+* `private_key`: *Optional.* The SSH private key to use when pulling
+  from/pushing to to the repository.
+
+
+### `s3` Driver
+
+The `s3` driver works by modifying a file a file in a bucket.
 
 * `bucket`: *Required.* The name of the bucket.
 
@@ -31,19 +53,24 @@ the bucket.
 
 ### Example
 
+With the following resource configuration:
+
 ``` yaml
+resources:
 - name: version
   type: semver
   source:
-    bucket: version-numbers
-    key: product-version
-    access_key_id: AKIANOTAKEY
-    secret_access_key: li984n9sd0nfgns833rwwsd\s293
+    driver: git
+    uri: git@github.com:concourse/concourse.git
+    branch: version
+    file: version
+    private_key: {{concourse-repo-private-key}}
 ```
 
 Bumping with a `get` and then a `put`:
 
 ``` yaml
+plan:
 - get: version
   params: {bump: minor}
 - task: a-thing-that-needs-a-version
@@ -54,6 +81,7 @@ Bumping with a `get` and then a `put`:
 Or, bumping with an atomic `put`:
 
 ``` yaml
+plan:
 - put: version
   params: {bump: minor}
 - task: a-thing-that-needs-a-version
@@ -63,14 +91,17 @@ Or, bumping with an atomic `put`:
 
 ### `check`: Report the current version number.
 
-Detects new versions, currently by reading the file in S3 and either emitting
-the initial version if it's not present, or emitting the current version if
-it's newer than the current one.
+Detects new versions, currently by reading the file from the source and either
+emitting the initial version if it's not present, or emitting the current
+version if it's newer than the current one.
 
 
 ### `in`: Provide the version as a file, optionally bumping it.
 
 Provides the version number to the build as a `number` file in the destination.
+
+Can be configured to bump the version locally, which can be useful for getting
+the `final` version ahead of time when building artifacts.
 
 #### Parameters
 
@@ -84,8 +115,9 @@ explicitly specified to actually update the version.
 
 ### `out`: Set the version or bump the current one.
 
-Given a file, use its contents to update the version. Or, given a bump strategy,
-bump whatever the current version is.
+Given a file, use its contents to update the version. Or, given a bump
+strategy, bump whatever the current version is. If there is no current version,
+the bump will be based on `initial_version`.
 
 The `file` parameter should be used if you have a particular version that you
 want to force the current version to be. This can be used in combination with

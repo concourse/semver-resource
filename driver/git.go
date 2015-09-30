@@ -194,6 +194,7 @@ func (driver *GitDriver) readVersion() (semver.Version, bool, error) {
 	return currentVersion, true, nil
 }
 
+const nothingToCommitString = "nothing to commit"
 const falsePushString = "Everything up-to-date"
 const pushRejectedString = "[rejected]"
 const pushRemoteRejectedString = "[remote rejected]"
@@ -216,7 +217,15 @@ func (driver *GitDriver) writeVersion(newVersion semver.Version) (bool, error) {
 	gitCommit.Dir = gitRepoDir
 	gitCommit.Stdout = os.Stderr
 	gitCommit.Stderr = os.Stderr
-	if err := gitCommit.Run(); err != nil {
+
+	commitOutput, err := gitCommit.CombinedOutput()
+
+	if strings.Contains(string(commitOutput), nothingToCommitString) {
+		return true, nil
+	}
+
+	if err != nil {
+		os.Stderr.Write(commitOutput)
 		return false, err
 	}
 

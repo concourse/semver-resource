@@ -215,8 +215,6 @@ func (driver *GitDriver) writeVersion(newVersion semver.Version) (bool, error) {
 
 	gitCommit := exec.Command("git", "commit", "-m", "bump to "+newVersion.String())
 	gitCommit.Dir = gitRepoDir
-	gitCommit.Stdout = os.Stderr
-	gitCommit.Stderr = os.Stderr
 
 	commitOutput, err := gitCommit.CombinedOutput()
 

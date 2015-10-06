@@ -90,10 +90,10 @@ var _ = Describe("BumpForParams", func() {
 
 			for bump, result := range map[string]string{
 				"":      "1.2.3-rc.2",
-				"final": "1.2.3-rc.2",
-				"patch": "1.2.3-rc.2",
-				"minor": "1.2.3-rc.2",
-				"major": "1.2.3-rc.2",
+				"final": "1.2.3-rc.1",
+				"patch": "1.2.4-rc.1",
+				"minor": "1.3.0-rc.1",
+				"major": "2.0.0-rc.1",
 			} {
 				bumpLocal := bump
 				resultLocal := result
@@ -117,9 +117,9 @@ var _ = Describe("BumpForParams", func() {
 				for bump, result := range map[string]string{
 					"":      "1.2.3-rc.1",
 					"final": "1.2.3-rc.1",
-					"patch": "1.2.3-rc.1",
-					"minor": "1.2.3-rc.1",
-					"major": "1.2.3-rc.1",
+					"patch": "1.2.4-rc.1",
+					"minor": "1.3.0-rc.1",
+					"major": "2.0.0-rc.1",
 				} {
 					bumpLocal := bump
 					resultLocal := result

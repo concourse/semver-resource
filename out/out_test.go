@@ -220,7 +220,7 @@ var _ = Describe("Out", func() {
 					})
 
 					It("reports the bumped version as the version", func() {
-						Ω(response.Version.Number).Should(Equal("1.2.3-alpha.3"))
+						Ω(response.Version.Number).Should(Equal("1.3.0-alpha.1"))
 					})
 
 					It("saves the contents of the file in the configured bucket", func() {
@@ -255,7 +255,7 @@ var _ = Describe("Out", func() {
 					})
 
 					It("reports the bumped version as the version", func() {
-						Ω(response.Version.Number).Should(Equal("1.2.3-alpha.1"))
+						Ω(response.Version.Number).Should(Equal("1.3.0-alpha.1"))
 					})
 
 					It("saves the contents of the file in the configured bucket", func() {

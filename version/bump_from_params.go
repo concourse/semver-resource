@@ -14,18 +14,13 @@ func BumpFromParams(bumpStr string, preStr string) Bump {
 		semverBump = FinalBump{}
 	}
 
-	var bump Bump
-	if semverBump != nil && preStr != "" {
-		bump = ConditionalPreBump{
-			ConditionalBump: semverBump,
-			Pre:             preStr,
-		}
-	} else if preStr != "" {
-		bump = PreBump{preStr}
-	} else if semverBump != nil {
-		bump = semverBump
-	} else {
-		bump = IdentityBump{}
+	var bump MultiBump
+	if semverBump != nil {
+		bump = append(bump, semverBump)
+	}
+
+	if preStr != "" {
+		bump = append(bump, PreBump{preStr})
 	}
 
 	return bump

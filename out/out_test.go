@@ -227,7 +227,7 @@ var _ = Describe("Out", func() {
 						contents, err := bucket.Get(key)
 						Ω(err).ShouldNot(HaveOccurred())
 
-						Ω(string(contents)).Should(Equal("1.2.3-alpha.3"))
+						Ω(string(contents)).Should(Equal("1.3.0-alpha.1"))
 					})
 				})
 			})
@@ -262,7 +262,7 @@ var _ = Describe("Out", func() {
 						contents, err := bucket.Get(key)
 						Ω(err).ShouldNot(HaveOccurred())
 
-						Ω(string(contents)).Should(Equal("1.2.3-alpha.1"))
+						Ω(string(contents)).Should(Equal("1.3.0-alpha.1"))
 					})
 				})
 			})

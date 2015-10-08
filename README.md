@@ -160,12 +160,5 @@ be one of:
  If present, and the version is already a prerelease matching this value,
 its number is bumped. If the version is already a prerelease of another
 type, (e.g. `alpha` vs. `beta`), the type is switched and the prerelease
-version is reset to `1`. If the version is *not* already a pre-release,
-`bump` is applied, and then `pre` is added, starting at `1`.
-
-So, with `bump` as `minor` and `pre` as `rc`, the following changes will be
-applied:
-
-* `0.1.0` -> `0.2.0-rc.1`
-* `0.1.0-rc.1` -> `0.1.0-rc.2`
-* `0.1.0-beta.4` -> `0.1.0-rc.1`
+version is reset to `1`. If the version is *not* already a pre-release, then
+`pre` is added, starting at `1`.

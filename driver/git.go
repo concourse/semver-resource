@@ -165,7 +165,7 @@ func (driver *GitDriver) setUpKey() error {
 		}
 	}
 
-	return os.Setenv("GIT_SSH_COMMAND", "ssh -i "+privateKeyPath)
+	return os.Setenv("GIT_SSH_COMMAND", "ssh -o StrictHostKeyChecking=no -i "+privateKeyPath)
 }
 
 func (driver *GitDriver) readVersion() (semver.Version, bool, error) {

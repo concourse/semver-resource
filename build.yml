@@ -13,4 +13,4 @@ params:
   SEMVER_TESTING_REGION:
 
 run:
-  path: gopath/src/github.com/concourse/semver-resource/scripts/test
+  path: gopath/src/github.com/concourse/semver-resource/scripts/ci

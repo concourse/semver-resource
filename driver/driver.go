@@ -32,9 +32,9 @@ func FromSource(source models.Source) (Driver, error) {
 
 	switch source.Driver {
 	case models.DriverUnspecified, models.DriverS3:
-		auth := aws.Auth{
-			AccessKey: source.AccessKeyID,
-			SecretKey: source.SecretAccessKey,
+		auth, err := aws.GetAuth(source.AccessKeyID, source.SecretAccessKey)
+		if err != nil {
+			return nil, err
 		}
 
 		regionName := source.RegionName

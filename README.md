@@ -40,11 +40,13 @@ The `s3` driver works by modifying a file a file in a bucket.
 * `key`: *Required.* The key to use for the object in the bucket tracking
 the version.
 
-* `access_key_id`: *Required.* The AWS access key to use when accessing the
-bucket.
+* `access_key_id`: *Optional.* The AWS access key to use when accessing the
+bucket. If empty, the resource will try to retrieve credentials from environment
+or [AWS instance profile](http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html)
 
-* `secret_access_key`: *Required.* The AWS secret key to use when accessing
-the bucket.
+* `secret_access_key`: *Optional.* The AWS secret key to use when accessing
+the bucket. If empty, the resource will try to retrieve credentials from environment
+or [AWS instance profile](http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html)
 
 * `region_name`: *Optional. Default `us-east-1`.* The region the bucket is in.
 

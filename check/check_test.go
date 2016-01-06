@@ -52,10 +52,8 @@ var _ = Describe("Check", func() {
 
 			key = guid.String()
 
-			auth := aws.Auth{
-				AccessKey: accessKeyID,
-				SecretKey: secretAccessKey,
-			}
+			auth, err := aws.GetAuth(accessKeyID, secretAccessKey)
+			Ω(err).ShouldNot(HaveOccurred())
 
 			region, ok := aws.Regions[regionName]
 			Ω(ok).Should(BeTrue())

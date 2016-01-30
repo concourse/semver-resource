@@ -6,6 +6,8 @@ set -eu
 export GOPATH=$PWD/gopath
 export PATH=$GOPATH/bin:$PATH
 
+BUILD_DIR=$PWD/built-resource
+
 cd $GOPATH/src/github.com/concourse/semver-resource
 
 export GOPATH=${PWD}/Godeps/_workspace:$GOPATH
@@ -16,3 +18,5 @@ go install github.com/onsi/ginkgo/ginkgo
 CGO_ENABLED=1 ginkgo -race -r -p "$@"
 
 ./scripts/build
+
+cp -a assets/ test/ Dockerfile $BUILD_DIR

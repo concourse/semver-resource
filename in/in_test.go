@@ -123,8 +123,14 @@ var _ = Describe("In", func() {
 					Ω(response.Version.Number).Should(Equal(request.Version.Number))
 				})
 
-				It("writes the version to the destination", func() {
+				It("writes the version to the destination 'number' file", func() {
 					contents, err := ioutil.ReadFile(path.Join(destination, "number"))
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(string(contents)).Should(Equal(resultLocal))
+				})
+
+				It("writes the version to the destination 'version' file", func() {
+					contents, err := ioutil.ReadFile(path.Join(destination, "version"))
 					Ω(err).ShouldNot(HaveOccurred())
 					Ω(string(contents)).Should(Equal(resultLocal))
 				})

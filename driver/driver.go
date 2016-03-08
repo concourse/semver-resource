@@ -73,6 +73,9 @@ func FromSource(source models.Source) (Driver, error) {
 			File:       source.File,
 		}, nil
 
+	case models.DriverSwift:
+		return NewSwiftDriver(&source)
+
 	default:
 		return nil, fmt.Errorf("unknown driver: %s", source.Driver)
 	}

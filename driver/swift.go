@@ -125,7 +125,6 @@ func (driver *SwiftDriver) Bump(bump version.Bump) (semver.Version, error) {
 
 func (driver *SwiftDriver) Set(newVersion semver.Version) error {
 	content := strings.NewReader(newVersion.String())
-	// You have the option of specifying additional configuration options.
 	opts := objects.CreateOpts{
 		ContentDisposition: fmt.Sprintf(`attachment; filename="%s"`, driver.ItemName),
 		DeleteAfter:        3600,

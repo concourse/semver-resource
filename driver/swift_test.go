@@ -37,15 +37,15 @@ var _ = Describe("Swift", func() {
 		}
 		var err error
 		client, err = getSwiftClient(opts, region)
-		Ω(err).Should(BeNil())
+		Expect(err).To(BeNil())
 
 		err = createContainer(containerName)
-		Ω(err).Should(BeNil())
+		Expect(err).To(BeNil())
 	})
 
 	AfterSuite(func() {
 		err := deleteContainer(containerName)
-		Ω(err).Should(BeNil())
+		Expect(err).To(BeNil())
 	})
 
 	It("NewSwiftDriver with empty container name should fail", func() {
@@ -56,9 +56,9 @@ var _ = Describe("Swift", func() {
 				},
 			})
 
-		Ω(driver).Should(BeNil())
-		Ω(err).Should(HaveOccurred())
-		Ω(err.Error()).Should(Equal("openstack/container is empty but must be specified"))
+		Expect(driver).To(BeNil())
+		Expect(err).To(HaveOccurred())
+		Expect(err.Error()).To(Equal("openstack/container is empty but must be specified"))
 	})
 
 	It("NewSwiftDriver with empty item_name name should fail", func() {
@@ -69,9 +69,9 @@ var _ = Describe("Swift", func() {
 				},
 			})
 
-		Ω(driver).Should(BeNil())
-		Ω(err).Should(HaveOccurred())
-		Ω(err.Error()).Should(Equal("openstack/item_name is empty but must be specified"))
+		Expect(driver).To(BeNil())
+		Expect(err).To(HaveOccurred())
+		Expect(err.Error()).To(Equal("openstack/item_name is empty but must be specified"))
 	})
 
 	It("NewSwiftDriver with empty region name should fail", func() {
@@ -82,82 +82,82 @@ var _ = Describe("Swift", func() {
 				},
 			})
 
-		Ω(driver).Should(BeNil())
-		Ω(err).Should(HaveOccurred())
-		Ω(err.Error()).Should(Equal("openstack/region is empty but must be specified"))
+		Expect(driver).To(BeNil())
+		Expect(err).To(HaveOccurred())
+		Expect(err.Error()).To(Equal("openstack/region is empty but must be specified"))
 	})
 
 	It("returns the the initial version as no source is present", func() {
 		driver, err := newTestSwiftDriver("1.0.0", "testitem1.txt")
 		defer deleteObject("testitem1.txt")
-		Ω(err).Should(BeNil())
+		Expect(err).To(BeNil())
 
 		semVers, err := driver.Check(nil)
-		Ω(err).Should(BeNil())
-		Ω(semVers).Should(HaveLen(1))
-		Ω(semVers[0].String()).Should(Equal("1.0.0"))
+		Expect(err).To(BeNil())
+		Expect(semVers).To(HaveLen(1))
+		Expect(semVers[0].String()).Should(Equal("1.0.0"))
 	})
 
 	It("bumps the initial when no source is present", func() {
 		driver, err := newTestSwiftDriver("1.0.0", "testitem2.txt")
 		defer deleteObject("testitem2.txt")
-		Ω(err).Should(BeNil())
+		Expect(err).To(BeNil())
 		semVer, err := driver.Bump(version.PatchBump{})
-		Ω(err).Should(BeNil())
-		Ω(semVer.String()).Should(Equal("1.0.1"))
+		Expect(err).To(BeNil())
+		Expect(semVer.String()).To(Equal("1.0.1"))
 	})
 
 	It("bump should return increased semver than one in objectstore", func() {
 		driver, err := newTestSwiftDriver("1.0.0", "testitem3.txt")
 		defer deleteObject("testitem3.txt")
-		Ω(err).Should(BeNil())
+		Expect(err).To(BeNil())
 		// Setup test with version in object store
 		err = driver.Set(semver.Version{Major: 2, Minor: 0, Patch: 10})
-		Ω(err).Should(BeNil())
+		Expect(err).To(BeNil())
 
 		semVer, err := driver.Bump(version.PatchBump{})
-		Ω(err).Should(BeNil())
-		Ω(semVer.String()).Should(Equal("2.0.11"))
+		Expect(err).To(BeNil())
+		Expect(semVer.String()).To(Equal("2.0.11"))
 	})
 
 	It("check returns empty if current in swift is less than supplied version", func() {
 		driver, err := newTestSwiftDriver("1.0.0", "testitem3.txt")
 		defer deleteObject("testitem3.txt")
-		Ω(err).Should(BeNil())
+		Expect(err).To(BeNil())
 		err = driver.Set(semver.Version{Major: 1, Minor: 0, Patch: 10})
-		Ω(err).Should(BeNil())
+		Expect(err).To(BeNil())
 
 		greaterThanVersion := semver.Version{Major: 2, Minor: 0, Patch: 0}
 		semVers, err := driver.Check(&greaterThanVersion)
-		Ω(err).Should(BeNil())
-		Ω(semVers).Should(BeEmpty())
+		Expect(err).To(BeNil())
+		Expect(semVers).To(BeEmpty())
 	})
 
 	It("check should return current semver if greater than supplied version", func() {
 		driver, err := newTestSwiftDriver("1.0.0", "testitem3.txt")
 		defer deleteObject("testitem3.txt")
-		Ω(err).Should(BeNil())
+		Expect(err).Should(BeNil())
 		err = driver.Set(semver.Version{Major: 2, Minor: 0, Patch: 10})
-		Ω(err).Should(BeNil())
+		Expect(err).Should(BeNil())
 
 		lessThanVersion := semver.Version{Major: 1, Minor: 0, Patch: 0}
 		semVers, err := driver.Check(&lessThanVersion)
-		Ω(err).Should(BeNil())
-		Ω(semVers).Should(HaveLen(1))
-		Ω(semVers[0].String()).Should(Equal("2.0.10"))
+		Expect(err).To(BeNil())
+		Expect(semVers).To(HaveLen(1))
+		Expect(semVers[0].String()).To(Equal("2.0.10"))
 	})
 
 	It("check should return current semver if greater supplied version is nil", func() {
 		driver, err := newTestSwiftDriver("1.0.0", "testitem3.txt")
 		defer deleteObject("testitem3.txt")
-		Ω(err).Should(BeNil())
+		Expect(err).To(BeNil())
 		err = driver.Set(semver.Version{Major: 2, Minor: 0, Patch: 10})
-		Ω(err).Should(BeNil())
+		Expect(err).To(BeNil())
 
 		semVers, err := driver.Check(nil)
-		Ω(err).Should(BeNil())
-		Ω(semVers).Should(HaveLen(1))
-		Ω(semVers[0].String()).Should(Equal("2.0.10"))
+		Expect(err).To(BeNil())
+		Expect(semVers).To(HaveLen(1))
+		Expect(semVers[0].String()).To(Equal("2.0.10"))
 	})
 })
 

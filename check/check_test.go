@@ -29,7 +29,7 @@ var _ = Describe("Check", func() {
 		var err error
 
 		tmpdir, err = ioutil.TempDir("", "in-destination")
-		Ω(err).ShouldNot(HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 
 		destination = path.Join(tmpdir, "in-dir")
 
@@ -48,7 +48,7 @@ var _ = Describe("Check", func() {
 
 		BeforeEach(func() {
 			guid, err := uuid.NewV4()
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(err).NotTo(HaveOccurred())
 
 			key = guid.String()
 
@@ -58,7 +58,7 @@ var _ = Describe("Check", func() {
 			}
 
 			region, ok := aws.Regions[regionName]
-			Ω(ok).Should(BeTrue())
+			Expect(ok).To(BeTrue())
 
 			client := s3.New(auth, region)
 
@@ -80,24 +80,24 @@ var _ = Describe("Check", func() {
 
 		AfterEach(func() {
 			err := bucket.Del(key)
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(err).NotTo(HaveOccurred())
 		})
 
 		JustBeforeEach(func() {
 			stdin, err := checkCmd.StdinPipe()
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(err).NotTo(HaveOccurred())
 
 			session, err := gexec.Start(checkCmd, GinkgoWriter, GinkgoWriter)
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(err).NotTo(HaveOccurred())
 
 			err = json.NewEncoder(stdin).Encode(request)
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(err).NotTo(HaveOccurred())
 
 			// account for roundtrip to s3
 			Eventually(session, 5*time.Second).Should(gexec.Exit(0))
 
 			err = json.Unmarshal(session.Out.Contents(), &response)
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(err).NotTo(HaveOccurred())
 		})
 
 		Context("with no version", func() {
@@ -108,12 +108,12 @@ var _ = Describe("Check", func() {
 			Context("when a version is present in the source", func() {
 				BeforeEach(func() {
 					err := bucket.Put(key, []byte("1.2.3"), "text/plain", "")
-					Ω(err).ShouldNot(HaveOccurred())
+					Expect(err).NotTo(HaveOccurred())
 				})
 
 				It("returns the version present at the source", func() {
-					Ω(response).Should(HaveLen(1))
-					Ω(response[0].Number).Should(Equal("1.2.3"))
+					Expect(response).To(HaveLen(1))
+					Expect(response[0].Number).To(Equal("1.2.3"))
 				})
 			})
 
@@ -124,8 +124,8 @@ var _ = Describe("Check", func() {
 					})
 
 					It("returns the initial version", func() {
-						Ω(response).Should(HaveLen(1))
-						Ω(response[0].Number).Should(Equal("10.9.8"))
+						Expect(response).To(HaveLen(1))
+						Expect(response[0].Number).To(Equal("10.9.8"))
 					})
 				})
 
@@ -135,8 +135,8 @@ var _ = Describe("Check", func() {
 					})
 
 					It("returns the initial version as 0.0.0", func() {
-						Ω(response).Should(HaveLen(1))
-						Ω(response[0].Number).Should(Equal("0.0.0"))
+						Expect(response).To(HaveLen(1))
+						Expect(response[0].Number).To(Equal("0.0.0"))
 					})
 				})
 			})
@@ -149,30 +149,30 @@ var _ = Describe("Check", func() {
 
 			Context("when there is no current version", func() {
 				It("outputs an empty list", func() {
-					Ω(response).Should(HaveLen(0))
+					Expect(response).To(HaveLen(0))
 				})
 			})
 
 			Context("when the source has a higher version", func() {
 				BeforeEach(func() {
 					err := bucket.Put(key, []byte("1.2.4"), "text/plain", "")
-					Ω(err).ShouldNot(HaveOccurred())
+					Expect(err).NotTo(HaveOccurred())
 				})
 
 				It("returns the version present at the source", func() {
-					Ω(response).Should(HaveLen(1))
-					Ω(response[0].Number).Should(Equal("1.2.4"))
+					Expect(response).To(HaveLen(1))
+					Expect(response[0].Number).To(Equal("1.2.4"))
 				})
 			})
 
 			Context("when it's the same as the current version", func() {
 				BeforeEach(func() {
 					err := bucket.Put(key, []byte("1.2.3"), "text/plain", "")
-					Ω(err).ShouldNot(HaveOccurred())
+					Expect(err).NotTo(HaveOccurred())
 				})
 
 				It("outputs an empty list", func() {
-					Ω(response).Should(HaveLen(0))
+					Expect(response).To(HaveLen(0))
 				})
 			})
 		})

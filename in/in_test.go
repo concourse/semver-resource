@@ -30,7 +30,7 @@ var _ = Describe("In", func() {
 		var err error
 
 		tmpdir, err = ioutil.TempDir("", "in-destination")
-		Ω(err).ShouldNot(HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 
 		destination = path.Join(tmpdir, "in-dir")
 
@@ -49,7 +49,7 @@ var _ = Describe("In", func() {
 
 		BeforeEach(func() {
 			guid, err := uuid.NewV4()
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(err).NotTo(HaveOccurred())
 
 			key = guid.String()
 
@@ -59,7 +59,7 @@ var _ = Describe("In", func() {
 			}
 
 			region, ok := aws.Regions[regionName]
-			Ω(ok).Should(BeTrue())
+			Expect(ok).To(BeTrue())
 
 			client := s3.New(auth, region)
 
@@ -84,24 +84,24 @@ var _ = Describe("In", func() {
 
 		AfterEach(func() {
 			err := bucket.Del(key)
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(err).NotTo(HaveOccurred())
 		})
 
 		JustBeforeEach(func() {
 			stdin, err := inCmd.StdinPipe()
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(err).NotTo(HaveOccurred())
 
 			session, err := gexec.Start(inCmd, GinkgoWriter, GinkgoWriter)
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(err).NotTo(HaveOccurred())
 
 			err = json.NewEncoder(stdin).Encode(request)
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(err).NotTo(HaveOccurred())
 
 			// account for roundtrip to s3
 			Eventually(session, 5*time.Second).Should(gexec.Exit(0))
 
 			err = json.Unmarshal(session.Out.Contents(), &response)
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(err).NotTo(HaveOccurred())
 		})
 
 		for bump, result := range map[string]string{
@@ -120,19 +120,19 @@ var _ = Describe("In", func() {
 				})
 
 				It("reports the original version as the version", func() {
-					Ω(response.Version.Number).Should(Equal(request.Version.Number))
+					Expect(response.Version.Number).To(Equal(request.Version.Number))
 				})
 
 				It("writes the version to the destination 'number' file", func() {
 					contents, err := ioutil.ReadFile(path.Join(destination, "number"))
-					Ω(err).ShouldNot(HaveOccurred())
-					Ω(string(contents)).Should(Equal(resultLocal))
+					Expect(err).NotTo(HaveOccurred())
+					Expect(string(contents)).To(Equal(resultLocal))
 				})
 
 				It("writes the version to the destination 'version' file", func() {
 					contents, err := ioutil.ReadFile(path.Join(destination, "version"))
-					Ω(err).ShouldNot(HaveOccurred())
-					Ω(string(contents)).Should(Equal(resultLocal))
+					Expect(err).NotTo(HaveOccurred())
+					Expect(string(contents)).To(Equal(resultLocal))
 				})
 			})
 		}

@@ -49,7 +49,7 @@ var _ = Describe("BumpForParams", func() {
 			})
 
 			It("bumps to "+resultLocal, func() {
-				Ω(version.String()).Should(Equal(resultLocal))
+				Expect(version.String()).To(Equal(resultLocal))
 			})
 		})
 	}
@@ -75,7 +75,7 @@ var _ = Describe("BumpForParams", func() {
 				})
 
 				It("bumps to "+resultLocal, func() {
-					Ω(version.String()).Should(Equal(resultLocal))
+					Expect(version.String()).To(Equal(resultLocal))
 				})
 			})
 		}
@@ -104,7 +104,7 @@ var _ = Describe("BumpForParams", func() {
 					})
 
 					It("bumps to "+resultLocal, func() {
-						Ω(version.String()).Should(Equal(resultLocal))
+						Expect(version.String()).To(Equal(resultLocal))
 					})
 				})
 			}
@@ -130,7 +130,7 @@ var _ = Describe("BumpForParams", func() {
 						})
 
 						It("bumps to "+resultLocal, func() {
-							Ω(version.String()).Should(Equal(resultLocal))
+							Expect(version.String()).To(Equal(resultLocal))
 						})
 					})
 				}
@@ -162,7 +162,7 @@ var _ = Describe("BumpForParams", func() {
 				})
 
 				It("bumps to "+resultLocal, func() {
-					Ω(version.String()).Should(Equal(resultLocal))
+					Expect(version.String()).To(Equal(resultLocal))
 				})
 			})
 		}

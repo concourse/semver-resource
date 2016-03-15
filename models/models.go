@@ -61,6 +61,31 @@ type Source struct {
 	Branch     string `json:"branch"`
 	PrivateKey string `json:"private_key"`
 	File       string `json:"file"`
+
+	OpenStack OpenStackOptions `json:"openstack"`
+}
+
+// OpenStackOptions contains properties for authenticating and accessing
+// the object storage system.
+type OpenStackOptions struct {
+	Container string `json:"container"`
+	ItemName  string `json:"item_name"`
+	Region    string `json:"region"`
+
+	// Properties below are for authentication. Its a copy of
+	// the properties required by gophercloud. Review documentation
+	// in gophercloud for parameter usage as these are just passed in.
+	IdentityEndpoint string `json:"identity_endpoint"`
+	Username         string `json:"username"`
+	UserID           string `json:"user_id"`
+	Password         string `json:"password"`
+	APIKey           string `json:"api_key"`
+	DomainID         string `json:"domain_id"`
+	DomainName       string `json:"domain_name"`
+	TenantID         string `json:"tenant_id"`
+	TenantName       string `json:"tenant_name"`
+	AllowReauth      bool   `json:"allow_reauth"`
+	TokenID          string `json:"token_id"`
 }
 
 type Metadata []MetadataField
@@ -76,4 +101,5 @@ const (
 	DriverUnspecified Driver = ""
 	DriverS3          Driver = "s3"
 	DriverGit         Driver = "git"
+	DriverSwift       Driver = "swift"
 )

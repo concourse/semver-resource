@@ -28,24 +28,34 @@ var _ = Describe("Swift", func() {
 		password := os.Getenv("OS_PASSWORD")
 		region := os.Getenv("OS_REGION_NAME")
 
-		opts := gophercloud.AuthOptions{
-			IdentityEndpoint: identityEndpoint,
-			Username:         username,
-			Password:         password,
-			TenantID:         tenantID,
-			TenantName:       tenantName,
-		}
-		var err error
-		client, err = getSwiftClient(opts, region)
-		Expect(err).To(BeNil())
+		if identityEndpoint != "" || tenantID != "" || tenantName != "" || username != "" || password != "" || region != "" {
+			opts := gophercloud.AuthOptions{
+				IdentityEndpoint: identityEndpoint,
+				Username:         username,
+				Password:         password,
+				TenantID:         tenantID,
+				TenantName:       tenantName,
+			}
+			var err error
+			client, err = getSwiftClient(opts, region)
+			Expect(err).To(BeNil())
 
-		err = createContainer(containerName)
-		Expect(err).To(BeNil())
+			err = createContainer(containerName)
+			Expect(err).To(BeNil())
+		}
 	})
 
 	AfterSuite(func() {
-		err := deleteContainer(containerName)
-		Expect(err).To(BeNil())
+		if client != nil {
+			err := deleteContainer(containerName)
+			Expect(err).To(BeNil())
+		}
+	})
+
+	BeforeEach(func() {
+		if client == nil {
+			Skip("env vars not set, skipping Swift tests")
+		}
 	})
 
 	It("NewSwiftDriver with empty container name should fail", func() {

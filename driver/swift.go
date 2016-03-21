@@ -127,7 +127,6 @@ func (driver *SwiftDriver) Set(newVersion semver.Version) error {
 	content := strings.NewReader(newVersion.String())
 	opts := objects.CreateOpts{
 		ContentDisposition: fmt.Sprintf(`attachment; filename="%s"`, driver.ItemName),
-		DeleteAfter:        3600,
 	}
 
 	// Now execute the upload

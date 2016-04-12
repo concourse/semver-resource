@@ -3,7 +3,6 @@ package driver
 import (
 	"errors"
 	"fmt"
-	"net/http"
 
 	"github.com/blang/semver"
 	"github.com/concourse/semver-resource/models"
@@ -54,14 +53,7 @@ func FromSource(source models.Source) (Driver, error) {
 			}
 		}
 
-		proxyTransport := &http.Transport{Proxy: http.ProxyFromEnvironment}
-		proxyClient := &http.Client{Transport: proxyTransport}
-
-		client := s3.S3{
-			Auth:       auth,
-			Region:     region,
-			HTTPClient: func() *http.Client { return proxyClient },
-		}
+		client := s3.New(auth, region)
 		bucket := client.Bucket(source.Bucket)
 
 		return &S3Driver{

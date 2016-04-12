@@ -29,6 +29,12 @@ The `git` driver works by modifying a file in a repository with every bump. The
 
 * `private_key`: *Optional.* The SSH private key to use when pulling
   from/pushing to to the repository.
+  
+* `username`: *Optional.* Username for HTTP(S) auth when pulling/pushing.
+   This is needed when only HTTP/HTTPS protocol for git is available (which does not support private key auth)
+   and auth is required.
+ 
+* `password`: *Optional.* Password for HTTP(S) auth when pulling/pushing.
 
 
 ### `s3` Driver

@@ -29,11 +29,18 @@ type GitDriver struct {
 	URI        string
 	Branch     string
 	PrivateKey string
+	Username   string
+	Password   string
 	File       string
 }
 
 func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
 	err := driver.setUpKey()
+	if err != nil {
+		return semver.Version{}, err
+	}
+
+	err = driver.setUpUsernamePassword()
 	if err != nil {
 		return semver.Version{}, err
 	}
@@ -72,6 +79,11 @@ func (driver *GitDriver) Set(newVersion semver.Version) error {
 		return err
 	}
 
+	err = driver.setUpUsernamePassword()
+	if err != nil {
+		return err
+	}
+
 	for {
 		err = driver.setUpRepo()
 		if err != nil {
@@ -93,6 +105,11 @@ func (driver *GitDriver) Set(newVersion semver.Version) error {
 
 func (driver *GitDriver) Check(cursor *semver.Version) ([]semver.Version, error) {
 	err := driver.setUpKey()
+	if err != nil {
+		return nil, err
+	}
+
+	err = driver.setUpUsernamePassword()
 	if err != nil {
 		return nil, err
 	}
@@ -166,6 +183,21 @@ func (driver *GitDriver) setUpKey() error {
 	}
 
 	return os.Setenv("GIT_SSH_COMMAND", "ssh -o StrictHostKeyChecking=no -i "+privateKeyPath)
+}
+
+func (driver *GitDriver) setUpUsernamePassword() error {
+	if len(driver.Username) > 0 && len(driver.Password) > 0 {
+		credentialHelper := "!f() { echo \"username=" + driver.Username + "\"; echo \"password=" + driver.Password + "\"; }; f"
+		gitConfigHelper := exec.Command("git", "config", "--global", "credential.helper", credentialHelper)
+		gitConfigHelper.Stdout = os.Stderr
+		gitConfigHelper.Stderr = os.Stderr
+		if err := gitConfigHelper.Run(); err != nil {
+			return err
+		}
+		// TODO: change to .netrc
+	}
+
+	return nil
 }
 
 func (driver *GitDriver) readVersion() (semver.Version, bool, error) {

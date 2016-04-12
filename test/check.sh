@@ -47,6 +47,8 @@ it_fails_if_key_has_password() {
   grep "private keys with passphrases are not supported" $failed_output
 }
 
+# TODO: check user/password auth
+
 it_can_check_from_a_version() {
   local repo=$(init_repo)
 

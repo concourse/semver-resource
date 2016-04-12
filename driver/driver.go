@@ -70,6 +70,8 @@ func FromSource(source models.Source) (Driver, error) {
 			URI:        source.URI,
 			Branch:     source.Branch,
 			PrivateKey: source.PrivateKey,
+			Username:   source.Username,
+			Password:   source.Password,
 			File:       source.File,
 		}, nil
 

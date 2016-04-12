@@ -30,7 +30,7 @@ The `git` driver works by modifying a file in a repository with every bump. The
 * `private_key`: *Optional.* The SSH private key to use when pulling
   from/pushing to the repository.
 
-* `git_user`: *Optional.* The git identiy to use when pushing to the
+* `git_user`: *Optional.* The git identity to use when pushing to the
   repository support RFC 5322 address of the form "Gogh Fir <gf@example.com>" or "foo@example.com".
 
 

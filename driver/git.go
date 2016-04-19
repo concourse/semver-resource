@@ -11,6 +11,7 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/concourse/semver-resource/version"
+	"net/mail"
 )
 
 var gitRepoDir string
@@ -30,10 +31,16 @@ type GitDriver struct {
 	Branch     string
 	PrivateKey string
 	File       string
+	GitUser    string
 }
 
 func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
 	err := driver.setUpKey()
+	if err != nil {
+		return semver.Version{}, err
+	}
+
+	err = driver.setUserInfo()
 	if err != nil {
 		return semver.Version{}, err
 	}
@@ -68,6 +75,11 @@ func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
 
 func (driver *GitDriver) Set(newVersion semver.Version) error {
 	err := driver.setUpKey()
+	if err != nil {
+		return err
+	}
+
+	err = driver.setUserInfo()
 	if err != nil {
 		return err
 	}
@@ -166,6 +178,36 @@ func (driver *GitDriver) setUpKey() error {
 	}
 
 	return os.Setenv("GIT_SSH_COMMAND", "ssh -o StrictHostKeyChecking=no -i "+privateKeyPath)
+}
+
+func (driver *GitDriver) setUserInfo() error {
+
+	if len(driver.GitUser) == 0 {
+		return nil
+	}
+
+	e, err := mail.ParseAddress(driver.GitUser)
+	if err != nil {
+		return err
+	}
+
+	if len(e.Name) > 0 {
+		gitName := exec.Command("git", "config", "--global", "user.name", e.Name)
+		gitName.Stdout = os.Stderr
+		gitName.Stderr = os.Stderr
+		if err := gitName.Run(); err != nil {
+			return err
+		}
+	}
+
+	gitEmail := exec.Command("git", "config", "--global", "user.email", e.Address)
+	gitEmail.Stdout = os.Stderr
+	gitEmail.Stderr = os.Stderr
+	if err := gitEmail.Run(); err != nil {
+		return err
+	}
+	return nil
+
 }
 
 func (driver *GitDriver) readVersion() (semver.Version, bool, error) {

@@ -9,9 +9,11 @@ import (
 	"path"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/concourse/semver-resource/models"
-	"github.com/mitchellh/goamz/aws"
-	"github.com/mitchellh/goamz/s3"
 	"github.com/nu7hatch/gouuid"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -45,7 +47,7 @@ var _ = Describe("In", func() {
 		var request models.InRequest
 		var response models.InResponse
 
-		var bucket *s3.Bucket
+		var svc *s3.S3
 
 		BeforeEach(func() {
 			guid, err := uuid.NewV4()
@@ -53,17 +55,15 @@ var _ = Describe("In", func() {
 
 			key = guid.String()
 
-			auth := aws.Auth{
-				AccessKey: accessKeyID,
-				SecretKey: secretAccessKey,
+			creds := credentials.NewStaticCredentials(accessKeyID, secretAccessKey, "")
+			awsConfig := &aws.Config{
+				Region:           aws.String(regionName),
+				Credentials:      creds,
+				S3ForcePathStyle: aws.Bool(true),
+				MaxRetries:       aws.Int(12),
 			}
 
-			region, ok := aws.Regions[regionName]
-			Expect(ok).To(BeTrue())
-
-			client := s3.New(auth, region)
-
-			bucket = client.Bucket(bucketName)
+			svc = s3.New(session.New(awsConfig))
 
 			request = models.InRequest{
 				Version: models.Version{
@@ -83,7 +83,10 @@ var _ = Describe("In", func() {
 		})
 
 		AfterEach(func() {
-			err := bucket.Del(key)
+			_, err := svc.DeleteObject(&s3.DeleteObjectInput{
+				Bucket: aws.String(bucketName),
+				Key:    aws.String(key),
+			})
 			Expect(err).NotTo(HaveOccurred())
 		})
 

@@ -9,9 +9,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	"net/mail"
+
 	"github.com/blang/semver"
 	"github.com/concourse/semver-resource/version"
-	"net/mail"
 )
 
 var gitRepoDir string
@@ -123,7 +124,7 @@ func (driver *GitDriver) Check(cursor *semver.Version) ([]semver.Version, error)
 		return []semver.Version{driver.InitialVersion}, nil
 	}
 
-	if cursor == nil || currentVersion.GT(*cursor) {
+	if cursor == nil || currentVersion.GTE(*cursor) {
 		return []semver.Version{currentVersion}, nil
 	}
 

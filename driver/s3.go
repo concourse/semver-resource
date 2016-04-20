@@ -97,7 +97,7 @@ func (driver *S3Driver) Check(cursor *semver.Version) ([]semver.Version, error) 
 		return nil, fmt.Errorf("parsing number in bucket: %s", err)
 	}
 
-	if cursor == nil || bucketVersion.GT(*cursor) {
+	if cursor == nil || bucketVersion.GTE(*cursor) {
 		return []semver.Version{bucketVersion}, nil
 	}
 

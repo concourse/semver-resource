@@ -182,8 +182,9 @@ var _ = Describe("Check", func() {
 					putVersion("1.2.3")
 				})
 
-				It("outputs an empty list", func() {
-					Expect(response).To(HaveLen(0))
+				It("returns the version present at the source", func() {
+					Expect(response).To(HaveLen(1))
+					Expect(response[0].Number).To(Equal("1.2.3"))
 				})
 			})
 		})

@@ -27,8 +27,7 @@ The `git` driver works by modifying a file in a repository with every bump. The
 
 * `file`: *Required.* The name of the file in the repository.
 
-* `private_key`: *Optional.* The SSH private key to use when pulling
-  from/pushing to to the repository.
+* `private_key`: *Optional.* The SSH private key to use when pulling from/pushing to to the repository.
   
 * `username`: *Optional.* Username for HTTP(S) auth when pulling/pushing.
    This is needed when only HTTP/HTTPS protocol for git is available (which does not support private key auth)
@@ -36,6 +35,8 @@ The `git` driver works by modifying a file in a repository with every bump. The
  
 * `password`: *Optional.* Password for HTTP(S) auth when pulling/pushing.
 
+* `git_user`: *Optional.* The git identity to use when pushing to the
+  repository support RFC 5322 address of the form "Gogh Fir <gf@example.com>" or "foo@example.com".
 
 ### `s3` Driver
 
@@ -114,10 +115,7 @@ plan:
 
 ### `check`: Report the current version number.
 
-Detects new versions, currently by reading the file from the source and either
-emitting the initial version if it's not present, or emitting the current
-version if it's newer than the current one.
-
+Detects new versions by reading the file from the specified source. If the file is empty, it returns the `initial_version`. If the file is not empty, it returns the version specified in the file if it is equal to or greater than current version, otherwise it returns no versions.
 
 ### `in`: Provide the version as a file, optionally bumping it.
 

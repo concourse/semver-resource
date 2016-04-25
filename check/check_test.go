@@ -1,6 +1,7 @@
 package main_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"os"
@@ -8,9 +9,11 @@ import (
 	"path"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/concourse/semver-resource/models"
-	"github.com/mitchellh/goamz/aws"
-	"github.com/mitchellh/goamz/s3"
 	"github.com/nu7hatch/gouuid"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -43,8 +46,7 @@ var _ = Describe("Check", func() {
 	Context("when executed", func() {
 		var request models.CheckRequest
 		var response models.CheckResponse
-
-		var bucket *s3.Bucket
+		var svc *s3.S3
 
 		BeforeEach(func() {
 			guid, err := uuid.NewV4()
@@ -52,17 +54,15 @@ var _ = Describe("Check", func() {
 
 			key = guid.String()
 
-			auth := aws.Auth{
-				AccessKey: accessKeyID,
-				SecretKey: secretAccessKey,
+			creds := credentials.NewStaticCredentials(accessKeyID, secretAccessKey, "")
+			awsConfig := &aws.Config{
+				Region:           aws.String(regionName),
+				Credentials:      creds,
+				S3ForcePathStyle: aws.Bool(true),
+				MaxRetries:       aws.Int(12),
 			}
 
-			region, ok := aws.Regions[regionName]
-			Expect(ok).To(BeTrue())
-
-			client := s3.New(auth, region)
-
-			bucket = client.Bucket(bucketName)
+			svc = s3.New(session.New(awsConfig))
 
 			request = models.CheckRequest{
 				Version: models.Version{},
@@ -79,7 +79,10 @@ var _ = Describe("Check", func() {
 		})
 
 		AfterEach(func() {
-			err := bucket.Del(key)
+			_, err := svc.DeleteObject(&s3.DeleteObjectInput{
+				Bucket: aws.String(bucketName),
+				Key:    aws.String(key),
+			})
 			Expect(err).NotTo(HaveOccurred())
 		})
 
@@ -100,6 +103,17 @@ var _ = Describe("Check", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 
+		putVersion := func(version string) {
+			_, err := svc.PutObject(&s3.PutObjectInput{
+				Bucket:      aws.String(bucketName),
+				Key:         aws.String(key),
+				ContentType: aws.String("text/plain"),
+				Body:        bytes.NewReader([]byte(version)),
+				ACL:         aws.String(s3.ObjectCannedACLPrivate),
+			})
+			Expect(err).NotTo(HaveOccurred())
+		}
+
 		Context("with no version", func() {
 			BeforeEach(func() {
 				request.Version.Number = ""
@@ -107,8 +121,7 @@ var _ = Describe("Check", func() {
 
 			Context("when a version is present in the source", func() {
 				BeforeEach(func() {
-					err := bucket.Put(key, []byte("1.2.3"), "text/plain", "")
-					Expect(err).NotTo(HaveOccurred())
+					putVersion("1.2.3")
 				})
 
 				It("returns the version present at the source", func() {
@@ -155,8 +168,7 @@ var _ = Describe("Check", func() {
 
 			Context("when the source has a higher version", func() {
 				BeforeEach(func() {
-					err := bucket.Put(key, []byte("1.2.4"), "text/plain", "")
-					Expect(err).NotTo(HaveOccurred())
+					putVersion("1.2.4")
 				})
 
 				It("returns the version present at the source", func() {
@@ -167,12 +179,12 @@ var _ = Describe("Check", func() {
 
 			Context("when it's the same as the current version", func() {
 				BeforeEach(func() {
-					err := bucket.Put(key, []byte("1.2.3"), "text/plain", "")
-					Expect(err).NotTo(HaveOccurred())
+					putVersion("1.2.3")
 				})
 
-				It("outputs an empty list", func() {
-					Expect(response).To(HaveLen(0))
+				It("returns the version present at the source", func() {
+					Expect(response).To(HaveLen(1))
+					Expect(response[0].Number).To(Equal("1.2.3"))
 				})
 			})
 		})

@@ -143,6 +143,20 @@ var _ = Describe("Swift", func() {
 		Expect(semVers).To(BeEmpty())
 	})
 
+	It("check returns current version if it is the same as supplied version", func() {
+		driver, err := newTestSwiftDriver("1.0.0", "testitem3.txt")
+		defer deleteObject("testitem3.txt")
+		Expect(err).Should(BeNil())
+		err = driver.Set(semver.Version{Major: 2, Minor: 0, Patch: 10})
+		Expect(err).Should(BeNil())
+
+		sameVersion := semver.Version{Major: 2, Minor: 0, Patch: 10}
+		semVers, err := driver.Check(&sameVersion)
+		Expect(err).To(BeNil())
+		Expect(semVers).To(HaveLen(1))
+		Expect(semVers[0].String()).To(Equal("2.0.10"))
+	})
+
 	It("check should return current semver if greater than supplied version", func() {
 		driver, err := newTestSwiftDriver("1.0.0", "testitem3.txt")
 		defer deleteObject("testitem3.txt")

@@ -1,14 +1,15 @@
 package driver
 
 import (
-	"errors"
 	"fmt"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/blang/semver"
 	"github.com/concourse/semver-resource/models"
 	"github.com/concourse/semver-resource/version"
-	"github.com/mitchellh/goamz/aws"
-	"github.com/mitchellh/goamz/s3"
 )
 
 type Driver interface {
@@ -16,6 +17,8 @@ type Driver interface {
 	Set(semver.Version) error
 	Check(*semver.Version) ([]semver.Version, error)
 }
+
+const maxRetries = 12
 
 func FromSource(source models.Source) (Driver, error) {
 	var initialVersion semver.Version
@@ -32,35 +35,39 @@ func FromSource(source models.Source) (Driver, error) {
 
 	switch source.Driver {
 	case models.DriverUnspecified, models.DriverS3:
-		auth := aws.Auth{
-			AccessKey: source.AccessKeyID,
-			SecretKey: source.SecretAccessKey,
+		var creds *credentials.Credentials
+
+		if source.AccessKeyID == "" && source.SecretAccessKey == "" {
+			creds = credentials.AnonymousCredentials
+		} else {
+			creds = credentials.NewStaticCredentials(source.AccessKeyID, source.SecretAccessKey, "")
 		}
 
 		regionName := source.RegionName
 		if len(regionName) == 0 {
-			regionName = aws.USEast.Name
+			regionName = "us-east-1"
 		}
 
-		region, ok := aws.Regions[regionName]
-		if !ok {
-			return nil, errors.New(fmt.Sprintf("no such region '%s'", regionName))
+		awsConfig := &aws.Config{
+			Region:           aws.String(regionName),
+			Credentials:      creds,
+			S3ForcePathStyle: aws.Bool(true),
+			MaxRetries:       aws.Int(maxRetries),
 		}
 
 		if len(source.Endpoint) != 0 {
-			region = aws.Region{
-				S3Endpoint: fmt.Sprintf("https://%s", source.Endpoint),
-			}
+			endpoint := fmt.Sprintf("https://%s", source.Endpoint)
+			awsConfig.Endpoint = &endpoint
 		}
 
-		client := s3.New(auth, region)
-		bucket := client.Bucket(source.Bucket)
+		svc := s3.New(session.New(awsConfig))
 
 		return &S3Driver{
 			InitialVersion: initialVersion,
 
-			Bucket: bucket,
-			Key:    source.Key,
+			Svc:        svc,
+			BucketName: source.Bucket,
+			Key:        source.Key,
 		}, nil
 
 	case models.DriverGit:
@@ -73,6 +80,7 @@ func FromSource(source models.Source) (Driver, error) {
 			Username:   source.Username,
 			Password:   source.Password,
 			File:       source.File,
+			GitUser:    source.GitUser,
 		}, nil
 
 	case models.DriverSwift:

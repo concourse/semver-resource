@@ -65,6 +65,12 @@ it_can_check_from_a_version() {
 
   set_version $repo 1.2.3
 
+  check_uri_from $repo 1.2.3 | jq -e "
+    . == [
+      {number: $(echo 1.2.3 | jq -R .)}
+    ]
+  "
+
   check_uri_from $repo 1.2.4 | jq -e "
     . == []
   "

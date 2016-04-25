@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/mail"
 	"os"
 	"os/exec"
 	"os/user"
@@ -37,10 +38,16 @@ type GitDriver struct {
 	Username   string
 	Password   string
 	File       string
+	GitUser    string
 }
 
 func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
 	err := driver.setUpAuth()
+	if err != nil {
+		return semver.Version{}, err
+	}
+
+	err = driver.setUserInfo()
 	if err != nil {
 		return semver.Version{}, err
 	}
@@ -75,6 +82,11 @@ func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
 
 func (driver *GitDriver) Set(newVersion semver.Version) error {
 	err := driver.setUpAuth()
+	if err != nil {
+		return err
+	}
+
+	err = driver.setUserInfo()
 	if err != nil {
 		return err
 	}
@@ -118,7 +130,7 @@ func (driver *GitDriver) Check(cursor *semver.Version) ([]semver.Version, error)
 		return []semver.Version{driver.InitialVersion}, nil
 	}
 
-	if cursor == nil || currentVersion.GT(*cursor) {
+	if cursor == nil || currentVersion.GTE(*cursor) {
 		return []semver.Version{currentVersion}, nil
 	}
 
@@ -205,6 +217,34 @@ func (driver *GitDriver) setUpUsernamePassword() error {
 		}
 	}
 
+	return nil
+}
+
+func (driver *GitDriver) setUserInfo() error {
+	if len(driver.GitUser) == 0 {
+		return nil
+	}
+
+	e, err := mail.ParseAddress(driver.GitUser)
+	if err != nil {
+		return err
+	}
+
+	if len(e.Name) > 0 {
+		gitName := exec.Command("git", "config", "--global", "user.name", e.Name)
+		gitName.Stdout = os.Stderr
+		gitName.Stderr = os.Stderr
+		if err := gitName.Run(); err != nil {
+			return err
+		}
+	}
+
+	gitEmail := exec.Command("git", "config", "--global", "user.email", e.Address)
+	gitEmail.Stdout = os.Stderr
+	gitEmail.Stderr = os.Stderr
+	if err := gitEmail.Run(); err != nil {
+		return err
+	}
 	return nil
 }
 

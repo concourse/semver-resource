@@ -1,6 +1,7 @@
 package main_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -9,9 +10,11 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/concourse/semver-resource/models"
-	"github.com/mitchellh/goamz/aws"
-	"github.com/mitchellh/goamz/s3"
 	"github.com/nu7hatch/gouuid"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -42,7 +45,7 @@ var _ = Describe("Out", func() {
 		var request models.OutRequest
 		var response models.OutResponse
 
-		var bucket *s3.Bucket
+		var svc *s3.S3
 
 		BeforeEach(func() {
 			guid, err := uuid.NewV4()
@@ -50,17 +53,15 @@ var _ = Describe("Out", func() {
 
 			key = guid.String()
 
-			auth := aws.Auth{
-				AccessKey: accessKeyID,
-				SecretKey: secretAccessKey,
+			creds := credentials.NewStaticCredentials(accessKeyID, secretAccessKey, "")
+			awsConfig := &aws.Config{
+				Region:           aws.String(regionName),
+				Credentials:      creds,
+				S3ForcePathStyle: aws.Bool(true),
+				MaxRetries:       aws.Int(12),
 			}
 
-			region, ok := aws.Regions[regionName]
-			Expect(ok).To(BeTrue())
-
-			client := s3.New(auth, region)
-
-			bucket = client.Bucket(bucketName)
+			svc = s3.New(session.New(awsConfig))
 
 			request = models.OutRequest{
 				Version: models.Version{},
@@ -78,7 +79,10 @@ var _ = Describe("Out", func() {
 		})
 
 		AfterEach(func() {
-			err := bucket.Del(key)
+			_, err := svc.DeleteObject(&s3.DeleteObjectInput{
+				Bucket: aws.String(bucketName),
+				Key:    aws.String(key),
+			})
 			Expect(err).NotTo(HaveOccurred())
 		})
 
@@ -99,6 +103,31 @@ var _ = Describe("Out", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 
+		getVersion := func() string {
+			resp, err := svc.GetObject(&s3.GetObjectInput{
+				Bucket: aws.String(bucketName),
+				Key:    aws.String(key),
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			contents, err := ioutil.ReadAll(resp.Body)
+			Expect(err).NotTo(HaveOccurred())
+			defer resp.Body.Close()
+
+			return string(contents)
+		}
+
+		putVersion := func(version string) {
+			_, err := svc.PutObject(&s3.PutObjectInput{
+				Bucket:      aws.String(bucketName),
+				Key:         aws.String(key),
+				ContentType: aws.String("text/plain"),
+				Body:        bytes.NewReader([]byte(version)),
+				ACL:         aws.String(s3.ObjectCannedACLPrivate),
+			})
+			Expect(err).NotTo(HaveOccurred())
+		}
+
 		Context("when setting the version", func() {
 			BeforeEach(func() {
 				request.Params.File = "number"
@@ -115,18 +144,14 @@ var _ = Describe("Out", func() {
 				})
 
 				It("saves the contents of the file in the configured bucket", func() {
-					contents, err := bucket.Get(key)
-					Expect(err).NotTo(HaveOccurred())
-
-					Expect(string(contents)).To(Equal("1.2.3"))
+					Expect(getVersion()).To(Equal("1.2.3"))
 				})
 			})
 		})
 
 		Context("when bumping the version", func() {
 			BeforeEach(func() {
-				err := bucket.Put(key, []byte("1.2.3"), "text/plain", s3.Private)
-				Expect(err).NotTo(HaveOccurred())
+				putVersion("1.2.3")
 			})
 
 			for bump, result := range map[string]string{
@@ -148,10 +173,7 @@ var _ = Describe("Out", func() {
 					})
 
 					It("saves the contents of the file in the configured bucket", func() {
-						contents, err := bucket.Get(key)
-						Expect(err).NotTo(HaveOccurred())
-
-						Expect(string(contents)).To(Equal(resultLocal))
+						Expect(getVersion()).To(Equal(resultLocal))
 					})
 				})
 			}
@@ -164,8 +186,7 @@ var _ = Describe("Out", func() {
 
 			Context("when the version is not a prerelease", func() {
 				BeforeEach(func() {
-					err := bucket.Put(key, []byte("1.2.3"), "text/plain", s3.Private)
-					Expect(err).NotTo(HaveOccurred())
+					putVersion("1.2.3")
 				})
 
 				It("reports the bumped version as the version", func() {
@@ -173,10 +194,7 @@ var _ = Describe("Out", func() {
 				})
 
 				It("saves the contents of the file in the configured bucket", func() {
-					contents, err := bucket.Get(key)
-					Expect(err).NotTo(HaveOccurred())
-
-					Expect(string(contents)).To(Equal("1.2.3-alpha.1"))
+					Expect(getVersion()).To(Equal("1.2.3-alpha.1"))
 				})
 
 				Context("when doing a semantic bump at the same time", func() {
@@ -189,18 +207,14 @@ var _ = Describe("Out", func() {
 					})
 
 					It("saves the contents of the file in the configured bucket", func() {
-						contents, err := bucket.Get(key)
-						Expect(err).NotTo(HaveOccurred())
-
-						Expect(string(contents)).To(Equal("1.3.0-alpha.1"))
+						Expect(getVersion()).To(Equal("1.3.0-alpha.1"))
 					})
 				})
 			})
 
 			Context("when the version is the same prerelease", func() {
 				BeforeEach(func() {
-					err := bucket.Put(key, []byte("1.2.3-alpha.2"), "text/plain", s3.Private)
-					Expect(err).NotTo(HaveOccurred())
+					putVersion("1.2.3-alpha.2")
 				})
 
 				It("reports the bumped version as the version", func() {
@@ -208,10 +222,7 @@ var _ = Describe("Out", func() {
 				})
 
 				It("saves the contents of the file in the configured bucket", func() {
-					contents, err := bucket.Get(key)
-					Expect(err).NotTo(HaveOccurred())
-
-					Expect(string(contents)).To(Equal("1.2.3-alpha.3"))
+					Expect(getVersion()).To(Equal("1.2.3-alpha.3"))
 				})
 
 				Context("when doing a semantic bump at the same time", func() {
@@ -224,18 +235,14 @@ var _ = Describe("Out", func() {
 					})
 
 					It("saves the contents of the file in the configured bucket", func() {
-						contents, err := bucket.Get(key)
-						Expect(err).NotTo(HaveOccurred())
-
-						Expect(string(contents)).To(Equal("1.3.0-alpha.1"))
+						Expect(getVersion()).To(Equal("1.3.0-alpha.1"))
 					})
 				})
 			})
 
 			Context("when the version is a different prerelease", func() {
 				BeforeEach(func() {
-					err := bucket.Put(key, []byte("1.2.3-beta.2"), "text/plain", s3.Private)
-					Expect(err).NotTo(HaveOccurred())
+					putVersion("1.2.3-beta.2")
 				})
 
 				It("reports the bumped version as the version", func() {
@@ -243,10 +250,7 @@ var _ = Describe("Out", func() {
 				})
 
 				It("saves the contents of the file in the configured bucket", func() {
-					contents, err := bucket.Get(key)
-					Expect(err).NotTo(HaveOccurred())
-
-					Expect(string(contents)).To(Equal("1.2.3-alpha.1"))
+					Expect(getVersion()).To(Equal("1.2.3-alpha.1"))
 				})
 
 				Context("when doing a semantic bump at the same time", func() {
@@ -259,10 +263,7 @@ var _ = Describe("Out", func() {
 					})
 
 					It("saves the contents of the file in the configured bucket", func() {
-						contents, err := bucket.Get(key)
-						Expect(err).NotTo(HaveOccurred())
-
-						Expect(string(contents)).To(Equal("1.3.0-alpha.1"))
+						Expect(getVersion()).To(Equal("1.3.0-alpha.1"))
 					})
 				})
 			})

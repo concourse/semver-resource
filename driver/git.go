@@ -168,14 +168,18 @@ func (driver *GitDriver) setUpRepo() error {
 }
 
 func (driver *GitDriver) setUpAuth() error {
-	err := driver.setUpKey()
-	if err != nil {
-		return err
+	if len(driver.PrivateKey) > 0 {
+		err := driver.setUpKey()
+		if err != nil {
+			return err
+		}
 	}
 
-	err = driver.setUpUsernamePassword()
-	if err != nil {
-		return err
+	if len(driver.Username) > 0 && len(driver.Password) > 0 {
+		err = driver.setUpUsernamePassword()
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -202,18 +206,16 @@ func (driver *GitDriver) setUpKey() error {
 }
 
 func (driver *GitDriver) setUpUsernamePassword() error {
-	if len(driver.Username) > 0 && len(driver.Password) > 0 {
-		_, err := os.Stat(netRcPath)
-		if err != nil {
-			if os.IsNotExist(err) {
-				content := fmt.Sprintf("default login %s password %s", driver.Username, driver.Password)
-				err := ioutil.WriteFile(netRcPath, []byte(content), 0600)
-				if err != nil {
-					return err
-				}
-			} else {
+	_, err := os.Stat(netRcPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			content := fmt.Sprintf("default login %s password %s", driver.Username, driver.Password)
+			err := ioutil.WriteFile(netRcPath, []byte(content), 0600)
+			if err != nil {
 				return err
 			}
+		} else {
+			return err
 		}
 	}
 

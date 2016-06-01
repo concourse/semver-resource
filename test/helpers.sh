@@ -100,6 +100,20 @@ check_uri_with_key() {
 }
 
 
+check_uri_with_credentials() {
+  jq -n "{
+    source: {
+      driver: \"git\",
+      uri: $(echo $1 | jq -R .),
+      branch: \"master\",
+      file: \"some-file\",
+      username: $(echo $2 | jq -R .),
+      password: $(echo $3 | jq -R .)
+    }
+  }" | ${resource_dir}/check | tee /dev/stderr
+}
+
+
 check_uri_from() {
   jq -n "{
     source: {

@@ -4,12 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/mail"
 	"os"
 	"os/exec"
+	"os/user"
 	"path/filepath"
 	"strings"
-
-	"net/mail"
 
 	"github.com/blang/semver"
 	"github.com/concourse/semver-resource/version"
@@ -17,12 +17,16 @@ import (
 
 var gitRepoDir string
 var privateKeyPath string
+var netRcPath string
 
 var ErrEncryptedKey = errors.New("private keys with passphrases are not supported")
 
 func init() {
 	gitRepoDir = filepath.Join(os.TempDir(), "semver-git-repo")
 	privateKeyPath = filepath.Join(os.TempDir(), "private-key")
+
+	usr, _ := user.Current()
+	netRcPath = filepath.Join(usr.HomeDir, ".netrc")
 }
 
 type GitDriver struct {
@@ -31,12 +35,14 @@ type GitDriver struct {
 	URI        string
 	Branch     string
 	PrivateKey string
+	Username   string
+	Password   string
 	File       string
 	GitUser    string
 }
 
 func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
-	err := driver.setUpKey()
+	err := driver.setUpAuth()
 	if err != nil {
 		return semver.Version{}, err
 	}
@@ -75,7 +81,7 @@ func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
 }
 
 func (driver *GitDriver) Set(newVersion semver.Version) error {
-	err := driver.setUpKey()
+	err := driver.setUpAuth()
 	if err != nil {
 		return err
 	}
@@ -105,7 +111,7 @@ func (driver *GitDriver) Set(newVersion semver.Version) error {
 }
 
 func (driver *GitDriver) Check(cursor *semver.Version) ([]semver.Version, error) {
-	err := driver.setUpKey()
+	err := driver.setUpAuth()
 	if err != nil {
 		return nil, err
 	}
@@ -161,6 +167,24 @@ func (driver *GitDriver) setUpRepo() error {
 	return nil
 }
 
+func (driver *GitDriver) setUpAuth() error {
+	if len(driver.PrivateKey) > 0 {
+		err := driver.setUpKey()
+		if err != nil {
+			return err
+		}
+	}
+
+	if len(driver.Username) > 0 && len(driver.Password) > 0 {
+		err = driver.setUpUsernamePassword()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (driver *GitDriver) setUpKey() error {
 	if strings.Contains(driver.PrivateKey, "ENCRYPTED") {
 		return ErrEncryptedKey
@@ -181,8 +205,24 @@ func (driver *GitDriver) setUpKey() error {
 	return os.Setenv("GIT_SSH_COMMAND", "ssh -o StrictHostKeyChecking=no -i "+privateKeyPath)
 }
 
-func (driver *GitDriver) setUserInfo() error {
+func (driver *GitDriver) setUpUsernamePassword() error {
+	_, err := os.Stat(netRcPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			content := fmt.Sprintf("default login %s password %s", driver.Username, driver.Password)
+			err := ioutil.WriteFile(netRcPath, []byte(content), 0600)
+			if err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+	}
 
+	return nil
+}
+
+func (driver *GitDriver) setUserInfo() error {
 	if len(driver.GitUser) == 0 {
 		return nil
 	}
@@ -208,7 +248,6 @@ func (driver *GitDriver) setUserInfo() error {
 		return err
 	}
 	return nil
-
 }
 
 func (driver *GitDriver) readVersion() (semver.Version, bool, error) {

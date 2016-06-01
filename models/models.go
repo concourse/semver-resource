@@ -60,6 +60,8 @@ type Source struct {
 	URI        string `json:"uri"`
 	Branch     string `json:"branch"`
 	PrivateKey string `json:"private_key"`
+	Username   string `json:"username"`
+	Password   string `json:"password"`
 	File       string `json:"file"`
 	GitUser    string `json:"git_user"`
 

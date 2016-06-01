@@ -47,6 +47,19 @@ it_fails_if_key_has_password() {
   grep "private keys with passphrases are not supported" $failed_output
 }
 
+it_can_check_with_credentials() {
+  local repo=$(init_repo)
+
+  set_version $repo 1.2.3
+
+  check_uri_with_credentials $repo "user1" "pass1" | jq -e "
+    . == [{number: $(echo 1.2.3 | jq -R .)}]
+  "
+
+  local expected_netrc="default login user1 password pass1"
+  [ "$(cat $HOME/.netrc)" = "$expected_netrc" ] && rm -f $HOME/.netrc
+}
+
 it_can_check_from_a_version() {
   local repo=$(init_repo)
 
@@ -83,4 +96,5 @@ run it_can_check_with_no_current_version
 run it_can_check_with_no_current_version_with_initial_set
 run it_can_check_with_current_version
 run it_fails_if_key_has_password
+run it_can_check_with_credentials
 run it_can_check_from_a_version

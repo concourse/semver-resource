@@ -57,7 +57,32 @@ it_can_check_with_credentials() {
   "
 
   local expected_netrc="default login user1 password pass1"
-  [ "$(cat $HOME/.netrc)" = "$expected_netrc" ] && rm -f $HOME/.netrc
+  [ "$(cat $HOME/.netrc)" = "$expected_netrc" ]
+
+  # make sure it clears out .netrc for this request without credentials
+  check_uri_with_credentials $repo "" "" | jq -e "
+    . == [{number: $(echo 1.2.3 | jq -R .)}]
+  "
+  [ ! -f "$HOME/.netrc" ]
+}
+
+it_clears_netrc_even_after_errors() {
+  local repo=$(init_repo)
+
+  set_version $repo 1.2.3
+
+  if check_uri_with_credentials "non_existent_repo" "user1" "pass1" ; then
+    exit 1
+  fi
+
+  local expected_netrc="default login user1 password pass1"
+  [ "$(cat $HOME/.netrc)" = "$expected_netrc" ]
+
+  # make sure it clears out .netrc for this request without credentials
+  if check_uri_with_credentials "non_existent_repo" "" "" ; then
+    exit 1
+  fi
+  [ ! -f "$HOME/.netrc" ]
 }
 
 it_can_check_from_a_version() {
@@ -98,3 +123,4 @@ run it_can_check_with_current_version
 run it_fails_if_key_has_password
 run it_can_check_with_credentials
 run it_can_check_from_a_version
+run it_clears_netrc_even_after_errors

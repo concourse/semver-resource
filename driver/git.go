@@ -7,7 +7,6 @@ import (
 	"net/mail"
 	"os"
 	"os/exec"
-	"os/user"
 	"path/filepath"
 	"strings"
 
@@ -24,9 +23,7 @@ var ErrEncryptedKey = errors.New("private keys with passphrases are not supporte
 func init() {
 	gitRepoDir = filepath.Join(os.TempDir(), "semver-git-repo")
 	privateKeyPath = filepath.Join(os.TempDir(), "private-key")
-
-	usr, _ := user.Current()
-	netRcPath = filepath.Join(usr.HomeDir, ".netrc")
+	netRcPath = filepath.Join(os.Getenv("HOME"), ".netrc")
 }
 
 type GitDriver struct {
@@ -168,6 +165,18 @@ func (driver *GitDriver) setUpRepo() error {
 }
 
 func (driver *GitDriver) setUpAuth() error {
+	_, err := os.Stat(netRcPath)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return err
+		}
+	} else {
+		err := os.Remove(netRcPath)
+		if err != nil {
+			return err
+		}
+	}
+
 	if len(driver.PrivateKey) > 0 {
 		err := driver.setUpKey()
 		if err != nil {
@@ -176,7 +185,7 @@ func (driver *GitDriver) setUpAuth() error {
 	}
 
 	if len(driver.Username) > 0 && len(driver.Password) > 0 {
-		err = driver.setUpUsernamePassword()
+		err := driver.setUpUsernamePassword()
 		if err != nil {
 			return err
 		}

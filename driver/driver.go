@@ -53,6 +53,7 @@ func FromSource(source models.Source) (Driver, error) {
 			Credentials:      creds,
 			S3ForcePathStyle: aws.Bool(true),
 			MaxRetries:       aws.Int(maxRetries),
+			DisableSSL:       aws.Bool(source.DisableSSL),
 		}
 
 		if len(source.Endpoint) != 0 {

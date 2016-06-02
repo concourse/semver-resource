@@ -28,11 +28,11 @@ The `git` driver works by modifying a file in a repository with every bump. The
 * `file`: *Required.* The name of the file in the repository.
 
 * `private_key`: *Optional.* The SSH private key to use when pulling from/pushing to to the repository.
-  
+
 * `username`: *Optional.* Username for HTTP(S) auth when pulling/pushing.
    This is needed when only HTTP/HTTPS protocol for git is available (which does not support private key auth)
    and auth is required.
- 
+
 * `password`: *Optional.* Password for HTTP(S) auth when pulling/pushing.
 
 * `git_user`: *Optional.* The git identity to use when pushing to the
@@ -56,6 +56,8 @@ the bucket.
 * `region_name`: *Optional. Default `us-east-1`.* The region the bucket is in.
 
 * `endpoint`: *Optional.* Custom endpoint for using S3 compatible provider.
+
+* `disableSSL`: *Optional.* Disable SSL for the endpoint, useful for S3 compatible providers without SSL.
 
 
 ### `swift` Driver

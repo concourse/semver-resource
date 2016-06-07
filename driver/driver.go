@@ -57,7 +57,7 @@ func FromSource(source models.Source) (Driver, error) {
 		}
 
 		if len(source.Endpoint) != 0 {
-			endpoint := fmt.Sprintf("https://%s", source.Endpoint)
+			endpoint := fmt.Sprintf("%s", source.Endpoint)
 			awsConfig.Endpoint = &endpoint
 		}
 

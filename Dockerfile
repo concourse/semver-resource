@@ -1,4 +1,4 @@
-FROM concourse/busyboxplus:git
+FROM concourse/buildroot:git
 
 # make Go's SSL stdlib happy
 RUN cat /etc/ssl/certs/*.pem > /etc/ssl/certs/ca-certificates.crt

@@ -6,7 +6,7 @@ not_installed() {
   ! command -v $1 > /dev/null 2>&1
 }
 
-semver_resource_dir=$(realpath $(dirname $(dirname $0)))
+semver_resource_dir=$(cd $(dirname $0)/.. && pwd)
 
 if not_installed ginkgo; then
   echo "# ginkgo is not installed! run the following command:"

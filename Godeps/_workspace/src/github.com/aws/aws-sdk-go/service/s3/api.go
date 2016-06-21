@@ -4,11 +4,14 @@
 package s3
 
 import (
+	"fmt"
 	"io"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/awsutil"
 	"github.com/aws/aws-sdk-go/aws/request"
+	"github.com/aws/aws-sdk-go/private/protocol"
+	"github.com/aws/aws-sdk-go/private/protocol/restxml"
 )
 
 const opAbortMultipartUpload = "AbortMultipartUpload"
@@ -171,6 +174,8 @@ func (c *S3) DeleteBucketRequest(input *DeleteBucketInput) (req *request.Request
 	}
 
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(restxml.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	output = &DeleteBucketOutput{}
 	req.Data = output
 	return
@@ -199,6 +204,8 @@ func (c *S3) DeleteBucketCorsRequest(input *DeleteBucketCorsInput) (req *request
 	}
 
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(restxml.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	output = &DeleteBucketCorsOutput{}
 	req.Data = output
 	return
@@ -226,6 +233,8 @@ func (c *S3) DeleteBucketLifecycleRequest(input *DeleteBucketLifecycleInput) (re
 	}
 
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(restxml.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	output = &DeleteBucketLifecycleOutput{}
 	req.Data = output
 	return
@@ -253,6 +262,8 @@ func (c *S3) DeleteBucketPolicyRequest(input *DeleteBucketPolicyInput) (req *req
 	}
 
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(restxml.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	output = &DeleteBucketPolicyOutput{}
 	req.Data = output
 	return
@@ -280,11 +291,14 @@ func (c *S3) DeleteBucketReplicationRequest(input *DeleteBucketReplicationInput)
 	}
 
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(restxml.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	output = &DeleteBucketReplicationOutput{}
 	req.Data = output
 	return
 }
 
+// Deletes the replication configuration from the bucket.
 func (c *S3) DeleteBucketReplication(input *DeleteBucketReplicationInput) (*DeleteBucketReplicationOutput, error) {
 	req, out := c.DeleteBucketReplicationRequest(input)
 	err := req.Send()
@@ -306,6 +320,8 @@ func (c *S3) DeleteBucketTaggingRequest(input *DeleteBucketTaggingInput) (req *r
 	}
 
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(restxml.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	output = &DeleteBucketTaggingOutput{}
 	req.Data = output
 	return
@@ -333,6 +349,8 @@ func (c *S3) DeleteBucketWebsiteRequest(input *DeleteBucketWebsiteInput) (req *r
 	}
 
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(restxml.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	output = &DeleteBucketWebsiteOutput{}
 	req.Data = output
 	return
@@ -402,6 +420,33 @@ func (c *S3) DeleteObjects(input *DeleteObjectsInput) (*DeleteObjectsOutput, err
 	return out, err
 }
 
+const opGetBucketAccelerateConfiguration = "GetBucketAccelerateConfiguration"
+
+// GetBucketAccelerateConfigurationRequest generates a request for the GetBucketAccelerateConfiguration operation.
+func (c *S3) GetBucketAccelerateConfigurationRequest(input *GetBucketAccelerateConfigurationInput) (req *request.Request, output *GetBucketAccelerateConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opGetBucketAccelerateConfiguration,
+		HTTPMethod: "GET",
+		HTTPPath:   "/{Bucket}?accelerate",
+	}
+
+	if input == nil {
+		input = &GetBucketAccelerateConfigurationInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &GetBucketAccelerateConfigurationOutput{}
+	req.Data = output
+	return
+}
+
+// Returns the accelerate configuration of a bucket.
+func (c *S3) GetBucketAccelerateConfiguration(input *GetBucketAccelerateConfigurationInput) (*GetBucketAccelerateConfigurationOutput, error) {
+	req, out := c.GetBucketAccelerateConfigurationRequest(input)
+	err := req.Send()
+	return out, err
+}
+
 const opGetBucketAcl = "GetBucketAcl"
 
 // GetBucketAclRequest generates a request for the GetBucketAcl operation.
@@ -460,6 +505,9 @@ const opGetBucketLifecycle = "GetBucketLifecycle"
 
 // GetBucketLifecycleRequest generates a request for the GetBucketLifecycle operation.
 func (c *S3) GetBucketLifecycleRequest(input *GetBucketLifecycleInput) (req *request.Request, output *GetBucketLifecycleOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, GetBucketLifecycle, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opGetBucketLifecycle,
 		HTTPMethod: "GET",
@@ -569,6 +617,9 @@ const opGetBucketNotification = "GetBucketNotification"
 
 // GetBucketNotificationRequest generates a request for the GetBucketNotification operation.
 func (c *S3) GetBucketNotificationRequest(input *GetBucketNotificationConfigurationRequest) (req *request.Request, output *NotificationConfigurationDeprecated) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, GetBucketNotification, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opGetBucketNotification,
 		HTTPMethod: "GET",
@@ -666,6 +717,7 @@ func (c *S3) GetBucketReplicationRequest(input *GetBucketReplicationInput) (req 
 	return
 }
 
+// Deprecated, see the GetBucketReplicationConfiguration operation.
 func (c *S3) GetBucketReplication(input *GetBucketReplicationInput) (*GetBucketReplicationOutput, error) {
 	req, out := c.GetBucketReplicationRequest(input)
 	err := req.Send()
@@ -876,6 +928,8 @@ func (c *S3) HeadBucketRequest(input *HeadBucketInput) (req *request.Request, ou
 	}
 
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(restxml.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	output = &HeadBucketOutput{}
 	req.Data = output
 	return
@@ -1070,6 +1124,50 @@ func (c *S3) ListObjectsPages(input *ListObjectsInput, fn func(p *ListObjectsOut
 	})
 }
 
+const opListObjectsV2 = "ListObjectsV2"
+
+// ListObjectsV2Request generates a request for the ListObjectsV2 operation.
+func (c *S3) ListObjectsV2Request(input *ListObjectsV2Input) (req *request.Request, output *ListObjectsV2Output) {
+	op := &request.Operation{
+		Name:       opListObjectsV2,
+		HTTPMethod: "GET",
+		HTTPPath:   "/{Bucket}?list-type=2",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"ContinuationToken"},
+			OutputTokens:    []string{"NextContinuationToken"},
+			LimitToken:      "MaxKeys",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListObjectsV2Input{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &ListObjectsV2Output{}
+	req.Data = output
+	return
+}
+
+// Returns some or all (up to 1000) of the objects in a bucket. You can use
+// the request parameters as selection criteria to return a subset of the objects
+// in a bucket. Note: ListObjectsV2 is the revised List Objects API and we recommend
+// you use this revised API for new application development.
+func (c *S3) ListObjectsV2(input *ListObjectsV2Input) (*ListObjectsV2Output, error) {
+	req, out := c.ListObjectsV2Request(input)
+	err := req.Send()
+	return out, err
+}
+
+func (c *S3) ListObjectsV2Pages(input *ListObjectsV2Input, fn func(p *ListObjectsV2Output, lastPage bool) (shouldContinue bool)) error {
+	page, _ := c.ListObjectsV2Request(input)
+	page.Handlers.Build.PushBack(request.MakeAddToUserAgentFreeFormHandler("Paginator"))
+	return page.EachPage(func(p interface{}, lastPage bool) bool {
+		return fn(p.(*ListObjectsV2Output), lastPage)
+	})
+}
+
 const opListParts = "ListParts"
 
 // ListPartsRequest generates a request for the ListParts operation.
@@ -1111,6 +1209,35 @@ func (c *S3) ListPartsPages(input *ListPartsInput, fn func(p *ListPartsOutput, l
 	})
 }
 
+const opPutBucketAccelerateConfiguration = "PutBucketAccelerateConfiguration"
+
+// PutBucketAccelerateConfigurationRequest generates a request for the PutBucketAccelerateConfiguration operation.
+func (c *S3) PutBucketAccelerateConfigurationRequest(input *PutBucketAccelerateConfigurationInput) (req *request.Request, output *PutBucketAccelerateConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opPutBucketAccelerateConfiguration,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/{Bucket}?accelerate",
+	}
+
+	if input == nil {
+		input = &PutBucketAccelerateConfigurationInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(restxml.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	output = &PutBucketAccelerateConfigurationOutput{}
+	req.Data = output
+	return
+}
+
+// Sets the accelerate configuration of an existing bucket.
+func (c *S3) PutBucketAccelerateConfiguration(input *PutBucketAccelerateConfigurationInput) (*PutBucketAccelerateConfigurationOutput, error) {
+	req, out := c.PutBucketAccelerateConfigurationRequest(input)
+	err := req.Send()
+	return out, err
+}
+
 const opPutBucketAcl = "PutBucketAcl"
 
 // PutBucketAclRequest generates a request for the PutBucketAcl operation.
@@ -1126,6 +1253,8 @@ func (c *S3) PutBucketAclRequest(input *PutBucketAclInput) (req *request.Request
 	}
 
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(restxml.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	output = &PutBucketAclOutput{}
 	req.Data = output
 	return
@@ -1153,6 +1282,8 @@ func (c *S3) PutBucketCorsRequest(input *PutBucketCorsInput) (req *request.Reque
 	}
 
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(restxml.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	output = &PutBucketCorsOutput{}
 	req.Data = output
 	return
@@ -1169,6 +1300,9 @@ const opPutBucketLifecycle = "PutBucketLifecycle"
 
 // PutBucketLifecycleRequest generates a request for the PutBucketLifecycle operation.
 func (c *S3) PutBucketLifecycleRequest(input *PutBucketLifecycleInput) (req *request.Request, output *PutBucketLifecycleOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, PutBucketLifecycle, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opPutBucketLifecycle,
 		HTTPMethod: "PUT",
@@ -1180,6 +1314,8 @@ func (c *S3) PutBucketLifecycleRequest(input *PutBucketLifecycleInput) (req *req
 	}
 
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(restxml.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	output = &PutBucketLifecycleOutput{}
 	req.Data = output
 	return
@@ -1207,6 +1343,8 @@ func (c *S3) PutBucketLifecycleConfigurationRequest(input *PutBucketLifecycleCon
 	}
 
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(restxml.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	output = &PutBucketLifecycleConfigurationOutput{}
 	req.Data = output
 	return
@@ -1235,6 +1373,8 @@ func (c *S3) PutBucketLoggingRequest(input *PutBucketLoggingInput) (req *request
 	}
 
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(restxml.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	output = &PutBucketLoggingOutput{}
 	req.Data = output
 	return
@@ -1253,6 +1393,9 @@ const opPutBucketNotification = "PutBucketNotification"
 
 // PutBucketNotificationRequest generates a request for the PutBucketNotification operation.
 func (c *S3) PutBucketNotificationRequest(input *PutBucketNotificationInput) (req *request.Request, output *PutBucketNotificationOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, PutBucketNotification, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opPutBucketNotification,
 		HTTPMethod: "PUT",
@@ -1264,6 +1407,8 @@ func (c *S3) PutBucketNotificationRequest(input *PutBucketNotificationInput) (re
 	}
 
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(restxml.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	output = &PutBucketNotificationOutput{}
 	req.Data = output
 	return
@@ -1291,6 +1436,8 @@ func (c *S3) PutBucketNotificationConfigurationRequest(input *PutBucketNotificat
 	}
 
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(restxml.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	output = &PutBucketNotificationConfigurationOutput{}
 	req.Data = output
 	return
@@ -1318,6 +1465,8 @@ func (c *S3) PutBucketPolicyRequest(input *PutBucketPolicyInput) (req *request.R
 	}
 
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(restxml.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	output = &PutBucketPolicyOutput{}
 	req.Data = output
 	return
@@ -1346,6 +1495,8 @@ func (c *S3) PutBucketReplicationRequest(input *PutBucketReplicationInput) (req 
 	}
 
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(restxml.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	output = &PutBucketReplicationOutput{}
 	req.Data = output
 	return
@@ -1374,6 +1525,8 @@ func (c *S3) PutBucketRequestPaymentRequest(input *PutBucketRequestPaymentInput)
 	}
 
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(restxml.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	output = &PutBucketRequestPaymentOutput{}
 	req.Data = output
 	return
@@ -1405,6 +1558,8 @@ func (c *S3) PutBucketTaggingRequest(input *PutBucketTaggingInput) (req *request
 	}
 
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(restxml.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	output = &PutBucketTaggingOutput{}
 	req.Data = output
 	return
@@ -1432,6 +1587,8 @@ func (c *S3) PutBucketVersioningRequest(input *PutBucketVersioningInput) (req *r
 	}
 
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(restxml.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	output = &PutBucketVersioningOutput{}
 	req.Data = output
 	return
@@ -1460,6 +1617,8 @@ func (c *S3) PutBucketWebsiteRequest(input *PutBucketWebsiteInput) (req *request
 	}
 
 	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(restxml.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	output = &PutBucketWebsiteOutput{}
 	req.Data = output
 	return
@@ -1614,6 +1773,26 @@ func (c *S3) UploadPartCopy(input *UploadPartCopyInput) (*UploadPartCopyOutput, 
 	return out, err
 }
 
+// Specifies the days since the initiation of an Incomplete Multipart Upload
+// that Lifecycle will wait before permanently removing all parts of the upload.
+type AbortIncompleteMultipartUpload struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates the number of days that must pass since initiation for Lifecycle
+	// to abort an Incomplete Multipart Upload.
+	DaysAfterInitiation *int64 `type:"integer"`
+}
+
+// String returns the string representation
+func (s AbortIncompleteMultipartUpload) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AbortIncompleteMultipartUpload) GoString() string {
+	return s.String()
+}
+
 type AbortMultipartUploadInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1640,6 +1819,28 @@ func (s AbortMultipartUploadInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AbortMultipartUploadInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AbortMultipartUploadInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+	if s.UploadId == nil {
+		invalidParams.Add(request.NewErrParamRequired("UploadId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type AbortMultipartUploadOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1655,6 +1856,23 @@ func (s AbortMultipartUploadOutput) String() string {
 
 // GoString returns the string representation
 func (s AbortMultipartUploadOutput) GoString() string {
+	return s.String()
+}
+
+type AccelerateConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// The accelerate configuration of the bucket.
+	Status *string `type:"string" enum:"BucketAccelerateStatus"`
+}
+
+// String returns the string representation
+func (s AccelerateConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AccelerateConfiguration) GoString() string {
 	return s.String()
 }
 
@@ -1675,6 +1893,26 @@ func (s AccessControlPolicy) String() string {
 // GoString returns the string representation
 func (s AccessControlPolicy) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AccessControlPolicy) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AccessControlPolicy"}
+	if s.Grants != nil {
+		for i, v := range s.Grants {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Grants", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type Bucket struct {
@@ -1713,6 +1951,29 @@ func (s BucketLifecycleConfiguration) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *BucketLifecycleConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "BucketLifecycleConfiguration"}
+	if s.Rules == nil {
+		invalidParams.Add(request.NewErrParamRequired("Rules"))
+	}
+	if s.Rules != nil {
+		for i, v := range s.Rules {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Rules", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type BucketLoggingStatus struct {
 	_ struct{} `type:"structure"`
 
@@ -1729,6 +1990,21 @@ func (s BucketLoggingStatus) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *BucketLoggingStatus) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "BucketLoggingStatus"}
+	if s.LoggingEnabled != nil {
+		if err := s.LoggingEnabled.Validate(); err != nil {
+			invalidParams.AddNested("LoggingEnabled", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type CORSConfiguration struct {
 	_ struct{} `type:"structure"`
 
@@ -1743,6 +2019,29 @@ func (s CORSConfiguration) String() string {
 // GoString returns the string representation
 func (s CORSConfiguration) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CORSConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CORSConfiguration"}
+	if s.CORSRules == nil {
+		invalidParams.Add(request.NewErrParamRequired("CORSRules"))
+	}
+	if s.CORSRules != nil {
+		for i, v := range s.CORSRules {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "CORSRules", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type CORSRule struct {
@@ -1778,13 +2077,29 @@ func (s CORSRule) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CORSRule) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CORSRule"}
+	if s.AllowedMethods == nil {
+		invalidParams.Add(request.NewErrParamRequired("AllowedMethods"))
+	}
+	if s.AllowedOrigins == nil {
+		invalidParams.Add(request.NewErrParamRequired("AllowedOrigins"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type CloudFunctionConfiguration struct {
 	_ struct{} `type:"structure"`
 
 	CloudFunction *string `type:"string"`
 
 	// Bucket event for which to send notifications.
-	Event *string `type:"string" enum:"Event"`
+	Event *string `deprecated:"true" type:"string" enum:"Event"`
 
 	Events []*string `locationName:"Event" type:"list" flattened:"true"`
 
@@ -1847,6 +2162,28 @@ func (s CompleteMultipartUploadInput) String() string {
 // GoString returns the string representation
 func (s CompleteMultipartUploadInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CompleteMultipartUploadInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CompleteMultipartUploadInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+	if s.UploadId == nil {
+		invalidParams.Add(request.NewErrParamRequired("UploadId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type CompleteMultipartUploadOutput struct {
@@ -2087,6 +2424,28 @@ func (s CopyObjectInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CopyObjectInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CopyObjectInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.CopySource == nil {
+		invalidParams.Add(request.NewErrParamRequired("CopySource"))
+	}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type CopyObjectOutput struct {
 	_ struct{} `type:"structure" payload:"CopyObjectResult"`
 
@@ -2226,6 +2585,19 @@ func (s CreateBucketInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateBucketInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateBucketInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type CreateBucketOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2337,8 +2709,34 @@ func (s CreateMultipartUploadInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateMultipartUploadInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateMultipartUploadInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type CreateMultipartUploadOutput struct {
 	_ struct{} `type:"structure"`
+
+	// Date when multipart upload will become eligible for abort operation by lifecycle.
+	AbortDate *time.Time `location:"header" locationName:"x-amz-abort-date" type:"timestamp" timestampFormat:"rfc822"`
+
+	// Id of the lifecycle rule that makes a multipart upload eligible for abort
+	// operation.
+	AbortRuleId *string `location:"header" locationName:"x-amz-abort-rule-id" type:"string"`
 
 	// Name of the bucket to which the multipart upload was initiated.
 	Bucket *string `locationName:"Bucket" type:"string"`
@@ -2402,6 +2800,29 @@ func (s Delete) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Delete) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Delete"}
+	if s.Objects == nil {
+		invalidParams.Add(request.NewErrParamRequired("Objects"))
+	}
+	if s.Objects != nil {
+		for i, v := range s.Objects {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Objects", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type DeleteBucketCorsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2416,6 +2837,19 @@ func (s DeleteBucketCorsInput) String() string {
 // GoString returns the string representation
 func (s DeleteBucketCorsInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteBucketCorsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteBucketCorsInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type DeleteBucketCorsOutput struct {
@@ -2448,6 +2882,19 @@ func (s DeleteBucketInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteBucketInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteBucketInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type DeleteBucketLifecycleInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2462,6 +2909,19 @@ func (s DeleteBucketLifecycleInput) String() string {
 // GoString returns the string representation
 func (s DeleteBucketLifecycleInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteBucketLifecycleInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteBucketLifecycleInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type DeleteBucketLifecycleOutput struct {
@@ -2508,6 +2968,19 @@ func (s DeleteBucketPolicyInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteBucketPolicyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteBucketPolicyInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type DeleteBucketPolicyOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -2536,6 +3009,19 @@ func (s DeleteBucketReplicationInput) String() string {
 // GoString returns the string representation
 func (s DeleteBucketReplicationInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteBucketReplicationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteBucketReplicationInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type DeleteBucketReplicationOutput struct {
@@ -2568,6 +3054,19 @@ func (s DeleteBucketTaggingInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteBucketTaggingInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteBucketTaggingInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type DeleteBucketTaggingOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -2596,6 +3095,19 @@ func (s DeleteBucketWebsiteInput) String() string {
 // GoString returns the string representation
 func (s DeleteBucketWebsiteInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteBucketWebsiteInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteBucketWebsiteInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type DeleteBucketWebsiteOutput struct {
@@ -2672,6 +3184,25 @@ func (s DeleteObjectInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteObjectInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteObjectInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type DeleteObjectOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2724,6 +3255,27 @@ func (s DeleteObjectsInput) String() string {
 // GoString returns the string representation
 func (s DeleteObjectsInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteObjectsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteObjectsInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.Delete == nil {
+		invalidParams.Add(request.NewErrParamRequired("Delete"))
+	}
+	if s.Delete != nil {
+		if err := s.Delete.Validate(); err != nil {
+			invalidParams.AddNested("Delete", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type DeleteObjectsOutput struct {
@@ -2791,6 +3343,19 @@ func (s Destination) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Destination) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Destination"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type Error struct {
 	_ struct{} `type:"structure"`
 
@@ -2830,6 +3395,22 @@ func (s ErrorDocument) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ErrorDocument) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ErrorDocument"}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 // Container for key value pair that defines the criteria for the filter rule.
 type FilterRule struct {
 	_ struct{} `type:"structure"`
@@ -2854,6 +3435,53 @@ func (s FilterRule) GoString() string {
 	return s.String()
 }
 
+type GetBucketAccelerateConfigurationInput struct {
+	_ struct{} `type:"structure"`
+
+	// Name of the bucket for which the accelerate configuration is retrieved.
+	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s GetBucketAccelerateConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetBucketAccelerateConfigurationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetBucketAccelerateConfigurationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetBucketAccelerateConfigurationInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+type GetBucketAccelerateConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The accelerate configuration of the bucket.
+	Status *string `type:"string" enum:"BucketAccelerateStatus"`
+}
+
+// String returns the string representation
+func (s GetBucketAccelerateConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetBucketAccelerateConfigurationOutput) GoString() string {
+	return s.String()
+}
+
 type GetBucketAclInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2868,6 +3496,19 @@ func (s GetBucketAclInput) String() string {
 // GoString returns the string representation
 func (s GetBucketAclInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetBucketAclInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetBucketAclInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type GetBucketAclOutput struct {
@@ -2905,6 +3546,19 @@ func (s GetBucketCorsInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetBucketCorsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetBucketCorsInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type GetBucketCorsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2935,6 +3589,19 @@ func (s GetBucketLifecycleConfigurationInput) String() string {
 // GoString returns the string representation
 func (s GetBucketLifecycleConfigurationInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetBucketLifecycleConfigurationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetBucketLifecycleConfigurationInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type GetBucketLifecycleConfigurationOutput struct {
@@ -2969,6 +3636,19 @@ func (s GetBucketLifecycleInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetBucketLifecycleInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetBucketLifecycleInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type GetBucketLifecycleOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2999,6 +3679,19 @@ func (s GetBucketLocationInput) String() string {
 // GoString returns the string representation
 func (s GetBucketLocationInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetBucketLocationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetBucketLocationInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type GetBucketLocationOutput struct {
@@ -3033,6 +3726,19 @@ func (s GetBucketLoggingInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetBucketLoggingInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetBucketLoggingInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type GetBucketLoggingOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3052,7 +3758,7 @@ func (s GetBucketLoggingOutput) GoString() string {
 type GetBucketNotificationConfigurationRequest struct {
 	_ struct{} `type:"structure"`
 
-	// Name of the buket to get the notification configuration for.
+	// Name of the bucket to get the notification configuration for.
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
 }
 
@@ -3064,6 +3770,19 @@ func (s GetBucketNotificationConfigurationRequest) String() string {
 // GoString returns the string representation
 func (s GetBucketNotificationConfigurationRequest) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetBucketNotificationConfigurationRequest) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetBucketNotificationConfigurationRequest"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type GetBucketPolicyInput struct {
@@ -3080,6 +3799,19 @@ func (s GetBucketPolicyInput) String() string {
 // GoString returns the string representation
 func (s GetBucketPolicyInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetBucketPolicyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetBucketPolicyInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type GetBucketPolicyOutput struct {
@@ -3113,6 +3845,19 @@ func (s GetBucketReplicationInput) String() string {
 // GoString returns the string representation
 func (s GetBucketReplicationInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetBucketReplicationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetBucketReplicationInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type GetBucketReplicationOutput struct {
@@ -3149,6 +3894,19 @@ func (s GetBucketRequestPaymentInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetBucketRequestPaymentInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetBucketRequestPaymentInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type GetBucketRequestPaymentOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3182,6 +3940,19 @@ func (s GetBucketTaggingInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetBucketTaggingInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetBucketTaggingInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type GetBucketTaggingOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3212,6 +3983,19 @@ func (s GetBucketVersioningInput) String() string {
 // GoString returns the string representation
 func (s GetBucketVersioningInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetBucketVersioningInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetBucketVersioningInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type GetBucketVersioningOutput struct {
@@ -3250,6 +4034,19 @@ func (s GetBucketWebsiteInput) String() string {
 // GoString returns the string representation
 func (s GetBucketWebsiteInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetBucketWebsiteInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetBucketWebsiteInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type GetBucketWebsiteOutput struct {
@@ -3299,6 +4096,25 @@ func (s GetObjectAclInput) String() string {
 // GoString returns the string representation
 func (s GetObjectAclInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetObjectAclInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetObjectAclInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type GetObjectAclOutput struct {
@@ -3404,6 +4220,25 @@ func (s GetObjectInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetObjectInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetObjectInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type GetObjectOutput struct {
 	_ struct{} `type:"structure" payload:"Body"`
 
@@ -3427,7 +4262,7 @@ type GetObjectOutput struct {
 	ContentLanguage *string `location:"header" locationName:"Content-Language" type:"string"`
 
 	// Size of the body in bytes.
-	ContentLength *int64 `location:"header" locationName:"Content-Length" type:"integer"`
+	ContentLength *int64 `location:"header" locationName:"Content-Length" type:"long"`
 
 	// The portion of the object returned in the response.
 	ContentRange *string `location:"header" locationName:"Content-Range" type:"string"`
@@ -3537,6 +4372,25 @@ func (s GetObjectTorrentInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetObjectTorrentInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetObjectTorrentInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type GetObjectTorrentOutput struct {
 	_ struct{} `type:"structure" payload:"Body"`
 
@@ -3576,6 +4430,21 @@ func (s Grant) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Grant) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Grant"}
+	if s.Grantee != nil {
+		if err := s.Grantee.Validate(); err != nil {
+			invalidParams.AddNested("Grantee", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type Grantee struct {
 	_ struct{} `type:"structure" xmlPrefix:"xsi" xmlURI:"http://www.w3.org/2001/XMLSchema-instance"`
 
@@ -3605,6 +4474,19 @@ func (s Grantee) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Grantee) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Grantee"}
+	if s.Type == nil {
+		invalidParams.Add(request.NewErrParamRequired("Type"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type HeadBucketInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3619,6 +4501,19 @@ func (s HeadBucketInput) String() string {
 // GoString returns the string representation
 func (s HeadBucketInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *HeadBucketInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "HeadBucketInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type HeadBucketOutput struct {
@@ -3697,6 +4592,25 @@ func (s HeadObjectInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *HeadObjectInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "HeadObjectInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type HeadObjectOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3717,7 +4631,7 @@ type HeadObjectOutput struct {
 	ContentLanguage *string `location:"header" locationName:"Content-Language" type:"string"`
 
 	// Size of the body in bytes.
-	ContentLength *int64 `location:"header" locationName:"Content-Length" type:"integer"`
+	ContentLength *int64 `location:"header" locationName:"Content-Length" type:"long"`
 
 	// A standard MIME type describing the format of the object data.
 	ContentType *string `location:"header" locationName:"Content-Type" type:"string"`
@@ -3820,6 +4734,19 @@ func (s IndexDocument) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *IndexDocument) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "IndexDocument"}
+	if s.Suffix == nil {
+		invalidParams.Add(request.NewErrParamRequired("Suffix"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type Initiator struct {
 	_ struct{} `type:"structure"`
 
@@ -3890,6 +4817,22 @@ func (s LambdaFunctionConfiguration) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *LambdaFunctionConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "LambdaFunctionConfiguration"}
+	if s.Events == nil {
+		invalidParams.Add(request.NewErrParamRequired("Events"))
+	}
+	if s.LambdaFunctionArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("LambdaFunctionArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type LifecycleConfiguration struct {
 	_ struct{} `type:"structure"`
 
@@ -3906,6 +4849,29 @@ func (s LifecycleConfiguration) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *LifecycleConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "LifecycleConfiguration"}
+	if s.Rules == nil {
+		invalidParams.Add(request.NewErrParamRequired("Rules"))
+	}
+	if s.Rules != nil {
+		for i, v := range s.Rules {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Rules", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type LifecycleExpiration struct {
 	_ struct{} `type:"structure"`
 
@@ -3916,6 +4882,12 @@ type LifecycleExpiration struct {
 	// Indicates the lifetime, in days, of the objects that are subject to the rule.
 	// The value must be a non-zero positive integer.
 	Days *int64 `type:"integer"`
+
+	// Indicates whether Amazon S3 will remove a delete marker with no noncurrent
+	// versions. If set to true, the delete marker will be expired; if set to false
+	// the policy takes no action. This cannot be specified with Days or Date in
+	// a Lifecycle Expiration Policy.
+	ExpiredObjectDeleteMarker *bool `type:"boolean"`
 }
 
 // String returns the string representation
@@ -3930,6 +4902,10 @@ func (s LifecycleExpiration) GoString() string {
 
 type LifecycleRule struct {
 	_ struct{} `type:"structure"`
+
+	// Specifies the days since the initiation of an Incomplete Multipart Upload
+	// that Lifecycle will wait before permanently removing all parts of the upload.
+	AbortIncompleteMultipartUpload *AbortIncompleteMultipartUpload `type:"structure"`
 
 	Expiration *LifecycleExpiration `type:"structure"`
 
@@ -3963,6 +4939,22 @@ func (s LifecycleRule) String() string {
 // GoString returns the string representation
 func (s LifecycleRule) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *LifecycleRule) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "LifecycleRule"}
+	if s.Prefix == nil {
+		invalidParams.Add(request.NewErrParamRequired("Prefix"))
+	}
+	if s.Status == nil {
+		invalidParams.Add(request.NewErrParamRequired("Status"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type ListBucketsInput struct {
@@ -4040,6 +5032,19 @@ func (s ListMultipartUploadsInput) String() string {
 // GoString returns the string representation
 func (s ListMultipartUploadsInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListMultipartUploadsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListMultipartUploadsInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type ListMultipartUploadsOutput struct {
@@ -4136,6 +5141,19 @@ func (s ListObjectVersionsInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListObjectVersionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListObjectVersionsInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type ListObjectVersionsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -4222,6 +5240,19 @@ func (s ListObjectsInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListObjectsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListObjectsInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type ListObjectsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -4266,6 +5297,124 @@ func (s ListObjectsOutput) GoString() string {
 	return s.String()
 }
 
+type ListObjectsV2Input struct {
+	_ struct{} `type:"structure"`
+
+	// Name of the bucket to list.
+	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
+
+	// ContinuationToken indicates Amazon S3 that the list is being continued on
+	// this bucket with a token. ContinuationToken is obfuscated and is not a real
+	// key
+	ContinuationToken *string `location:"querystring" locationName:"continuation-token" type:"string"`
+
+	// A delimiter is a character you use to group keys.
+	Delimiter *string `location:"querystring" locationName:"delimiter" type:"string"`
+
+	// Encoding type used by Amazon S3 to encode object keys in the response.
+	EncodingType *string `location:"querystring" locationName:"encoding-type" type:"string" enum:"EncodingType"`
+
+	// The owner field is not present in listV2 by default, if you want to return
+	// owner field with each key in the result then set the fetch owner field to
+	// true
+	FetchOwner *bool `location:"querystring" locationName:"fetch-owner" type:"boolean"`
+
+	// Sets the maximum number of keys returned in the response. The response might
+	// contain fewer keys but will never contain more.
+	MaxKeys *int64 `location:"querystring" locationName:"max-keys" type:"integer"`
+
+	// Limits the response to keys that begin with the specified prefix.
+	Prefix *string `location:"querystring" locationName:"prefix" type:"string"`
+
+	// StartAfter is where you want Amazon S3 to start listing from. Amazon S3 starts
+	// listing after this specified key. StartAfter can be any key in the bucket
+	StartAfter *string `location:"querystring" locationName:"start-after" type:"string"`
+}
+
+// String returns the string representation
+func (s ListObjectsV2Input) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ListObjectsV2Input) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListObjectsV2Input) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListObjectsV2Input"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+type ListObjectsV2Output struct {
+	_ struct{} `type:"structure"`
+
+	// CommonPrefixes contains all (if there are any) keys between Prefix and the
+	// next occurrence of the string specified by delimiter
+	CommonPrefixes []*CommonPrefix `type:"list" flattened:"true"`
+
+	// Metadata about each object returned.
+	Contents []*Object `type:"list" flattened:"true"`
+
+	// ContinuationToken indicates Amazon S3 that the list is being continued on
+	// this bucket with a token. ContinuationToken is obfuscated and is not a real
+	// key
+	ContinuationToken *string `type:"string"`
+
+	// A delimiter is a character you use to group keys.
+	Delimiter *string `type:"string"`
+
+	// Encoding type used by Amazon S3 to encode object keys in the response.
+	EncodingType *string `type:"string" enum:"EncodingType"`
+
+	// A flag that indicates whether or not Amazon S3 returned all of the results
+	// that satisfied the search criteria.
+	IsTruncated *bool `type:"boolean"`
+
+	// KeyCount is the number of keys returned with this request. KeyCount will
+	// always be less than equals to MaxKeys field. Say you ask for 50 keys, your
+	// result will include less than equals 50 keys
+	KeyCount *int64 `type:"integer"`
+
+	// Sets the maximum number of keys returned in the response. The response might
+	// contain fewer keys but will never contain more.
+	MaxKeys *int64 `type:"integer"`
+
+	// Name of the bucket to list.
+	Name *string `type:"string"`
+
+	// NextContinuationToken is sent when isTruncated is true which means there
+	// are more keys in the bucket that can be listed. The next list requests to
+	// Amazon S3 can be continued with this NextContinuationToken. NextContinuationToken
+	// is obfuscated and is not a real key
+	NextContinuationToken *string `type:"string"`
+
+	// Limits the response to keys that begin with the specified prefix.
+	Prefix *string `type:"string"`
+
+	// StartAfter is where you want Amazon S3 to start listing from. Amazon S3 starts
+	// listing after this specified key. StartAfter can be any key in the bucket
+	StartAfter *string `type:"string"`
+}
+
+// String returns the string representation
+func (s ListObjectsV2Output) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ListObjectsV2Output) GoString() string {
+	return s.String()
+}
+
 type ListPartsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4300,8 +5449,37 @@ func (s ListPartsInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListPartsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListPartsInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+	if s.UploadId == nil {
+		invalidParams.Add(request.NewErrParamRequired("UploadId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type ListPartsOutput struct {
 	_ struct{} `type:"structure"`
+
+	// Date when multipart upload will become eligible for abort operation by lifecycle.
+	AbortDate *time.Time `location:"header" locationName:"x-amz-abort-date" type:"timestamp" timestampFormat:"rfc822"`
+
+	// Id of the lifecycle rule that makes a multipart upload eligible for abort
+	// operation.
+	AbortRuleId *string `location:"header" locationName:"x-amz-abort-rule-id" type:"string"`
 
 	// Name of the bucket to which the multipart upload was initiated.
 	Bucket *string `type:"string"`
@@ -4379,6 +5557,26 @@ func (s LoggingEnabled) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *LoggingEnabled) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "LoggingEnabled"}
+	if s.TargetGrants != nil {
+		for i, v := range s.TargetGrants {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "TargetGrants", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type MultipartUpload struct {
 	_ struct{} `type:"structure"`
 
@@ -4421,8 +5619,8 @@ type NoncurrentVersionExpiration struct {
 	// Specifies the number of days an object is noncurrent before Amazon S3 can
 	// perform the associated action. For information about the noncurrent days
 	// calculations, see How Amazon S3 Calculates When an Object Became Noncurrent
-	// (/AmazonS3/latest/dev/s3-access-control.html) in the Amazon Simple Storage
-	// Service Developer Guide.
+	// (http://docs.aws.amazon.com/AmazonS3/latest/dev/s3-access-control.html) in
+	// the Amazon Simple Storage Service Developer Guide.
 	NoncurrentDays *int64 `type:"integer"`
 }
 
@@ -4447,8 +5645,8 @@ type NoncurrentVersionTransition struct {
 	// Specifies the number of days an object is noncurrent before Amazon S3 can
 	// perform the associated action. For information about the noncurrent days
 	// calculations, see How Amazon S3 Calculates When an Object Became Noncurrent
-	// (/AmazonS3/latest/dev/s3-access-control.html) in the Amazon Simple Storage
-	// Service Developer Guide.
+	// (http://docs.aws.amazon.com/AmazonS3/latest/dev/s3-access-control.html) in
+	// the Amazon Simple Storage Service Developer Guide.
 	NoncurrentDays *int64 `type:"integer"`
 
 	// The class of storage used to store the object.
@@ -4485,6 +5683,46 @@ func (s NotificationConfiguration) String() string {
 // GoString returns the string representation
 func (s NotificationConfiguration) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *NotificationConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "NotificationConfiguration"}
+	if s.LambdaFunctionConfigurations != nil {
+		for i, v := range s.LambdaFunctionConfigurations {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "LambdaFunctionConfigurations", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.QueueConfigurations != nil {
+		for i, v := range s.QueueConfigurations {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "QueueConfigurations", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.TopicConfigurations != nil {
+		for i, v := range s.TopicConfigurations {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "TopicConfigurations", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type NotificationConfigurationDeprecated struct {
@@ -4574,6 +5812,22 @@ func (s ObjectIdentifier) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ObjectIdentifier) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ObjectIdentifier"}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type ObjectVersion struct {
 	_ struct{} `type:"structure"`
 
@@ -4656,6 +5910,56 @@ func (s Part) GoString() string {
 	return s.String()
 }
 
+type PutBucketAccelerateConfigurationInput struct {
+	_ struct{} `type:"structure" payload:"AccelerateConfiguration"`
+
+	// Specifies the Accelerate Configuration you want to set for the bucket.
+	AccelerateConfiguration *AccelerateConfiguration `locationName:"AccelerateConfiguration" type:"structure" required:"true"`
+
+	// Name of the bucket for which the accelerate configuration is set.
+	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s PutBucketAccelerateConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s PutBucketAccelerateConfigurationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutBucketAccelerateConfigurationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutBucketAccelerateConfigurationInput"}
+	if s.AccelerateConfiguration == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccelerateConfiguration"))
+	}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+type PutBucketAccelerateConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s PutBucketAccelerateConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s PutBucketAccelerateConfigurationOutput) GoString() string {
+	return s.String()
+}
+
 type PutBucketAclInput struct {
 	_ struct{} `type:"structure" payload:"AccessControlPolicy"`
 
@@ -4693,6 +5997,24 @@ func (s PutBucketAclInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutBucketAclInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutBucketAclInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.AccessControlPolicy != nil {
+		if err := s.AccessControlPolicy.Validate(); err != nil {
+			invalidParams.AddNested("AccessControlPolicy", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type PutBucketAclOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4723,6 +6045,27 @@ func (s PutBucketCorsInput) String() string {
 // GoString returns the string representation
 func (s PutBucketCorsInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutBucketCorsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutBucketCorsInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.CORSConfiguration == nil {
+		invalidParams.Add(request.NewErrParamRequired("CORSConfiguration"))
+	}
+	if s.CORSConfiguration != nil {
+		if err := s.CORSConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("CORSConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type PutBucketCorsOutput struct {
@@ -4757,6 +6100,24 @@ func (s PutBucketLifecycleConfigurationInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutBucketLifecycleConfigurationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutBucketLifecycleConfigurationInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.LifecycleConfiguration != nil {
+		if err := s.LifecycleConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("LifecycleConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type PutBucketLifecycleConfigurationOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4789,6 +6150,24 @@ func (s PutBucketLifecycleInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutBucketLifecycleInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutBucketLifecycleInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.LifecycleConfiguration != nil {
+		if err := s.LifecycleConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("LifecycleConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type PutBucketLifecycleOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4819,6 +6198,27 @@ func (s PutBucketLoggingInput) String() string {
 // GoString returns the string representation
 func (s PutBucketLoggingInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutBucketLoggingInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutBucketLoggingInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.BucketLoggingStatus == nil {
+		invalidParams.Add(request.NewErrParamRequired("BucketLoggingStatus"))
+	}
+	if s.BucketLoggingStatus != nil {
+		if err := s.BucketLoggingStatus.Validate(); err != nil {
+			invalidParams.AddNested("BucketLoggingStatus", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type PutBucketLoggingOutput struct {
@@ -4855,6 +6255,27 @@ func (s PutBucketNotificationConfigurationInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutBucketNotificationConfigurationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutBucketNotificationConfigurationInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.NotificationConfiguration == nil {
+		invalidParams.Add(request.NewErrParamRequired("NotificationConfiguration"))
+	}
+	if s.NotificationConfiguration != nil {
+		if err := s.NotificationConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("NotificationConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type PutBucketNotificationConfigurationOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4885,6 +6306,22 @@ func (s PutBucketNotificationInput) String() string {
 // GoString returns the string representation
 func (s PutBucketNotificationInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutBucketNotificationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutBucketNotificationInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.NotificationConfiguration == nil {
+		invalidParams.Add(request.NewErrParamRequired("NotificationConfiguration"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type PutBucketNotificationOutput struct {
@@ -4918,6 +6355,22 @@ func (s PutBucketPolicyInput) String() string {
 // GoString returns the string representation
 func (s PutBucketPolicyInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutBucketPolicyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutBucketPolicyInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.Policy == nil {
+		invalidParams.Add(request.NewErrParamRequired("Policy"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type PutBucketPolicyOutput struct {
@@ -4954,6 +6407,27 @@ func (s PutBucketReplicationInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutBucketReplicationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutBucketReplicationInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.ReplicationConfiguration == nil {
+		invalidParams.Add(request.NewErrParamRequired("ReplicationConfiguration"))
+	}
+	if s.ReplicationConfiguration != nil {
+		if err := s.ReplicationConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("ReplicationConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type PutBucketReplicationOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4986,6 +6460,27 @@ func (s PutBucketRequestPaymentInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutBucketRequestPaymentInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutBucketRequestPaymentInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.RequestPaymentConfiguration == nil {
+		invalidParams.Add(request.NewErrParamRequired("RequestPaymentConfiguration"))
+	}
+	if s.RequestPaymentConfiguration != nil {
+		if err := s.RequestPaymentConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("RequestPaymentConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type PutBucketRequestPaymentOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5016,6 +6511,27 @@ func (s PutBucketTaggingInput) String() string {
 // GoString returns the string representation
 func (s PutBucketTaggingInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutBucketTaggingInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutBucketTaggingInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.Tagging == nil {
+		invalidParams.Add(request.NewErrParamRequired("Tagging"))
+	}
+	if s.Tagging != nil {
+		if err := s.Tagging.Validate(); err != nil {
+			invalidParams.AddNested("Tagging", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type PutBucketTaggingOutput struct {
@@ -5054,6 +6570,22 @@ func (s PutBucketVersioningInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutBucketVersioningInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutBucketVersioningInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.VersioningConfiguration == nil {
+		invalidParams.Add(request.NewErrParamRequired("VersioningConfiguration"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type PutBucketVersioningOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5084,6 +6616,27 @@ func (s PutBucketWebsiteInput) String() string {
 // GoString returns the string representation
 func (s PutBucketWebsiteInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutBucketWebsiteInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutBucketWebsiteInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.WebsiteConfiguration == nil {
+		invalidParams.Add(request.NewErrParamRequired("WebsiteConfiguration"))
+	}
+	if s.WebsiteConfiguration != nil {
+		if err := s.WebsiteConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("WebsiteConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type PutBucketWebsiteOutput struct {
@@ -5133,6 +6686,9 @@ type PutObjectAclInput struct {
 	// Documentation on downloading objects from requester pays buckets can be found
 	// at http://docs.aws.amazon.com/AmazonS3/latest/dev/ObjectsinRequesterPaysBuckets.html
 	RequestPayer *string `location:"header" locationName:"x-amz-request-payer" type:"string" enum:"RequestPayer"`
+
+	// VersionId used to reference a specific version of the object.
+	VersionId *string `location:"querystring" locationName:"versionId" type:"string"`
 }
 
 // String returns the string representation
@@ -5143,6 +6699,30 @@ func (s PutObjectAclInput) String() string {
 // GoString returns the string representation
 func (s PutObjectAclInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutObjectAclInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutObjectAclInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+	if s.AccessControlPolicy != nil {
+		if err := s.AccessControlPolicy.Validate(); err != nil {
+			invalidParams.AddNested("AccessControlPolicy", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type PutObjectAclOutput struct {
@@ -5172,6 +6752,7 @@ type PutObjectInput struct {
 	// Object data.
 	Body io.ReadSeeker `type:"blob"`
 
+	// Name of the bucket to which the PUT operation was initiated.
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
 
 	// Specifies caching behavior along the request/reply chain.
@@ -5190,7 +6771,7 @@ type PutObjectInput struct {
 
 	// Size of the body in bytes. This parameter is useful when the size of the
 	// body cannot be determined automatically.
-	ContentLength *int64 `location:"header" locationName:"Content-Length" type:"integer"`
+	ContentLength *int64 `location:"header" locationName:"Content-Length" type:"long"`
 
 	// A standard MIME type describing the format of the object data.
 	ContentType *string `location:"header" locationName:"Content-Type" type:"string"`
@@ -5210,6 +6791,7 @@ type PutObjectInput struct {
 	// Allows grantee to write the ACL for the applicable object.
 	GrantWriteACP *string `location:"header" locationName:"x-amz-grant-write-acp" type:"string"`
 
+	// Object key for which the PUT operation was initiated.
 	Key *string `location:"uri" locationName:"Key" min:"1" type:"string" required:"true"`
 
 	// A map of metadata to store with the object in S3.
@@ -5263,6 +6845,25 @@ func (s PutObjectInput) String() string {
 // GoString returns the string representation
 func (s PutObjectInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutObjectInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutObjectInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type PutObjectOutput struct {
@@ -5342,11 +6943,27 @@ func (s QueueConfiguration) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *QueueConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "QueueConfiguration"}
+	if s.Events == nil {
+		invalidParams.Add(request.NewErrParamRequired("Events"))
+	}
+	if s.QueueArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("QueueArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type QueueConfigurationDeprecated struct {
 	_ struct{} `type:"structure"`
 
 	// Bucket event for which to send notifications.
-	Event *string `type:"string" enum:"Event"`
+	Event *string `deprecated:"true" type:"string" enum:"Event"`
 
 	Events []*string `locationName:"Event" type:"list" flattened:"true"`
 
@@ -5426,6 +7043,19 @@ func (s RedirectAllRequestsTo) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RedirectAllRequestsTo) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RedirectAllRequestsTo"}
+	if s.HostName == nil {
+		invalidParams.Add(request.NewErrParamRequired("HostName"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 // Container for replication rules. You can add as many as 1,000 rules. Total
 // replication configuration size can be up to 2 MB.
 type ReplicationConfiguration struct {
@@ -5448,6 +7078,32 @@ func (s ReplicationConfiguration) String() string {
 // GoString returns the string representation
 func (s ReplicationConfiguration) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ReplicationConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ReplicationConfiguration"}
+	if s.Role == nil {
+		invalidParams.Add(request.NewErrParamRequired("Role"))
+	}
+	if s.Rules == nil {
+		invalidParams.Add(request.NewErrParamRequired("Rules"))
+	}
+	if s.Rules != nil {
+		for i, v := range s.Rules {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Rules", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type ReplicationRule struct {
@@ -5477,6 +7133,30 @@ func (s ReplicationRule) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ReplicationRule) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ReplicationRule"}
+	if s.Destination == nil {
+		invalidParams.Add(request.NewErrParamRequired("Destination"))
+	}
+	if s.Prefix == nil {
+		invalidParams.Add(request.NewErrParamRequired("Prefix"))
+	}
+	if s.Status == nil {
+		invalidParams.Add(request.NewErrParamRequired("Status"))
+	}
+	if s.Destination != nil {
+		if err := s.Destination.Validate(); err != nil {
+			invalidParams.AddNested("Destination", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type RequestPaymentConfiguration struct {
 	_ struct{} `type:"structure"`
 
@@ -5492,6 +7172,19 @@ func (s RequestPaymentConfiguration) String() string {
 // GoString returns the string representation
 func (s RequestPaymentConfiguration) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RequestPaymentConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RequestPaymentConfiguration"}
+	if s.Payer == nil {
+		invalidParams.Add(request.NewErrParamRequired("Payer"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type RestoreObjectInput struct {
@@ -5520,6 +7213,30 @@ func (s RestoreObjectInput) String() string {
 // GoString returns the string representation
 func (s RestoreObjectInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RestoreObjectInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RestoreObjectInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+	if s.RestoreRequest != nil {
+		if err := s.RestoreRequest.Validate(); err != nil {
+			invalidParams.AddNested("RestoreRequest", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type RestoreObjectOutput struct {
@@ -5557,6 +7274,19 @@ func (s RestoreRequest) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RestoreRequest) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RestoreRequest"}
+	if s.Days == nil {
+		invalidParams.Add(request.NewErrParamRequired("Days"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type RoutingRule struct {
 	_ struct{} `type:"structure"`
 
@@ -5582,8 +7312,25 @@ func (s RoutingRule) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RoutingRule) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RoutingRule"}
+	if s.Redirect == nil {
+		invalidParams.Add(request.NewErrParamRequired("Redirect"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type Rule struct {
 	_ struct{} `type:"structure"`
+
+	// Specifies the days since the initiation of an Incomplete Multipart Upload
+	// that Lifecycle will wait before permanently removing all parts of the upload.
+	AbortIncompleteMultipartUpload *AbortIncompleteMultipartUpload `type:"structure"`
 
 	Expiration *LifecycleExpiration `type:"structure"`
 
@@ -5624,6 +7371,22 @@ func (s Rule) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Rule) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Rule"}
+	if s.Prefix == nil {
+		invalidParams.Add(request.NewErrParamRequired("Prefix"))
+	}
+	if s.Status == nil {
+		invalidParams.Add(request.NewErrParamRequired("Status"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type Tag struct {
 	_ struct{} `type:"structure"`
 
@@ -5644,6 +7407,25 @@ func (s Tag) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Tag) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Tag"}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+	if s.Value == nil {
+		invalidParams.Add(request.NewErrParamRequired("Value"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type Tagging struct {
 	_ struct{} `type:"structure"`
 
@@ -5658,6 +7440,29 @@ func (s Tagging) String() string {
 // GoString returns the string representation
 func (s Tagging) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Tagging) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Tagging"}
+	if s.TagSet == nil {
+		invalidParams.Add(request.NewErrParamRequired("TagSet"))
+	}
+	if s.TagSet != nil {
+		for i, v := range s.TagSet {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "TagSet", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type TargetGrant struct {
@@ -5677,6 +7482,21 @@ func (s TargetGrant) String() string {
 // GoString returns the string representation
 func (s TargetGrant) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TargetGrant) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TargetGrant"}
+	if s.Grantee != nil {
+		if err := s.Grantee.Validate(); err != nil {
+			invalidParams.AddNested("Grantee", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 // Container for specifying the configuration when you want Amazon S3 to publish
@@ -5710,11 +7530,27 @@ func (s TopicConfiguration) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TopicConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TopicConfiguration"}
+	if s.Events == nil {
+		invalidParams.Add(request.NewErrParamRequired("Events"))
+	}
+	if s.TopicArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("TopicArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type TopicConfigurationDeprecated struct {
 	_ struct{} `type:"structure"`
 
 	// Bucket event for which to send notifications.
-	Event *string `type:"string" enum:"Event"`
+	Event *string `deprecated:"true" type:"string" enum:"Event"`
 
 	Events []*string `locationName:"Event" type:"list" flattened:"true"`
 
@@ -5846,6 +7682,34 @@ func (s UploadPartCopyInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UploadPartCopyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UploadPartCopyInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.CopySource == nil {
+		invalidParams.Add(request.NewErrParamRequired("CopySource"))
+	}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+	if s.PartNumber == nil {
+		invalidParams.Add(request.NewErrParamRequired("PartNumber"))
+	}
+	if s.UploadId == nil {
+		invalidParams.Add(request.NewErrParamRequired("UploadId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 type UploadPartCopyOutput struct {
 	_ struct{} `type:"structure" payload:"CopyPartResult"`
 
@@ -5891,14 +7755,17 @@ func (s UploadPartCopyOutput) GoString() string {
 type UploadPartInput struct {
 	_ struct{} `type:"structure" payload:"Body"`
 
+	// Object data.
 	Body io.ReadSeeker `type:"blob"`
 
+	// Name of the bucket to which the multipart upload was initiated.
 	Bucket *string `location:"uri" locationName:"Bucket" type:"string" required:"true"`
 
 	// Size of the body in bytes. This parameter is useful when the size of the
 	// body cannot be determined automatically.
-	ContentLength *int64 `location:"header" locationName:"Content-Length" type:"integer"`
+	ContentLength *int64 `location:"header" locationName:"Content-Length" type:"long"`
 
+	// Object key for which the multipart upload was initiated.
 	Key *string `location:"uri" locationName:"Key" min:"1" type:"string" required:"true"`
 
 	// Part number of part being uploaded. This is a positive integer between 1
@@ -5939,6 +7806,31 @@ func (s UploadPartInput) String() string {
 // GoString returns the string representation
 func (s UploadPartInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UploadPartInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UploadPartInput"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+	if s.PartNumber == nil {
+		invalidParams.Add(request.NewErrParamRequired("PartNumber"))
+	}
+	if s.UploadId == nil {
+		invalidParams.Add(request.NewErrParamRequired("UploadId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 type UploadPartOutput struct {
@@ -6023,6 +7915,48 @@ func (s WebsiteConfiguration) String() string {
 func (s WebsiteConfiguration) GoString() string {
 	return s.String()
 }
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *WebsiteConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "WebsiteConfiguration"}
+	if s.ErrorDocument != nil {
+		if err := s.ErrorDocument.Validate(); err != nil {
+			invalidParams.AddNested("ErrorDocument", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.IndexDocument != nil {
+		if err := s.IndexDocument.Validate(); err != nil {
+			invalidParams.AddNested("IndexDocument", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.RedirectAllRequestsTo != nil {
+		if err := s.RedirectAllRequestsTo.Validate(); err != nil {
+			invalidParams.AddNested("RedirectAllRequestsTo", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.RoutingRules != nil {
+		for i, v := range s.RoutingRules {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "RoutingRules", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+const (
+	// @enum BucketAccelerateStatus
+	BucketAccelerateStatusEnabled = "Enabled"
+	// @enum BucketAccelerateStatus
+	BucketAccelerateStatusSuspended = "Suspended"
+)
 
 const (
 	// @enum BucketCannedACL

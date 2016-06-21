@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/concourse/semver-resource",
-	"GoVersion": "go1.4.2",
+	"GoVersion": "go1.6",
 	"GodepVersion": "v74",
 	"Packages": [
 		"./..."
@@ -68,6 +68,11 @@
 		},
 		{
 			"ImportPath": "github.com/aws/aws-sdk-go/private/endpoints",
+			"Comment": "v1.1.35",
+			"Rev": "d3b6d25135b4e09ecd39ea3c2a5cad35279b0515"
+		},
+		{
+			"ImportPath": "github.com/aws/aws-sdk-go/private/protocol",
 			"Comment": "v1.1.35",
 			"Rev": "d3b6d25135b4e09ecd39ea3c2a5cad35279b0515"
 		},
@@ -338,11 +343,6 @@
 			"ImportPath": "github.com/rackspace/gophercloud/testhelper/client",
 			"Comment": "v1.0.0-831-gf3d0534",
 			"Rev": "f3d053460f7c37970af6733bf370a3256e3648fb"
-		},
-		{
-			"ImportPath": "github.com/aws/aws-sdk-go/private/protocol",
-			"Comment": "v1.1.35",
-			"Rev": "d3b6d25135b4e09ecd39ea3c2a5cad35279b0515"
 		}
 	]
 }

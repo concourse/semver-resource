@@ -59,6 +59,8 @@ the bucket.
 
 * `disable_ssl`: *Optional.* Disable SSL for the endpoint, useful for S3 compatible providers without SSL.
 
+* `default_credentials`: *Optional. Default `false`.* This option only matters if neither `access_key_id` nor `secret_access_key` are provided. If set to `true`, then the resource uses the default credentials chain. Otherwise, it uses anonymous credentials. 
+
 ### `swift` Driver
 
 The `swift` driver works by modifying a file in a container.

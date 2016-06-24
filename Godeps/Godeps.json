@@ -150,6 +150,41 @@
 			"Rev": "c3a655f9b37a2207fa39721b078b3173ee9218d6"
 		},
 		{
+			"ImportPath": "github.com/onsi/ginkgo/ginkgo",
+			"Comment": "v1.2.0-46-gc3a655f",
+			"Rev": "c3a655f9b37a2207fa39721b078b3173ee9218d6"
+		},
+		{
+			"ImportPath": "github.com/onsi/ginkgo/ginkgo/convert",
+			"Comment": "v1.2.0-46-gc3a655f",
+			"Rev": "c3a655f9b37a2207fa39721b078b3173ee9218d6"
+		},
+		{
+			"ImportPath": "github.com/onsi/ginkgo/ginkgo/interrupthandler",
+			"Comment": "v1.2.0-46-gc3a655f",
+			"Rev": "c3a655f9b37a2207fa39721b078b3173ee9218d6"
+		},
+		{
+			"ImportPath": "github.com/onsi/ginkgo/ginkgo/nodot",
+			"Comment": "v1.2.0-46-gc3a655f",
+			"Rev": "c3a655f9b37a2207fa39721b078b3173ee9218d6"
+		},
+		{
+			"ImportPath": "github.com/onsi/ginkgo/ginkgo/testrunner",
+			"Comment": "v1.2.0-46-gc3a655f",
+			"Rev": "c3a655f9b37a2207fa39721b078b3173ee9218d6"
+		},
+		{
+			"ImportPath": "github.com/onsi/ginkgo/ginkgo/testsuite",
+			"Comment": "v1.2.0-46-gc3a655f",
+			"Rev": "c3a655f9b37a2207fa39721b078b3173ee9218d6"
+		},
+		{
+			"ImportPath": "github.com/onsi/ginkgo/ginkgo/watch",
+			"Comment": "v1.2.0-46-gc3a655f",
+			"Rev": "c3a655f9b37a2207fa39721b078b3173ee9218d6"
+		},
+		{
 			"ImportPath": "github.com/onsi/ginkgo/internal/codelocation",
 			"Comment": "v1.2.0-46-gc3a655f",
 			"Rev": "c3a655f9b37a2207fa39721b078b3173ee9218d6"

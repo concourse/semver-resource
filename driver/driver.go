@@ -57,8 +57,7 @@ func FromSource(source models.Source) (Driver, error) {
 		}
 
 		if len(source.Endpoint) != 0 {
-			endpoint := fmt.Sprintf("%s", source.Endpoint)
-			awsConfig.Endpoint = &endpoint
+			awsConfig.Endpoint = aws.String(source.Endpoint)
 		}
 
 		svc := s3.New(session.New(awsConfig))

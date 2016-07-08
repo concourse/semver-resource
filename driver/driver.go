@@ -53,11 +53,11 @@ func FromSource(source models.Source) (Driver, error) {
 			Credentials:      creds,
 			S3ForcePathStyle: aws.Bool(true),
 			MaxRetries:       aws.Int(maxRetries),
+			DisableSSL:       aws.Bool(source.DisableSSL),
 		}
 
 		if len(source.Endpoint) != 0 {
-			endpoint := fmt.Sprintf("https://%s", source.Endpoint)
-			awsConfig.Endpoint = &endpoint
+			awsConfig.Endpoint = aws.String(source.Endpoint)
 		}
 
 		svc := s3.New(session.New(awsConfig))

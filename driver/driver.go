@@ -79,8 +79,23 @@ func FromSource(source models.Source) (Driver, error) {
 			PrivateKey: source.PrivateKey,
 			Username:   source.Username,
 			Password:   source.Password,
-			File:       source.File,
 			GitUser:    source.GitUser,
+			VersionDriver: &GitFileDriver{
+				File: source.File,
+			},
+		}, nil
+
+	case models.DriverGitTag:
+		return &GitDriver{
+			InitialVersion: initialVersion,
+
+			URI:           source.URI,
+			Branch:        source.Branch,
+			PrivateKey:    source.PrivateKey,
+			Username:      source.Username,
+			Password:      source.Password,
+			GitUser:       source.GitUser,
+			VersionDriver: &GitTagDriver{},
 		}, nil
 
 	case models.DriverSwift:

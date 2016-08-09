@@ -105,5 +105,6 @@ const (
 	DriverUnspecified Driver = ""
 	DriverS3          Driver = "s3"
 	DriverGit         Driver = "git"
+	DriverGitTag      Driver = "git-tag"
 	DriverSwift       Driver = "swift"
 )

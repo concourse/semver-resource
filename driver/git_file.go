@@ -12,7 +12,9 @@ import (
 )
 
 type GitFileDriver struct {
-	File string
+	URI    string
+	Branch string
+	File   string
 }
 
 func (driver *GitFileDriver) readVersion() (semver.Version, bool, error) {
@@ -46,7 +48,7 @@ const falsePushString = "Everything up-to-date"
 const pushRejectedString = "[rejected]"
 const pushRemoteRejectedString = "[remote rejected]"
 
-func (driver *GitFileDriver) writeVersion(newVersion semver.Version, branch string) (bool, error) {
+func (driver *GitFileDriver) writeVersion(newVersion semver.Version) (bool, error) {
 	err := ioutil.WriteFile(filepath.Join(gitRepoDir, driver.File), []byte(newVersion.String()+"\n"), 0644)
 	if err != nil {
 		return false, err
@@ -74,7 +76,7 @@ func (driver *GitFileDriver) writeVersion(newVersion semver.Version, branch stri
 		return false, err
 	}
 
-	gitPush := exec.Command("git", "push", "origin", "HEAD:"+branch)
+	gitPush := exec.Command("git", "push", "origin", "HEAD:"+driver.Branch)
 	gitPush.Dir = gitRepoDir
 
 	pushOutput, err := gitPush.CombinedOutput()
@@ -97,4 +99,35 @@ func (driver *GitFileDriver) writeVersion(newVersion semver.Version, branch stri
 	}
 
 	return true, nil
+}
+
+func (driver *GitFileDriver) setUpRepo() error {
+
+	_, err := os.Stat(gitRepoDir)
+	if err != nil {
+		gitClone := exec.Command("git", "clone", driver.URI, "--branch", driver.Branch, gitRepoDir)
+		gitClone.Stdout = os.Stderr
+		gitClone.Stderr = os.Stderr
+		if err := gitClone.Run(); err != nil {
+			return err
+		}
+	} else {
+		gitFetch := exec.Command("git", "fetch", "origin", driver.Branch)
+		gitFetch.Dir = gitRepoDir
+		gitFetch.Stdout = os.Stderr
+		gitFetch.Stderr = os.Stderr
+		if err := gitFetch.Run(); err != nil {
+			return err
+		}
+	}
+
+	gitCheckout := exec.Command("git", "reset", "--hard", "origin/"+driver.Branch)
+	gitCheckout.Dir = gitRepoDir
+	gitCheckout.Stdout = os.Stderr
+	gitCheckout.Stderr = os.Stderr
+	if err := gitCheckout.Run(); err != nil {
+		return err
+	}
+
+	return nil
 }

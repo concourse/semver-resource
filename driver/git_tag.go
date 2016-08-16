@@ -10,14 +10,17 @@ import (
 )
 
 type GitTagDriver struct {
+	Branch     string
+	URI        string
+	Repository string
 }
 
 const nothingToDescribe = "No names found, cannot describe anything"
 
-func (*GitTagDriver) readVersion() (semver.Version, bool, error) {
+func (driver *GitTagDriver) readVersion() (semver.Version, bool, error) {
 	var currentVersionStr string
 
-	gitDescribe := exec.Command("git", "describe", "--tags", "--abbrev=0")
+	gitDescribe := exec.Command("git", "describe", "--tags", "--abbrev=0", "origin/"+driver.Branch)
 	gitDescribe.Dir = gitRepoDir
 	describeOutput, err := gitDescribe.CombinedOutput()
 
@@ -41,14 +44,14 @@ func (*GitTagDriver) readVersion() (semver.Version, bool, error) {
 	return currentVersion, true, nil
 }
 
-func (*GitTagDriver) writeVersion(newVersion semver.Version, _ string) (bool, error) {
+func (driver *GitTagDriver) writeVersion(newVersion semver.Version) (bool, error) {
 	tagMessage := fmt.Sprintf(
 		"Pipeline: %s\nJob: %s\nBuild: %s",
 		os.Getenv("BUILD_PIPELINE_NAME"),
 		os.Getenv("BUILD_JOB_NAME"),
 		os.Getenv("BUILD_NAME"))
 
-	gitTag := exec.Command("git", "tag", "--force", "--annotate", "--message", tagMessage, newVersion.String())
+	gitTag := exec.Command("git", "tag", "--force", "--annotate", "--message", tagMessage, newVersion.String(), "origin/"+driver.Branch)
 	gitTag.Dir = gitRepoDir
 	tagOutput, err := gitTag.CombinedOutput()
 	if err != nil {
@@ -95,4 +98,39 @@ func (*GitTagDriver) writeVersion(newVersion semver.Version, _ string) (bool, er
 	}
 
 	return true, nil
+}
+
+func (driver *GitTagDriver) setUpRepo() error {
+
+	if driver.Repository != "" {
+		_, err := os.Stat(driver.Repository)
+		if err == nil {
+			return err
+		}
+		gitRepoDir = driver.Repository
+		driver.Branch = "HEAD"
+	} else if driver.URI != "" && driver.Branch != "" {
+		_, err := os.Stat(gitRepoDir)
+		if err != nil {
+			gitClone := exec.Command("git", "clone", driver.URI, "--branch", driver.Branch, gitRepoDir)
+			gitClone.Stdout = os.Stderr
+			gitClone.Stderr = os.Stderr
+			if err := gitClone.Run(); err != nil {
+				return err
+			}
+			return nil
+		}
+	} else {
+		return fmt.Errorf("Expected either repository or URI & Branch to be configured.")
+	}
+
+	gitFetch := exec.Command("git", "fetch", "origin", driver.Branch, "--tags")
+	gitFetch.Dir = gitRepoDir
+	gitFetch.Stdout = os.Stderr
+	gitFetch.Stderr = os.Stderr
+	if err := gitFetch.Run(); err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -65,6 +65,7 @@ type Source struct {
 	Password   string `json:"password"`
 	File       string `json:"file"`
 	GitUser    string `json:"git_user"`
+	Repository string `json:"repository"`
 
 	OpenStack OpenStackOptions `json:"openstack"`
 }

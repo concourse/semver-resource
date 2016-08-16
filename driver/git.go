@@ -29,8 +29,6 @@ func init() {
 type GitDriver struct {
 	InitialVersion semver.Version
 
-	URI           string
-	Branch        string
 	PrivateKey    string
 	Username      string
 	Password      string
@@ -40,7 +38,8 @@ type GitDriver struct {
 
 type VersionDriver interface {
 	readVersion() (semver.Version, bool, error)
-	writeVersion(semver.Version, string) (bool, error)
+	writeVersion(semver.Version) (bool, error)
+	setUpRepo() error
 }
 
 func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
@@ -57,7 +56,7 @@ func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
 	var newVersion semver.Version
 
 	for {
-		err = driver.setUpRepo()
+		err = driver.VersionDriver.setUpRepo()
 		if err != nil {
 			return semver.Version{}, err
 		}
@@ -73,7 +72,7 @@ func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
 
 		newVersion = bump.Apply(currentVersion)
 
-		wrote, err := driver.VersionDriver.writeVersion(newVersion, driver.Branch)
+		wrote, err := driver.VersionDriver.writeVersion(newVersion)
 		if wrote {
 			break
 		}
@@ -94,12 +93,12 @@ func (driver *GitDriver) Set(newVersion semver.Version) error {
 	}
 
 	for {
-		err = driver.setUpRepo()
+		err = driver.VersionDriver.setUpRepo()
 		if err != nil {
 			return err
 		}
 
-		wrote, err := driver.VersionDriver.writeVersion(newVersion, driver.Branch)
+		wrote, err := driver.VersionDriver.writeVersion(newVersion)
 		if err != nil {
 			return err
 		}
@@ -118,7 +117,7 @@ func (driver *GitDriver) Check(cursor *semver.Version) ([]semver.Version, error)
 		return nil, err
 	}
 
-	err = driver.setUpRepo()
+	err = driver.VersionDriver.setUpRepo()
 	if err != nil {
 		return nil, err
 	}
@@ -137,37 +136,6 @@ func (driver *GitDriver) Check(cursor *semver.Version) ([]semver.Version, error)
 	}
 
 	return []semver.Version{}, nil
-}
-
-func (driver *GitDriver) setUpRepo() error {
-
-	_, err := os.Stat(gitRepoDir)
-	if err != nil {
-		gitClone := exec.Command("git", "clone", driver.URI, "--branch", driver.Branch, gitRepoDir)
-		gitClone.Stdout = os.Stderr
-		gitClone.Stderr = os.Stderr
-		if err := gitClone.Run(); err != nil {
-			return err
-		}
-	} else {
-		gitFetch := exec.Command("git", "fetch", "origin", driver.Branch, "--tags")
-		gitFetch.Dir = gitRepoDir
-		gitFetch.Stdout = os.Stderr
-		gitFetch.Stderr = os.Stderr
-		if err := gitFetch.Run(); err != nil {
-			return err
-		}
-	}
-
-	gitCheckout := exec.Command("git", "reset", "--hard", "origin/"+driver.Branch)
-	gitCheckout.Dir = gitRepoDir
-	gitCheckout.Stdout = os.Stderr
-	gitCheckout.Stderr = os.Stderr
-	if err := gitCheckout.Run(); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (driver *GitDriver) setUpAuth() error {

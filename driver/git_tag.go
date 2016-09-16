@@ -20,6 +20,14 @@ const nothingToDescribe = "No names found, cannot describe anything"
 func (driver *GitTagDriver) readVersion() (semver.Version, bool, error) {
 	var currentVersionStr string
 
+	gitFetch := exec.Command("git", "fetch", "origin", driver.Branch, "--tags")
+	gitFetch.Dir = gitRepoDir
+	gitFetch.Stdout = os.Stderr
+	gitFetch.Stderr = os.Stderr
+	if err := gitFetch.Run(); err != nil {
+		return semver.Version{}, false, err
+	}
+
 	gitDescribe := exec.Command("git", "describe", "--tags", "--abbrev=0", "origin/"+driver.Branch)
 	gitDescribe.Dir = gitRepoDir
 	describeOutput, err := gitDescribe.CombinedOutput()
@@ -46,12 +54,30 @@ func (driver *GitTagDriver) readVersion() (semver.Version, bool, error) {
 
 func (driver *GitTagDriver) writeVersion(newVersion semver.Version) (bool, error) {
 	tagMessage := fmt.Sprintf(
-		"Pipeline: %s\nJob: %s\nBuild: %s",
+		"\"Pipeline: %s\\nJob: %s\\nBuild: %s\"",
 		os.Getenv("BUILD_PIPELINE_NAME"),
 		os.Getenv("BUILD_JOB_NAME"),
 		os.Getenv("BUILD_NAME"))
 
-	gitTag := exec.Command("git", "tag", "--force", "--annotate", "--message", tagMessage, newVersion.String(), "origin/"+driver.Branch)
+	gitFetch := exec.Command("git", "fetch", "origin", driver.Branch, "--tags", "--dry-run", "--depth=1")
+	gitFetch.Dir = gitRepoDir
+	gitFetchOutput, err := gitFetch.CombinedOutput()
+	if err != nil {
+		os.Stderr.Write(gitFetchOutput)
+		return false, err
+	}
+
+	gitLs := exec.Command("git", "ls-remote", "origin", driver.Branch)
+	gitLs.Dir = gitRepoDir
+	gitLsOutput, err := gitLs.CombinedOutput()
+	if err != nil {
+		os.Stderr.Write(gitLsOutput)
+		return false, err
+	}
+
+	headRef := strings.Split(string(gitLsOutput), "\t")[0]
+
+	gitTag := exec.Command("git", "tag", "--force", "--annotate", "--message", tagMessage, newVersion.String(), headRef)
 	gitTag.Dir = gitRepoDir
 	tagOutput, err := gitTag.CombinedOutput()
 	if err != nil {
@@ -108,28 +134,31 @@ func (driver *GitTagDriver) setUpRepo() error {
 			return err
 		}
 		gitRepoDir = driver.Repository
-		driver.Branch = "HEAD"
-	} else if driver.URI != "" && driver.Branch != "" {
+	} else if driver.URI != "" {
 		_, err := os.Stat(gitRepoDir)
 		if err != nil {
-			gitClone := exec.Command("git", "clone", driver.URI, "--branch", driver.Branch, gitRepoDir)
-			gitClone.Stdout = os.Stderr
-			gitClone.Stderr = os.Stderr
-			if err := gitClone.Run(); err != nil {
+			// Init an empty repo ...
+			gitInit := exec.Command("git", "init", gitRepoDir)
+			gitInit.Stdout = os.Stderr
+			gitInit.Stderr = os.Stderr
+			if err := gitInit.Run(); err != nil {
 				return err
 			}
-			return nil
+			// ... and setup the remote
+			gitRemote := exec.Command("git", "remote", "add", "origin", driver.URI)
+			gitRemote.Dir = gitRepoDir
+			gitRemote.Stdout = os.Stderr
+			gitRemote.Stderr = os.Stderr
+			if err := gitRemote.Run(); err != nil {
+				return err
+			}
 		}
 	} else {
-		return fmt.Errorf("Expected either repository or URI & Branch to be configured.")
+		return fmt.Errorf("Expected either repository (path) or URI to be configured.")
 	}
 
-	gitFetch := exec.Command("git", "fetch", "origin", driver.Branch, "--tags")
-	gitFetch.Dir = gitRepoDir
-	gitFetch.Stdout = os.Stderr
-	gitFetch.Stderr = os.Stderr
-	if err := gitFetch.Run(); err != nil {
-		return err
+	if driver.Branch == "" {
+		driver.Branch = "HEAD"
 	}
 
 	return nil

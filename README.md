@@ -122,7 +122,7 @@ Detects new versions by reading the file from the specified source. If the file 
 
 ### `in`: Provide the version as a file, optionally bumping it.
 
-Provides the version number to the build as a `number` file in the destination.
+Provides the version number to the build in files named `number` and `version` in the destination.
 
 Can be configured to bump the version locally, which can be useful for getting
 the `final` version ahead of time when building artifacts.

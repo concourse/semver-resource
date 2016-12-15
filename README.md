@@ -102,7 +102,7 @@ plan:
   params: {bump: minor}
 - task: a-thing-that-needs-a-version
 - put: version
-  params: {file: version/number}
+  params: {file: version/version}
 ```
 
 Or, bumping with an atomic `put`:
@@ -122,7 +122,7 @@ Detects new versions by reading the file from the specified source. If the file 
 
 ### `in`: Provide the version as a file, optionally bumping it.
 
-Provides the version number to the build as a `number` file in the destination.
+Provides the version number to the build as a `version` file in the destination.
 
 Can be configured to bump the version locally, which can be useful for getting
 the `final` version ahead of time when building artifacts.

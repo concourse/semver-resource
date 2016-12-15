@@ -95,7 +95,7 @@ The `git-tag` driver has the advantage of being able to do atomic updates.
 * `password`: *Optional.* Password for HTTP(S) auth when pulling/pushing.
 
 * `git_user`: *Optional.* The git identity to use when pushing to the repository.
-   Supports RFC 5322 address of the form "Gogh Fir <gf@example.com>" or "foo@example.com".
+   Supports RFC 5322 address of the form "Gogh Fir \<gf@example.com\>" or "foo@example.com".
 
 * `tag_prefix`: *Optional.* Prefix of the version in the git tag. When set to 'v' the tags
    will be in the format v1.2.3.
@@ -127,7 +127,7 @@ plan:
   params: {bump: minor}
 - task: a-thing-that-needs-a-version
 - put: version
-  params: {file: version/number}
+  params: {file: version/version}
 ```
 
 Or, bumping with an atomic `put`:
@@ -150,7 +150,7 @@ greater than current version, otherwise it returns no versions.
 
 ### `in`: Provide the version as a file, optionally bumping it.
 
-Provides the version number to the build as a `number` file in the destination.
+Provides the version number to the build as a `version` file in the destination.
 
 Can be configured to bump the version locally, which can be useful for getting
 the `final` version ahead of time when building artifacts.

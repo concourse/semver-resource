@@ -55,7 +55,7 @@ set_version_in_file_on_branch_and_tag() {
     -c user.email='test@example.com' \
     commit -q -m "set version to $version"
 
-  git -C $repo tag -a -m "concourse semver" $version HEAD
+  git -C $repo tag -a -m "concourse semver" v$version HEAD
 
   # output resulting sha
   git -C $repo rev-parse HEAD
@@ -76,7 +76,7 @@ check_version() {
       test "$(cat $repo/some-file)" = $version
       ;;
     "git-tag")
-      test "$(git -C $repo describe --tags --abbrev=0)" = $version
+      test "$(git -C $repo describe --tags --abbrev=0)" = v$version
       ;;
   esac
 }

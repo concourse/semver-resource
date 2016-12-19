@@ -6,21 +6,22 @@ import (
 	"os/exec"
 	"strings"
 
+	"bytes"
+
 	"github.com/blang/semver"
 )
 
 type GitTagDriver struct {
-	Branch     string
+	Prefix     string
 	URI        string
 	Repository string
 }
 
 const nothingToDescribe = "No names found, cannot describe anything"
+const notAValidObject = "Not a valid object name HEAD"
 
 func (driver *GitTagDriver) readVersion() (semver.Version, bool, error) {
-	var currentVersionStr string
-
-	gitFetch := exec.Command("git", "fetch", "origin", driver.Branch, "--tags")
+	gitFetch := exec.Command("git", "fetch", "--tags")
 	gitFetch.Dir = gitRepoDir
 	gitFetch.Stdout = os.Stderr
 	gitFetch.Stderr = os.Stderr
@@ -28,14 +29,22 @@ func (driver *GitTagDriver) readVersion() (semver.Version, bool, error) {
 		return semver.Version{}, false, err
 	}
 
-	gitDescribe := exec.Command("git", "describe", "--tags", "--abbrev=0", "origin/"+driver.Branch)
+	gitDescribe := exec.Command("git", "tag", "--sort=-taggerdate", "-l", driver.Prefix+"*")
 	gitDescribe.Dir = gitRepoDir
 	describeOutput, err := gitDescribe.CombinedOutput()
 
-	currentVersionStr = strings.TrimSpace(string(describeOutput))
+	var currentVersionStr string
+	if index := bytes.Index(describeOutput, []byte{10}); index > 1 {
+		currentVersionStr = string(describeOutput[:index])
+	} else {
+		currentVersionStr = string(describeOutput)
+	}
+	currentVersionStr = strings.TrimSpace(currentVersionStr)
 
 	if err != nil {
-		if strings.Contains(currentVersionStr, nothingToDescribe) {
+		if strings.Contains(currentVersionStr, nothingToDescribe) ||
+			strings.Contains(currentVersionStr, notAValidObject) {
+			os.Stderr.Write(describeOutput)
 			return semver.Version{}, false, nil
 		}
 
@@ -43,9 +52,15 @@ func (driver *GitTagDriver) readVersion() (semver.Version, bool, error) {
 		return semver.Version{}, false, err
 	}
 
+	if currentVersionStr == "" {
+		return semver.Version{}, false, nil
+	}
+
+	currentVersionStr = currentVersionStr[len(driver.Prefix):]
 	currentVersion, err := semver.Parse(currentVersionStr)
 
 	if err != nil {
+		os.Stderr.Write(describeOutput)
 		return semver.Version{}, false, err
 	}
 
@@ -59,7 +74,7 @@ func (driver *GitTagDriver) writeVersion(newVersion semver.Version) (bool, error
 		os.Getenv("BUILD_JOB_NAME"),
 		os.Getenv("BUILD_NAME"))
 
-	gitFetch := exec.Command("git", "fetch", "origin", driver.Branch, "--tags", "--dry-run", "--depth=1")
+	gitFetch := exec.Command("git", "fetch", "--tags", "--dry-run", "--depth=1")
 	gitFetch.Dir = gitRepoDir
 	gitFetchOutput, err := gitFetch.CombinedOutput()
 	if err != nil {
@@ -67,7 +82,7 @@ func (driver *GitTagDriver) writeVersion(newVersion semver.Version) (bool, error
 		return false, err
 	}
 
-	gitLs := exec.Command("git", "ls-remote", "origin", driver.Branch)
+	gitLs := exec.Command("git", "ls-remote", "origin", "HEAD")
 	gitLs.Dir = gitRepoDir
 	gitLsOutput, err := gitLs.CombinedOutput()
 	if err != nil {
@@ -77,7 +92,9 @@ func (driver *GitTagDriver) writeVersion(newVersion semver.Version) (bool, error
 
 	headRef := strings.Split(string(gitLsOutput), "\t")[0]
 
-	gitTag := exec.Command("git", "tag", "--force", "--annotate", "--message", tagMessage, newVersion.String(), headRef)
+	version := driver.Prefix + newVersion.String()
+
+	gitTag := exec.Command("git", "tag", "--force", "--annotate", "--message", tagMessage, version, headRef)
 	gitTag.Dir = gitRepoDir
 	tagOutput, err := gitTag.CombinedOutput()
 	if err != nil {
@@ -85,7 +102,7 @@ func (driver *GitTagDriver) writeVersion(newVersion semver.Version) (bool, error
 		return false, err
 	}
 
-	gitShowTag := exec.Command("git", "ls-remote", "origin", fmt.Sprintf("refs/tags/%s", newVersion.String()))
+	gitShowTag := exec.Command("git", "ls-remote", "origin", fmt.Sprintf("refs/tags/%s", version))
 	gitShowTag.Dir = gitRepoDir
 	showTagOutput, err := gitShowTag.CombinedOutput()
 
@@ -94,8 +111,8 @@ func (driver *GitTagDriver) writeVersion(newVersion semver.Version) (bool, error
 		return false, err
 	}
 
-	if strings.Contains(string(showTagOutput), newVersion.String()) {
-		gitDeleteTag := exec.Command("git", "push", "origin", fmt.Sprintf(":refs/tags/%s", newVersion.String()))
+	if strings.Contains(string(showTagOutput), version) {
+		gitDeleteTag := exec.Command("git", "push", "origin", fmt.Sprintf(":refs/tags/%s", version))
 		gitDeleteTag.Dir = gitRepoDir
 		deleteTagOutput, err := gitDeleteTag.CombinedOutput()
 
@@ -105,7 +122,7 @@ func (driver *GitTagDriver) writeVersion(newVersion semver.Version) (bool, error
 		}
 	}
 
-	gitPushTag := exec.Command("git", "push", "origin", newVersion.String())
+	gitPushTag := exec.Command("git", "push", "origin", version)
 	gitPushTag.Dir = gitRepoDir
 
 	pushTagOutput, err := gitPushTag.CombinedOutput()
@@ -157,8 +174,8 @@ func (driver *GitTagDriver) setUpRepo() error {
 		return fmt.Errorf("Expected either repository (path) or URI to be configured.")
 	}
 
-	if driver.Branch == "" {
-		driver.Branch = "HEAD"
+	if driver.Prefix == "" {
+		driver.Prefix = "v"
 	}
 
 	return nil

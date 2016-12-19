@@ -95,7 +95,7 @@ func FromSource(source models.Source) (Driver, error) {
 			GitUser:    source.GitUser,
 			VersionDriver: &GitTagDriver{
 				URI:        source.URI,
-				Branch:     source.Branch,
+				Prefix:     source.TagPrefix,
 				Repository: source.Repository,
 			},
 		}, nil

@@ -85,8 +85,6 @@ The `git-tag` driver has the advantage of being able to do atomic updates.
 
 * `uri`: *Required.* The repository URL.
 
-* `branch`: *Required.* The branch the tagged commits are part of.
-
 * `private_key`: *Optional.* The SSH private key to use when pulling from/
    pushing to to the repository.
 
@@ -98,6 +96,9 @@ The `git-tag` driver has the advantage of being able to do atomic updates.
 
 * `git_user`: *Optional.* The git identity to use when pushing to the repository.
    Supports RFC 5322 address of the form "Gogh Fir <gf@example.com>" or "foo@example.com".
+
+* `tag_prefix`: *Optional.* Prefix of the version in the git tag. When set to 'v' the tags
+   will be in the format v1.2.3.
 
 The `git-tag` driver uses annotated tags. On a put, the message is populated with
 details about the build that triggered the bump.

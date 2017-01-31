@@ -47,6 +47,28 @@ it_fails_if_key_has_password() {
   grep "private keys with passphrases are not supported" $failed_output
 }
 
+it_can_check_skipping_ssl_verification() {
+  local repo=$(init_repo)
+
+  local fake_bin_dir=$TMPDIR/fake_bin
+  local fake_git_bin=$fake_bin_dir/fake_git
+  mkdir -p $(dirname $fake_bin_dir)
+  echo 'echo GIT_SSL_NO_VERIFY=$GIT_SSL_NO_VERIFY' > $fake_git_bin
+  chmod a+x $fake_git_bin
+
+  # add our fake bin to path
+  old_PATH=$PATH
+  export PATH=$fake_bin_dir:$PATH
+
+  local git_output=$TMPDIR/git-output
+  check_uri_skipping_ssl_verification $repo > $git_output
+
+  # restore path
+  export PATH=$old_PATH
+
+  [ "$(cat $git_output)" = 'GIT_SSL_NO_VERIFY=true' ]
+}
+
 it_can_check_with_credentials() {
   local repo=$(init_repo)
 

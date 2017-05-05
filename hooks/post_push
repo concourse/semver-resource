@@ -1,0 +1,7 @@
+#!/bin/bash
+set -eu
+
+# Create an immutable tag that we can reference.
+echo "Creating tag: ${SOURCE_COMMIT}"
+docker tag "${IMAGE_NAME}" "${DOCKER_REPO}:${SOURCE_COMMIT}"
+docker push "${DOCKER_REPO}:${SOURCE_COMMIT}"

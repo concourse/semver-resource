@@ -1,6 +1,10 @@
 #!/bin/bash
 set -eu
 
+# Docker Hub doesn't have this (but Docker Cloud might).
+export SOURCE_COMMIT
+SOURCE_COMMIT="${SOURCE_COMMIT:-$(git rev-parse HEAD)}"
+
 # Create an immutable tag that we can reference.
 echo "Creating tag: ${SOURCE_COMMIT}"
 docker tag "${IMAGE_NAME}" "${DOCKER_REPO}:${SOURCE_COMMIT}"

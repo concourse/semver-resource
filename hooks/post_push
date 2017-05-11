@@ -5,7 +5,11 @@ set -eu
 export SOURCE_COMMIT
 SOURCE_COMMIT="${SOURCE_COMMIT:-$(git rev-parse HEAD)}"
 
-# Create an immutable tag that we can reference.
-echo "Creating tag: ${SOURCE_COMMIT}"
-docker tag "${IMAGE_NAME}" "${DOCKER_REPO}:${SOURCE_COMMIT}"
-docker push "${DOCKER_REPO}:${SOURCE_COMMIT}"
+# Create an immutable tag that we can reference for merge commits on "master".
+if [ "${SOURCE_BRANCH}" = "gds_master" ]; then
+  echo "Creating additional tag: ${SOURCE_COMMIT}"
+  docker tag "${IMAGE_NAME}" "${DOCKER_REPO}:${SOURCE_COMMIT}"
+  docker push "${DOCKER_REPO}:${SOURCE_COMMIT}"
+else
+  echo "Not creating tag for branch: ${SOURCE_BRANCH}"
+fi

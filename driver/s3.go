@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -34,7 +35,8 @@ func (driver *S3Driver) Bump(bump version.Bump) (semver.Version, error) {
 		}
 		defer resp.Body.Close()
 
-		currentVersion, err = semver.Parse(string(bucketNumberPayload))
+		payloadStr := strings.TrimSpace(string(bucketNumberPayload))
+		currentVersion, err = semver.Parse(payloadStr)
 		if err != nil {
 			return semver.Version{}, err
 		}

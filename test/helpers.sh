@@ -86,6 +86,18 @@ check_uri_with_initial() {
   }" | ${resource_dir}/check | tee /dev/stderr
 }
 
+check_uri_skipping_ssl_verification() {
+  jq -n "{
+    source: {
+      driver: \"git\",
+      uri: $(echo $1 | jq -R .),
+      branch: \"master\",
+      file: \"some-file\",
+      skip_ssl_verification: true
+    }
+  }" | ${resource_dir}/check | tee /dev/stderr
+}
+
 
 check_uri_with_key() {
   jq -n "{

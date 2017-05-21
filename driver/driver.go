@@ -72,15 +72,16 @@ func FromSource(source models.Source) (Driver, error) {
 
 	case models.DriverGit:
 		return &GitDriver{
-			InitialVersion: initialVersion,
+			InitialVersion:      initialVersion,
 
-			URI:        source.URI,
-			Branch:     source.Branch,
-			PrivateKey: source.PrivateKey,
-			Username:   source.Username,
-			Password:   source.Password,
-			File:       source.File,
-			GitUser:    source.GitUser,
+			URI:                 source.URI,
+			Branch:              source.Branch,
+			PrivateKey:          source.PrivateKey,
+			Username:            source.Username,
+			Password:            source.Password,
+			File:                source.File,
+			GitUser:             source.GitUser,
+			SkipSslVerification: source.SkipSslVerification,
 		}, nil
 
 	case models.DriverSwift:

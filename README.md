@@ -35,6 +35,9 @@ The `git` driver works by modifying a file in a repository with every bump. The
 
 * `password`: *Optional.* Password for HTTP(S) auth when pulling/pushing.
 
+* `skip_ssl_verification`: *Optional.* Skips git ssl verification by exporting
+  `GIT_SSL_NO_VERIFY=true`.
+
 * `git_user`: *Optional.* The git identity to use when pushing to the
   repository support RFC 5322 address of the form "Gogh Fir \<gf@example.com\>" or "foo@example.com".
 

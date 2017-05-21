@@ -12,7 +12,7 @@ bootstrapping, i.e. when there is not a version number present in the source.
 * `driver`: *Optional. Default `s3`.* The driver to use for tracking the
   version. Determines where the version is stored.
 
-There are three supported drivers, with their own sets of properties for
+There are four supported drivers, with their own sets of properties for
 configuring them.
 
 
@@ -78,6 +78,31 @@ with OpenStack. All OpenStack Identity versions are supported through this libra
 Authentication properties will pass through to it. For detailed information about the
 individual parameters, see https://github.com/rackspace/gophercloud/blob/master/auth_options.go
 
+### `git-tag` Driver
+
+The `git-tag` driver works by tagging commits in a repository with every bump.
+The `git-tag` driver has the advantage of being able to do atomic updates.
+
+* `uri`: *Required.* The repository URL.
+
+* `private_key`: *Optional.* The SSH private key to use when pulling from/
+   pushing to to the repository.
+
+* `username`: *Optional.* Username for HTTP(S) auth when pulling/pushing.
+   This is needed when only HTTP/HTTPS protocol for git is available (which
+   does not support private key auth) and auth is required.
+
+* `password`: *Optional.* Password for HTTP(S) auth when pulling/pushing.
+
+* `git_user`: *Optional.* The git identity to use when pushing to the repository.
+   Supports RFC 5322 address of the form "Gogh Fir \<gf@example.com\>" or "foo@example.com".
+
+* `tag_prefix`: *Optional.* Prefix of the version in the git tag. When set to 'v' the tags
+   will be in the format v1.2.3.
+
+The `git-tag` driver uses annotated tags. On a put, the message is populated with
+details about the build that triggered the bump.
+
 ### Example
 
 With the following resource configuration:
@@ -118,7 +143,10 @@ plan:
 
 ### `check`: Report the current version number.
 
-Detects new versions by reading the file from the specified source. If the file is empty, it returns the `initial_version`. If the file is not empty, it returns the version specified in the file if it is equal to or greater than current version, otherwise it returns no versions.
+Detects new versions by reading the file or latest tag from the specified source.
+If the file/tag is empty, it returns the `initial_version`. If the file/tag is
+not empty, it returns the version specified in the file/tag if it is equal to or
+greater than current version, otherwise it returns no versions.
 
 ### `in`: Provide the version as a file, optionally bumping it.
 
@@ -162,7 +190,6 @@ if the driver supports it. That is, if we pull down version `N`, and bump to
 `N+1`, the driver can then compare-and-swap. If the compare-and-swap fails
 because there's some new version `M`, the driver will re-apply the bump to get
 `M+1`, and try again (in a loop).
-
 
 ## Version Bumping Semantics
 

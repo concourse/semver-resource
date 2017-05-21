@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/blang/semver"
@@ -29,13 +30,14 @@ func init() {
 type GitDriver struct {
 	InitialVersion semver.Version
 
-	URI        string
-	Branch     string
-	PrivateKey string
-	Username   string
-	Password   string
-	File       string
-	GitUser    string
+	URI               string
+	Branch            string
+	PrivateKey        string
+	Username          string
+	Password          string
+	File              string
+	GitUser           string
+	SkipSslValidation bool
 }
 
 func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
@@ -228,7 +230,7 @@ func (driver *GitDriver) setUpUsernamePassword() error {
 		}
 	}
 
-	return nil
+	return os.Setenv("GIT_SSL_NO_VERIFY", strconv.FormatBool(driver.SkipSslValidation))
 }
 
 func (driver *GitDriver) setUserInfo() error {

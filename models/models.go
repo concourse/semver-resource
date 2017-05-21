@@ -65,6 +65,8 @@ type Source struct {
 	Password   string `json:"password"`
 	File       string `json:"file"`
 	GitUser    string `json:"git_user"`
+	Repository string `json:"repository"`
+	TagPrefix  string `json:"tag_prefix"`
 
 	OpenStack OpenStackOptions `json:"openstack"`
 }
@@ -105,5 +107,6 @@ const (
 	DriverUnspecified Driver = ""
 	DriverS3          Driver = "s3"
 	DriverGit         Driver = "git"
+	DriverGitTag      Driver = "git-tag"
 	DriverSwift       Driver = "swift"
 )

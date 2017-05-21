@@ -36,6 +36,7 @@ func FromSource(source models.Source) (Driver, error) {
 	switch source.Driver {
 	case models.DriverUnspecified, models.DriverS3:
 		var creds *credentials.Credentials
+		var awsConfig *aws.Config
 
 		if source.AccessKeyID == "" && source.SecretAccessKey == "" {
 			creds = credentials.AnonymousCredentials
@@ -48,12 +49,15 @@ func FromSource(source models.Source) (Driver, error) {
 			regionName = "us-east-1"
 		}
 
-		awsConfig := &aws.Config{
+		awsConfig = &aws.Config{
 			Region:           aws.String(regionName),
-			Credentials:      creds,
 			S3ForcePathStyle: aws.Bool(true),
 			MaxRetries:       aws.Int(maxRetries),
 			DisableSSL:       aws.Bool(source.DisableSSL),
+		}
+
+		if !(source.DefaultCredentials) {
+			awsConfig = awsConfig.WithCredentials(creds)
 		}
 
 		if len(source.Endpoint) != 0 {

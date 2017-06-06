@@ -67,11 +67,6 @@
 			"Rev": "328d4b6c297ec5d4f86543fca46254699d82cada"
 		},
 		{
-			"ImportPath": "github.com/aws/aws-sdk-go/private/endpoints",
-			"Comment": "v1.1.35",
-			"Rev": "d3b6d25135b4e09ecd39ea3c2a5cad35279b0515"
-		},
-		{
 			"ImportPath": "github.com/aws/aws-sdk-go/private/protocol",
 			"Comment": "v1.8.35",
 			"Rev": "328d4b6c297ec5d4f86543fca46254699d82cada"
@@ -100,16 +95,6 @@
 			"ImportPath": "github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil",
 			"Comment": "v1.8.35",
 			"Rev": "328d4b6c297ec5d4f86543fca46254699d82cada"
-		},
-		{
-			"ImportPath": "github.com/aws/aws-sdk-go/private/signer/v4",
-			"Comment": "v1.1.35",
-			"Rev": "d3b6d25135b4e09ecd39ea3c2a5cad35279b0515"
-		},
-		{
-			"ImportPath": "github.com/aws/aws-sdk-go/private/waiter",
-			"Comment": "v1.6.24-1-g2d3b3bc3",
-			"Rev": "2d3b3bc3aae6a09a9b194aa6eb71326fcbe2e918"
 		},
 		{
 			"ImportPath": "github.com/aws/aws-sdk-go/service/s3",

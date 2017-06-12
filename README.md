@@ -59,6 +59,9 @@ the bucket.
 
 * `disable_ssl`: *Optional.* Disable SSL for the endpoint, useful for S3 compatible providers without SSL.
 
+* `server_side_encryption`: *Optional.* The server-side encryption algorithm
+used when storing the version object (e.g. `AES256`, `aws:kms`).
+
 ### `swift` Driver
 
 The `swift` driver works by modifying a file in a container.

@@ -27,7 +27,7 @@ if not_installed docker-machine; then
 fi
 
 cd $semver_resource_dir
-ginkgo -r -p version
+ginkgo -r -p driver version
 
 ./scripts/build
 set +e

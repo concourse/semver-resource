@@ -13,12 +13,18 @@ import (
 	"github.com/concourse/semver-resource/version"
 )
 
+type Servicer interface {
+	GetObject(*s3.GetObjectInput) (*s3.GetObjectOutput, error)
+	PutObject(*s3.PutObjectInput) (*s3.PutObjectOutput, error)
+}
+
 type S3Driver struct {
 	InitialVersion semver.Version
 
-	Svc        *s3.S3
-	BucketName string
-	Key        string
+	Svc                  Servicer
+	BucketName           string
+	Key                  string
+	ServerSideEncryption string
 }
 
 func (driver *S3Driver) Bump(bump version.Bump) (semver.Version, error) {
@@ -63,6 +69,10 @@ func (driver *S3Driver) Set(newVersion semver.Version) error {
 		ContentType: aws.String("text/plain"),
 		Body:        bytes.NewReader([]byte(newVersion.String())),
 		ACL:         aws.String(s3.ObjectCannedACLPrivate),
+	}
+
+	if len(driver.ServerSideEncryption) > 0 {
+		params.ServerSideEncryption = aws.String(driver.ServerSideEncryption)
 	}
 
 	_, err := driver.Svc.PutObject(params)

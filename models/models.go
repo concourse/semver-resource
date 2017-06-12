@@ -50,13 +50,14 @@ type Source struct {
 
 	InitialVersion string `json:"initial_version"`
 
-	Bucket          string `json:"bucket"`
-	Key             string `json:"key"`
-	AccessKeyID     string `json:"access_key_id"`
-	SecretAccessKey string `json:"secret_access_key"`
-	RegionName      string `json:"region_name"`
-	Endpoint        string `json:"endpoint"`
-	DisableSSL      bool   `json:"disable_ssl"`
+	Bucket               string `json:"bucket"`
+	Key                  string `json:"key"`
+	AccessKeyID          string `json:"access_key_id"`
+	SecretAccessKey      string `json:"secret_access_key"`
+	RegionName           string `json:"region_name"`
+	Endpoint             string `json:"endpoint"`
+	DisableSSL           bool   `json:"disable_ssl"`
+	ServerSideEncryption string `json:"server_side_encryption"`
 
 	URI        string `json:"uri"`
 	Branch     string `json:"branch"`

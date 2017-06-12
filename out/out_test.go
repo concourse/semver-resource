@@ -66,11 +66,12 @@ var _ = Describe("Out", func() {
 			request = models.OutRequest{
 				Version: models.Version{},
 				Source: models.Source{
-					Bucket:          bucketName,
-					Key:             key,
-					AccessKeyID:     accessKeyID,
-					SecretAccessKey: secretAccessKey,
-					RegionName:      regionName,
+					Bucket:               bucketName,
+					Key:                  key,
+					AccessKeyID:          accessKeyID,
+					SecretAccessKey:      secretAccessKey,
+					RegionName:           regionName,
+                                        ServerSideEncryption: "AES256",
 				},
 				Params: models.OutParams{},
 			}
@@ -119,11 +120,12 @@ var _ = Describe("Out", func() {
 
 		putVersion := func(version string) {
 			_, err := svc.PutObject(&s3.PutObjectInput{
-				Bucket:      aws.String(bucketName),
-				Key:         aws.String(key),
-				ContentType: aws.String("text/plain"),
-				Body:        bytes.NewReader([]byte(version)),
-				ACL:         aws.String(s3.ObjectCannedACLPrivate),
+				Bucket:               aws.String(bucketName),
+				Key:                  aws.String(key),
+				ContentType:          aws.String("text/plain"),
+				Body:                 bytes.NewReader([]byte(version)),
+				ACL:                  aws.String(s3.ObjectCannedACLPrivate),
+				ServerSideEncryption: aws.String("AES256"),
 			})
 			Expect(err).NotTo(HaveOccurred())
 		}

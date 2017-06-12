@@ -71,7 +71,7 @@ var _ = Describe("Out", func() {
 					AccessKeyID:          accessKeyID,
 					SecretAccessKey:      secretAccessKey,
 					RegionName:           regionName,
-                                        ServerSideEncryption: "AES256",
+					ServerSideEncryption: "AES256",
 				},
 				Params: models.OutParams{},
 			}

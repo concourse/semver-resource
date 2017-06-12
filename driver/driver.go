@@ -68,7 +68,7 @@ func FromSource(source models.Source) (Driver, error) {
 			Svc:                  svc,
 			BucketName:           source.Bucket,
 			Key:                  source.Key,
-                        ServerSideEncryption: source.ServerSideEncryption
+			ServerSideEncryption: source.ServerSideEncryption,
 		}, nil
 
 	case models.DriverGit:

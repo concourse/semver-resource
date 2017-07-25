@@ -16,9 +16,10 @@ import (
 type S3Driver struct {
 	InitialVersion semver.Version
 
-	Svc        *s3.S3
-	BucketName string
-	Key        string
+	Svc                  *s3.S3
+	BucketName           string
+	Key                  string
+	ServerSideEncryption string
 }
 
 func (driver *S3Driver) Bump(bump version.Bump) (semver.Version, error) {
@@ -64,6 +65,10 @@ func (driver *S3Driver) Set(newVersion semver.Version) error {
 		Body:        bytes.NewReader([]byte(newVersion.String())),
 		ACL:         aws.String(s3.ObjectCannedACLPrivate),
 	}
+
+        if len(driver.ServerSideEncryption) > 0 {
+            params.ServerSideEncryption = aws.String(driver.ServerSideEncryption)
+        }
 
 	_, err := driver.Svc.PutObject(params)
 	return err

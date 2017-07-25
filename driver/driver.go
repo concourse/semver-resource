@@ -65,9 +65,10 @@ func FromSource(source models.Source) (Driver, error) {
 		return &S3Driver{
 			InitialVersion: initialVersion,
 
-			Svc:        svc,
-			BucketName: source.Bucket,
-			Key:        source.Key,
+			Svc:                  svc,
+			BucketName:           source.Bucket,
+			Key:                  source.Key,
+			ServerSideEncryption: source.ServerSideEncryption,
 		}, nil
 
 	case models.DriverGit:

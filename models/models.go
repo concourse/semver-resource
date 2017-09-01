@@ -68,6 +68,8 @@ type Source struct {
 	GitUser    string `json:"git_user"`
 
 	OpenStack OpenStackOptions `json:"openstack"`
+
+	JSONKey string `json:"json_key"`
 }
 
 // OpenStackOptions contains properties for authenticating and accessing
@@ -107,4 +109,5 @@ const (
 	DriverS3          Driver = "s3"
 	DriverGit         Driver = "git"
 	DriverSwift       Driver = "swift"
+	DriverGCS         Driver = "gcs"
 )

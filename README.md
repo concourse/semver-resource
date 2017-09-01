@@ -1,7 +1,6 @@
 # Semver Resource
 
-A resource for managing a version number. Persists the version number in an
-S3 bucket or a Git repository.
+A resource for managing a version number. Persists the version number in one of several backing stores.
 
 
 ## Source Configuration
@@ -40,7 +39,7 @@ The `git` driver works by modifying a file in a repository with every bump. The
 
 ### `s3` Driver
 
-The `s3` driver works by modifying a file in a bucket.
+The `s3` driver works by modifying a file in an S3 compatible bucket.
 
 * `bucket`: *Required.* The name of the bucket.
 
@@ -80,6 +79,27 @@ The swift driver uses [gophercloud](http://gophercloud.io/docs/) to handle inter
 with OpenStack. All OpenStack Identity versions are supported through this library. The
 Authentication properties will pass through to it. For detailed information about the
 individual parameters, see https://github.com/rackspace/gophercloud/blob/master/auth_options.go
+
+### `gcs` Driver
+
+The `gcs` driver works by modifying a file in a Google Cloud Storage bucket.
+
+* `bucket`: *Required.* The name of the bucket.
+
+* `key`: *Required.* The key to use for the object in the bucket tracking the version.
+
+* `json_key`: *Required.* The contents of your GCP Account JSON Key. Example:
+
+  ```yaml
+  json_key: |
+    {
+      "private_key_id": "...",
+      "private_key": "...",
+      "client_email": "...",
+      "client_id": "...",
+      "type": "service_account"
+    }
+  ```
 
 ### Example
 

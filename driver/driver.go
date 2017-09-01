@@ -87,6 +87,19 @@ func FromSource(source models.Source) (Driver, error) {
 	case models.DriverSwift:
 		return NewSwiftDriver(&source)
 
+	case models.DriverGCS:
+		servicer := &GCSIOServicer{
+			JSONCredentials: source.JSONKey,
+		}
+
+		return &GCSDriver{
+			InitialVersion: initialVersion,
+
+			Servicer:   servicer,
+			BucketName: source.Bucket,
+			Key:        source.Key,
+		}, nil
+
 	default:
 		return nil, fmt.Errorf("unknown driver: %s", source.Driver)
 	}

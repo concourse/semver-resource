@@ -1,4 +1,4 @@
-FROM golang:1.5.3-alpine
+FROM golang:1.8.3-alpine
 
 ENV CONCOURSE_CODE_PATH ${GOPATH}/src/github.com/concourse/semver-resource
 

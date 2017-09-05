@@ -21,14 +21,14 @@ var _ = BeforeSuite(func() {
 	var err error
 
 	if useInstanceProfile == "" {
-		Ω(accessKeyID).ShouldNot(BeEmpty(), "must specify $SEMVER_TESTING_ACCESS_KEY_ID or SEMVER_TESTING_USE_INSTANCE_PROFILE=true")
-		Ω(secretAccessKey).ShouldNot(BeEmpty(), "must specify $SEMVER_TESTING_SECRET_ACCESS_KEY or SEMVER_TESTING_USE_INSTANCE_PROFILE=true")
+		Expect(accessKeyID).ShouldNot(BeEmpty(), "must specify $SEMVER_TESTING_ACCESS_KEY_ID or SEMVER_TESTING_USE_INSTANCE_PROFILE=true")
+		Expect(secretAccessKey).ShouldNot(BeEmpty(), "must specify $SEMVER_TESTING_SECRET_ACCESS_KEY or SEMVER_TESTING_USE_INSTANCE_PROFILE=true")
 	}
-	Ω(bucketName).ShouldNot(BeEmpty(), "must specify $SEMVER_TESTING_BUCKET")
-	Ω(regionName).ShouldNot(BeEmpty(), "must specify $SEMVER_TESTING_REGION")
+	Expect(bucketName).ShouldNot(BeEmpty(), "must specify $SEMVER_TESTING_BUCKET")
+	Expect(regionName).ShouldNot(BeEmpty(), "must specify $SEMVER_TESTING_REGION")
 
 	outPath, err = gexec.Build("github.com/concourse/semver-resource/out")
-	Ω(err).ShouldNot(HaveOccurred())
+	Expect(err).NotTo(HaveOccurred())
 })
 
 var _ = AfterSuite(func() {

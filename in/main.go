@@ -42,16 +42,20 @@ func main() {
 		fmt.Fprintf(os.Stderr, "bumped locally from %s to %s\n", inputVersion, bumped)
 	}
 
-	numberFile, err := os.Create(filepath.Join(destination, "number"))
-	if err != nil {
-		fatal("opening number file", err)
-	}
+	versionFileNames := []string{"number", "version"}
 
-	defer numberFile.Close()
+	for _, fileName := range versionFileNames {
+		numberFile, err := os.Create(filepath.Join(destination, fileName))
+		if err != nil {
+			fatal("opening number file", err)
+		}
 
-	_, err = fmt.Fprintf(numberFile, "%s", bumped.String())
-	if err != nil {
-		fatal("writing to number file", err)
+		defer numberFile.Close()
+
+		_, err = fmt.Fprintf(numberFile, "%s", bumped.String())
+		if err != nil {
+			fatal("writing to number file", err)
+		}
 	}
 
 	json.NewEncoder(os.Stdout).Encode(models.InResponse{

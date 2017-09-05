@@ -9,9 +9,11 @@ import (
 	"path"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/concourse/semver-resource/models"
-	"github.com/mitchellh/goamz/aws"
-	"github.com/mitchellh/goamz/s3"
 	"github.com/nu7hatch/gouuid"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -30,7 +32,7 @@ var _ = Describe("In", func() {
 		var err error
 
 		tmpdir, err = ioutil.TempDir("", "in-destination")
-		Ω(err).ShouldNot(HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 
 		destination = path.Join(tmpdir, "in-dir")
 
@@ -45,23 +47,23 @@ var _ = Describe("In", func() {
 		var request models.InRequest
 		var response models.InResponse
 
-		var bucket *s3.Bucket
+		var svc *s3.S3
 
 		BeforeEach(func() {
 			guid, err := uuid.NewV4()
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(err).NotTo(HaveOccurred())
 
 			key = guid.String()
 
-			auth, err := aws.GetAuth(accessKeyID, secretAccessKey)
-			Ω(err).ShouldNot(HaveOccurred())
+			creds := credentials.NewStaticCredentials(accessKeyID, secretAccessKey, "")
+			awsConfig := &aws.Config{
+				Region:           aws.String(regionName),
+				Credentials:      creds,
+				S3ForcePathStyle: aws.Bool(true),
+				MaxRetries:       aws.Int(12),
+			}
 
-			region, ok := aws.Regions[regionName]
-			Ω(ok).Should(BeTrue())
-
-			client := s3.New(auth, region)
-
-			bucket = client.Bucket(bucketName)
+			svc = s3.New(session.New(awsConfig))
 
 			request = models.InRequest{
 				Version: models.Version{
@@ -81,25 +83,28 @@ var _ = Describe("In", func() {
 		})
 
 		AfterEach(func() {
-			err := bucket.Del(key)
-			Ω(err).ShouldNot(HaveOccurred())
+			_, err := svc.DeleteObject(&s3.DeleteObjectInput{
+				Bucket: aws.String(bucketName),
+				Key:    aws.String(key),
+			})
+			Expect(err).NotTo(HaveOccurred())
 		})
 
 		JustBeforeEach(func() {
 			stdin, err := inCmd.StdinPipe()
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(err).NotTo(HaveOccurred())
 
 			session, err := gexec.Start(inCmd, GinkgoWriter, GinkgoWriter)
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(err).NotTo(HaveOccurred())
 
 			err = json.NewEncoder(stdin).Encode(request)
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(err).NotTo(HaveOccurred())
 
 			// account for roundtrip to s3
 			Eventually(session, 5*time.Second).Should(gexec.Exit(0))
 
 			err = json.Unmarshal(session.Out.Contents(), &response)
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(err).NotTo(HaveOccurred())
 		})
 
 		for bump, result := range map[string]string{
@@ -118,13 +123,19 @@ var _ = Describe("In", func() {
 				})
 
 				It("reports the original version as the version", func() {
-					Ω(response.Version.Number).Should(Equal(request.Version.Number))
+					Expect(response.Version.Number).To(Equal(request.Version.Number))
 				})
 
-				It("writes the version to the destination", func() {
+				It("writes the version to the destination 'number' file", func() {
 					contents, err := ioutil.ReadFile(path.Join(destination, "number"))
-					Ω(err).ShouldNot(HaveOccurred())
-					Ω(string(contents)).Should(Equal(resultLocal))
+					Expect(err).NotTo(HaveOccurred())
+					Expect(string(contents)).To(Equal(resultLocal))
+				})
+
+				It("writes the version to the destination 'version' file", func() {
+					contents, err := ioutil.ReadFile(path.Join(destination, "version"))
+					Expect(err).NotTo(HaveOccurred())
+					Expect(string(contents)).To(Equal(resultLocal))
 				})
 			})
 		}

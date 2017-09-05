@@ -23,4 +23,3 @@ RUN cd ${CONCOURSE_CODE_PATH} \
   && cp built-out /opt/resource/out
 
 RUN rm -rf ${GOPATH} ${GOROOT} /usr/local/go /code
-

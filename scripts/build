@@ -1,5 +1,6 @@
 #!/bin/bash
 
-GOOS=linux GOARCH=amd64 go build -o built-in in/main.go
-GOOS=linux GOARCH=amd64 go build -o built-out out/main.go
-GOOS=linux GOARCH=amd64 go build -o built-check check/main.go
+mkdir -p assets
+GOOS=linux GOARCH=amd64 go build -o assets/in in/main.go
+GOOS=linux GOARCH=amd64 go build -o assets/out out/main.go
+GOOS=linux GOARCH=amd64 go build -o assets/check check/main.go

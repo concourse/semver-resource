@@ -1,7 +1,23 @@
-FROM concourse/buildroot:git
+FROM golang:1.8.3-alpine
 
-ADD assets/ /opt/resource/
+ENV CONCOURSE_CODE_PATH ${GOPATH}/src/github.com/concourse/semver-resource
 
-ADD test/ /opt/resource-tests/
-RUN /opt/resource-tests/all.sh && \
-  rm -rf /tmp/*
+RUN apk add --update git bash \
+  && rm -rf /var/cache/apk/*
+
+ADD . /code
+
+RUN mkdir -p $(dirname ${CONCOURSE_CODE_PATH}) \
+    && ln -s /code ${CONCOURSE_CODE_PATH}
+
+RUN cd ${CONCOURSE_CODE_PATH} \
+  && go get -v -d ./...
+
+RUN cd ${CONCOURSE_CODE_PATH} \
+  && ./scripts/build
+
+RUN cd ${CONCOURSE_CODE_PATH} \
+  && mkdir -p /opt/resource \
+  && cp assets/* /opt/resource
+
+RUN rm -rf ${GOPATH} ${GOROOT} /usr/local/go /code

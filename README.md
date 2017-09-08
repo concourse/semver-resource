@@ -1,3 +1,23 @@
+# Note: forked
+
+This resource has been forked to add support for [retrieving AWS credentials
+from IAM instance profiles][IAM]. That feature [isn't going to be
+implemented upstream][issue] at the moment, but the Concourse team are
+looking at other ways to retrieve credentials in the future.
+
+[IAM]: http://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#use-roles-with-ec2
+[issue]: https://github.com/concourse/s3-resource/pull/22
+
+Please do not add additional features or bug fixes to this fork/branch
+without first talking to the Tech Lead or Tech Architect on the Government
+PaaS team.
+
+[Docker Hub][hub] builds a container from the `gds` branch. There is no
+automated testing because the integration tests require credentials, so you
+will need to run the tests yourself.
+
+[hub]: https://hub.docker.com/u/governmentpaas/
+
 # Semver Resource
 
 A resource for managing a version number. Persists the version number in one of several backing stores.
@@ -46,11 +66,13 @@ The `s3` driver works by modifying a file in an S3 compatible bucket.
 * `key`: *Required.* The key to use for the object in the bucket tracking
 the version.
 
-* `access_key_id`: *Required.* The AWS access key to use when accessing the
-bucket.
+* `access_key_id`: *Optional.* The AWS access key to use when accessing the
+bucket. If empty, the resource will try to retrieve credentials from environment
+or [AWS instance profile](http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html)
 
-* `secret_access_key`: *Required.* The AWS secret key to use when accessing
-the bucket.
+* `secret_access_key`: *Optional.* The AWS secret key to use when accessing
+the bucket. If empty, the resource will try to retrieve credentials from environment
+or [AWS instance profile](http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html)
 
 * `region_name`: *Optional. Default `us-east-1`.* The region the bucket is in.
 

@@ -18,8 +18,6 @@ RUN cd ${CONCOURSE_CODE_PATH} \
 
 RUN cd ${CONCOURSE_CODE_PATH} \
   && mkdir -p /opt/resource \
-  && cp built-check /opt/resource/check \
-  && cp built-in /opt/resource/in \
-  && cp built-out /opt/resource/out
+  && cp assets/* /opt/resource
 
 RUN rm -rf ${GOPATH} ${GOROOT} /usr/local/go /code

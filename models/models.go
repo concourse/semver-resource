@@ -58,6 +58,7 @@ type Source struct {
 	Endpoint             string `json:"endpoint"`
 	DisableSSL           bool   `json:"disable_ssl"`
 	ServerSideEncryption string `json:"server_side_encryption"`
+	UseV2Signing         bool   `json:"use_v2_signing"`
 
 	URI        string `json:"uri"`
 	Branch     string `json:"branch"`

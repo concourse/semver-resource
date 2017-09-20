@@ -61,6 +61,8 @@ the bucket.
 * `server_side_encryption`: *Optional.* The server-side encryption algorithm
 used when storing the version object (e.g. `AES256`, `aws:kms`).
 
+* `use_v2_signing`: *Optional.* Use v2 signing, default false.
+
 ### `swift` Driver
 
 The `swift` driver works by modifying a file in a container.

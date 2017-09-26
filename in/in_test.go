@@ -75,6 +75,7 @@ var _ = Describe("In", func() {
 					AccessKeyID:     accessKeyID,
 					SecretAccessKey: secretAccessKey,
 					RegionName:      regionName,
+					UseV2Signing:    v2signing,
 				},
 				Params: models.InParams{},
 			}

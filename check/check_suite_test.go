@@ -15,6 +15,7 @@ var accessKeyID = os.Getenv("SEMVER_TESTING_ACCESS_KEY_ID")
 var secretAccessKey = os.Getenv("SEMVER_TESTING_SECRET_ACCESS_KEY")
 var bucketName = os.Getenv("SEMVER_TESTING_BUCKET")
 var regionName = os.Getenv("SEMVER_TESTING_REGION")
+var v2signing = os.Getenv("SEMVER_TESTING_V2_SIGNING") == "true"
 
 var _ = BeforeSuite(func() {
 	var err error

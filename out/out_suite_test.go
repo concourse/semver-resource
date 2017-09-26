@@ -25,8 +25,12 @@ var _ = BeforeSuite(func() {
 	Expect(bucketName).NotTo(BeEmpty(), "must specify $SEMVER_TESTING_BUCKET")
 	Expect(regionName).NotTo(BeEmpty(), "must specify $SEMVER_TESTING_REGION")
 
-	outPath, err = gexec.Build("github.com/concourse/semver-resource/out")
-	Expect(err).NotTo(HaveOccurred())
+	if _, err = os.Stat("/opt/resource/out"); err == nil {
+		outPath = "/opt/resource/out"
+	} else {
+		outPath, err = gexec.Build("github.com/concourse/semver-resource/out")
+		Expect(err).NotTo(HaveOccurred())
+	}
 })
 
 var _ = AfterSuite(func() {

@@ -211,3 +211,33 @@ be one of:
   type, (e.g. `alpha` vs. `beta`), the type is switched and the prerelease
   version is reset to `1`. If the version is *not* already a pre-release, then
   `pre` is added, starting at `1`.
+
+### Running the tests
+
+The tests have been embedded with the `Dockerfile`; ensuring that the testing
+environment is consistent across any `docker` enabled platform. When the docker
+image builds, the test are run inside the docker container, on failure they
+will stop the build.
+
+Run the tests with the following command:
+
+```sh
+docker build -t semver-resource .
+```
+
+#### Integration tests
+
+The integration requires two AWS S3 buckets, one without versioning and another
+with. The `docker build` step requires setting `--build-args` so the
+integration will run.
+
+Run the tests with the following command:
+
+```sh
+docker build . -t semver-resource --build-arg SEMVER_TESTING_ACCESS_KEY_ID="some-key" --build-arg SEMVER_TESTING_SECRET_ACCESS_KEY="some-secret" --build-arg SEMVER_TESTING_BUCKET="testing" --build-arg SEMVER_TESTING_REGION="us-east-1" 
+```
+
+### Contributing
+
+Please make all pull requests to the `master` branch and ensure tests pass
+locally.

@@ -57,6 +57,7 @@ type Source struct {
 	RegionName           string `json:"region_name"`
 	Endpoint             string `json:"endpoint"`
 	DisableSSL           bool   `json:"disable_ssl"`
+	SkipSSLVerification  bool   `json:"skip_ssl_verification"`
 	ServerSideEncryption string `json:"server_side_encryption"`
 	UseV2Signing         bool   `json:"use_v2_signing"`
 

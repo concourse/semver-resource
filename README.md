@@ -58,6 +58,8 @@ the bucket.
 
 * `disable_ssl`: *Optional.* Disable SSL for the endpoint, useful for S3 compatible providers without SSL.
 
+* `skip_ssl_verification`: *Optional.* Skip SSL verification for S3 endpoint. Useful for S3 compatible providers using self-signed SSL certificates.
+
 * `server_side_encryption`: *Optional.* The server-side encryption algorithm
 used when storing the version object (e.g. `AES256`, `aws:kms`).
 
@@ -234,7 +236,7 @@ integration will run.
 Run the tests with the following command:
 
 ```sh
-docker build . -t semver-resource --build-arg SEMVER_TESTING_ACCESS_KEY_ID="some-key" --build-arg SEMVER_TESTING_SECRET_ACCESS_KEY="some-secret" --build-arg SEMVER_TESTING_BUCKET="testing" --build-arg SEMVER_TESTING_REGION="us-east-1" 
+docker build . -t semver-resource --build-arg SEMVER_TESTING_ACCESS_KEY_ID="some-key" --build-arg SEMVER_TESTING_SECRET_ACCESS_KEY="some-secret" --build-arg SEMVER_TESTING_BUCKET="testing" --build-arg SEMVER_TESTING_REGION="us-east-1"
 ```
 
 ### Contributing

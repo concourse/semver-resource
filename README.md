@@ -231,10 +231,10 @@ The integration requires two AWS S3 buckets, one without versioning and another
 with. The `docker build` step requires setting `--build-args` so the
 integration will run.
 
-Run the tests with the following command:
+Run the tests with the following command, replacing each `build-arg` value with your own values:
 
 ```sh
-docker build . -t semver-resource --build-arg SEMVER_TESTING_ACCESS_KEY_ID="some-key" --build-arg SEMVER_TESTING_SECRET_ACCESS_KEY="some-secret" --build-arg SEMVER_TESTING_BUCKET="testing" --build-arg SEMVER_TESTING_REGION="us-east-1" 
+docker build . -t semver-resource --build-arg SEMVER_TESTING_ACCESS_KEY_ID="some-key" --build-arg SEMVER_TESTING_SECRET_ACCESS_KEY="some-secret" --build-arg SEMVER_TESTING_BUCKET="some-bucket" --build-arg SEMVER_TESTING_REGION="some-region"
 ```
 
 ### Contributing

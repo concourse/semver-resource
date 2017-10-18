@@ -231,6 +231,11 @@ The integration requires two AWS S3 buckets, one without versioning and another
 with. The `docker build` step requires setting `--build-args` so the
 integration will run.
 
+You will need:
+* AWS key and secret
+* An S3 bucket
+* The region you are in (i.e. `us-east-1`, `us-west-2`)
+
 Run the tests with the following command, replacing each `build-arg` value with your own values:
 
 ```sh

@@ -1,7 +1,9 @@
 package driver
 
 import (
+	"crypto/tls"
 	"fmt"
+	"net/http"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -48,12 +50,22 @@ func FromSource(source models.Source) (Driver, error) {
 			regionName = "us-east-1"
 		}
 
+		var httpClient *http.Client
+		if source.SkipSSLVerification {
+			httpClient = &http.Client{Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			}}
+		} else {
+			httpClient = http.DefaultClient
+		}
+
 		awsConfig := &aws.Config{
 			Region:           aws.String(regionName),
 			Credentials:      creds,
 			S3ForcePathStyle: aws.Bool(true),
 			MaxRetries:       aws.Int(maxRetries),
 			DisableSSL:       aws.Bool(source.DisableSSL),
+			HTTPClient:       httpClient,
 		}
 
 		if len(source.Endpoint) != 0 {

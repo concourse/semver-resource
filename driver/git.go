@@ -142,7 +142,7 @@ func (driver *GitDriver) setUpRepo() error {
 		if len(driver.Depth) > 0 {
 			gitClone.Args = append(gitClone.Args, "--depth", driver.Depth)
 		}
-		gitClone.Args = append(gitClone.Args, gitRepoDir)
+		gitClone.Args = append(gitClone.Args, "--single-branch", gitRepoDir)
 		gitClone.Stdout = os.Stderr
 		gitClone.Stderr = os.Stderr
 		if err := gitClone.Run(); err != nil {

@@ -36,6 +36,7 @@ type GitDriver struct {
 	Password   string
 	File       string
 	GitUser    string
+	Depth      string
 }
 
 func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
@@ -137,7 +138,11 @@ func (driver *GitDriver) Check(cursor *semver.Version) ([]semver.Version, error)
 func (driver *GitDriver) setUpRepo() error {
 	_, err := os.Stat(gitRepoDir)
 	if err != nil {
-		gitClone := exec.Command("git", "clone", driver.URI, "--branch", driver.Branch, gitRepoDir)
+		gitClone := exec.Command("git", "clone", driver.URI, "--branch", driver.Branch)
+		if len(driver.Depth) > 0 {
+			gitClone.Args = append(gitClone.Args, "--depth", driver.Depth)
+		}
+		gitClone.Args = append(gitClone.Args, "--single-branch", gitRepoDir)
 		gitClone.Stdout = os.Stderr
 		gitClone.Stderr = os.Stderr
 		if err := gitClone.Run(); err != nil {

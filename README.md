@@ -39,6 +39,10 @@ The `git` driver works by modifying a file in a repository with every bump. The
 
 * `depth`: *Optional.* If a positive integer is given, shallow clone the repository using the --depth option.
 
+The version will be cached by the resource. If you wish to change it manually, you will 
+need to delete `file` from the repository and update the source with a new `initial_version` 
+configuration.
+
 ### `s3` Driver
 
 The `s3` driver works by modifying a file in an S3 compatible bucket.

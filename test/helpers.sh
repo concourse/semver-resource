@@ -100,6 +100,20 @@ check_uri_with_key() {
 }
 
 
+check_uri_with_base64_key() {
+  jq -n "{
+    source: {
+      driver: \"git\",
+      uri: $(echo $1 | jq -R .),
+      branch: \"master\",
+      file: \"some-file\",
+      private_key: $(cat $2 | jq -s -R .),
+      private_key_base64: true
+    }
+  }" | ${resource_dir}/check | tee /dev/stderr
+}
+
+
 check_uri_with_credentials() {
   jq -n "{
     source: {

@@ -209,21 +209,21 @@ func (driver *GitDriver) setUpKey() error {
 	_, err := os.Stat(privateKeyPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-		    if driver.PrivateKeyBase64 != true {
-			    err := ioutil.WriteFile(privateKeyPath, []byte(driver.PrivateKey), 0600)
+			if driver.PrivateKeyBase64 != true {
+				err := ioutil.WriteFile(privateKeyPath, []byte(driver.PrivateKey), 0600)
 				if err != nil {
 					return err
 				}
 			} else {
-			    data, err := base64.StdEncoding.DecodeString(driver.PrivateKey)
-			    if err != nil {
-			        return err
-			    } else {
-			        err := ioutil.WriteFile(privateKeyPath, []byte(data), 0600)
+				data, err := base64.StdEncoding.DecodeString(driver.PrivateKey)
+				if err != nil {
+					return err
+				} else {
+					err := ioutil.WriteFile(privateKeyPath, []byte(data), 0600)
 					if err != nil {
 						return err
 					}
-			    }
+				}
 			}
 		} else {
 			return err

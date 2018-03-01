@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"encoding/base64"
 
 	"github.com/blang/semver"
 	"github.com/concourse/semver-resource/version"
@@ -29,14 +30,15 @@ func init() {
 type GitDriver struct {
 	InitialVersion semver.Version
 
-	URI        string
-	Branch     string
-	PrivateKey string
-	Username   string
-	Password   string
-	File       string
-	GitUser    string
-	Depth      string
+	URI              string
+	Branch           string
+	PrivateKey       string
+	PrivateKeyBase64 bool
+	Username         string
+	Password         string
+	File             string
+	GitUser          string
+	Depth            string
 }
 
 func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
@@ -207,9 +209,21 @@ func (driver *GitDriver) setUpKey() error {
 	_, err := os.Stat(privateKeyPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			err := ioutil.WriteFile(privateKeyPath, []byte(driver.PrivateKey), 0600)
-			if err != nil {
-				return err
+			if driver.PrivateKeyBase64 != true {
+				err := ioutil.WriteFile(privateKeyPath, []byte(driver.PrivateKey), 0600)
+				if err != nil {
+					return err
+				}
+			} else {
+				data, err := base64.StdEncoding.DecodeString(driver.PrivateKey)
+				if err != nil {
+					return err
+				} else {
+					err := ioutil.WriteFile(privateKeyPath, []byte(data), 0600)
+					if err != nil {
+						return err
+					}
+				}
 			}
 		} else {
 			return err

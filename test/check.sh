@@ -47,6 +47,21 @@ it_fails_if_key_has_password() {
   grep "private keys with passphrases are not supported" $failed_output
 }
 
+it_can_decode_base64_private_key() {
+  local repo=$(init_repo)
+
+  set_version $repo 1.2.3
+
+  local key=$TMPDIR/key-tmp
+  local key_base64=$TMPDIR/key-base64
+  ssh-keygen -f $key -N ""
+  base64 $key > $key_base64
+
+  check_uri_with_base64_key $repo $key_base64 | jq -e "
+    . == [{number: $(echo 1.2.3 | jq -R .)}]
+  "
+}
+
 it_can_check_with_credentials() {
   local repo=$(init_repo)
 
@@ -121,6 +136,7 @@ run it_can_check_with_no_current_version
 run it_can_check_with_no_current_version_with_initial_set
 run it_can_check_with_current_version
 run it_fails_if_key_has_password
+run it_can_decode_base64_private_key
 run it_can_check_with_credentials
 run it_can_check_from_a_version
 run it_clears_netrc_even_after_errors

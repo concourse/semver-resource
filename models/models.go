@@ -61,13 +61,14 @@ type Source struct {
 	ServerSideEncryption string `json:"server_side_encryption"`
 	UseV2Signing         bool   `json:"use_v2_signing"`
 
-	URI        string `json:"uri"`
-	Branch     string `json:"branch"`
-	PrivateKey string `json:"private_key"`
-	Username   string `json:"username"`
-	Password   string `json:"password"`
-	File       string `json:"file"`
-	GitUser    string `json:"git_user"`
+	URI              string `json:"uri"`
+	Branch           string `json:"branch"`
+	PrivateKey       string `json:"private_key"`
+	PrivateKeyBase64 bool   `json:"private_key_base64"`
+	Username         string `json:"username"`
+	Password         string `json:"password"`
+	File             string `json:"file"`
+	GitUser          string `json:"git_user"`
 
 	OpenStack OpenStackOptions `json:"openstack"`
 

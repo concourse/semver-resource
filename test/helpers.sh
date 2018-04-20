@@ -172,3 +172,19 @@ put_uri_with_bump_and_initial() {
     }
   }" | ${resource_dir}/out "$2" | tee /dev/stderr
 }
+
+put_uri_with_bump_and_message() {
+  jq -n "{
+    source: {
+      driver: \"git\",
+      uri: $(echo $1 | jq -R .),
+      branch: \"master\",
+      file: \"some-file\",
+      commit_message: \"$(echo $5)\"
+    },
+    params: {
+      bump: $(echo $3 | jq -R .),
+      pre: $(echo $4 | jq -R .)
+    }
+  }" | ${resource_dir}/out "$2" | tee /dev/stderr
+}

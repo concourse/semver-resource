@@ -39,6 +39,8 @@ The `git` driver works by modifying a file in a repository with every bump. The
 
 * `depth`: *Optional.* If a positive integer is given, shallow clone the repository using the --depth option.
 
+* `commit_message`: *Optional.* If specified overides the default commit message with the one provided. The user can use %version% and %file% to get them replaced automatically with the correct values.
+
 ### `s3` Driver
 
 The `s3` driver works by modifying a file in an S3 compatible bucket.

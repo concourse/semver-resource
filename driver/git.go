@@ -29,14 +29,15 @@ func init() {
 type GitDriver struct {
 	InitialVersion semver.Version
 
-	URI        string
-	Branch     string
-	PrivateKey string
-	Username   string
-	Password   string
-	File       string
-	GitUser    string
-	Depth      string
+	URI           string
+	Branch        string
+	PrivateKey    string
+	Username      string
+	Password      string
+	File          string
+	GitUser       string
+	Depth         string
+	CommitMessage string
 }
 
 func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
@@ -308,8 +309,15 @@ func (driver *GitDriver) writeVersion(newVersion semver.Version) (bool, error) {
 	if err := gitAdd.Run(); err != nil {
 		return false, err
 	}
+	var commitMessage string
+	if driver.CommitMessage == "" {
+		commitMessage = "bump to "+newVersion.String()
+	} else {
+		commitMessage = strings.Replace(driver.CommitMessage, "%version%", newVersion.String(), -1)
+		commitMessage = strings.Replace(commitMessage, "%file%", driver.File, -1)
+	}
 
-	gitCommit := exec.Command("git", "commit", "-m", "bump to "+newVersion.String())
+	gitCommit := exec.Command("git", "commit", "-m", commitMessage)
 	gitCommit.Dir = gitRepoDir
 
 	commitOutput, err := gitCommit.CombinedOutput()

@@ -55,7 +55,7 @@ func NewSwiftDriver(source *models.Source) (Driver, error) {
 
 	_, err = containers.Get(swiftServiceClient, source.OpenStack.Container).ExtractMetadata()
 	if err != nil {
-		return nil, fmt.Errorf("Unable to get container by name '%s'", source.OpenStack.Container)
+		return nil, fmt.Errorf("Unable to get container by name '%s', inner error: %s", source.OpenStack.Container, err.Error())
 	}
 
 	initialVersion, err := semver.Parse(source.InitialVersion)

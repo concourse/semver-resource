@@ -11,7 +11,7 @@ bootstrapping, i.e. when there is not a version number present in the source.
 * `driver`: *Optional. Default `s3`.* The driver to use for tracking the
   version. Determines where the version is stored.
 
-There are three supported drivers, with their own sets of properties for
+There are four supported drivers, with their own sets of properties for
 configuring them.
 
 

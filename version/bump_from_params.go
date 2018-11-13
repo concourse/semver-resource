@@ -1,6 +1,6 @@
 package version
 
-func BumpFromParams(bumpStr string, preStr string) Bump {
+func BumpFromParams(bumpStr string, preStr string, buildStr string) Bump {
 	var semverBump Bump
 
 	switch bumpStr {
@@ -21,6 +21,10 @@ func BumpFromParams(bumpStr string, preStr string) Bump {
 
 	if preStr != "" {
 		bump = append(bump, PreBump{preStr})
+	}
+
+	if buildStr != "" {
+		bump = append(bump, BuildBump{buildStr})
 	}
 
 	return bump

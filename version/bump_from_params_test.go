@@ -16,6 +16,7 @@ var _ = Describe("BumpForParams", func() {
 
 		bumpParam string
 		preParam  string
+		buildParam  string
 	)
 
 	BeforeEach(func() {
@@ -27,10 +28,11 @@ var _ = Describe("BumpForParams", func() {
 
 		bumpParam = ""
 		preParam = ""
+		buildParam = ""
 	})
 
 	JustBeforeEach(func() {
-		version = BumpFromParams(bumpParam, preParam).Apply(version)
+		version = BumpFromParams(bumpParam, preParam, buildParam).Apply(version)
 	})
 
 	for bump, result := range map[string]string{
@@ -152,6 +154,37 @@ var _ = Describe("BumpForParams", func() {
 			"patch": "1.2.4",
 			"minor": "1.3.0",
 			"major": "2.0.0",
+		} {
+			bumpLocal := bump
+			resultLocal := result
+
+			Context(fmt.Sprintf("when bumping %s", bumpLocal), func() {
+				BeforeEach(func() {
+					bumpParam = bumpLocal
+				})
+
+				It("bumps to "+resultLocal, func() {
+					Expect(version.String()).To(Equal(resultLocal))
+				})
+			})
+		}
+	})
+
+	Context("when bumping the build metadata", func() {
+		BeforeEach(func() {
+			version.Build = []string{ "b1", "a12b3c4d"}
+			version.Pre = []semver.PRVersion{
+				{VersionStr: "rc"},
+				{VersionNum: 1, IsNum: true},
+			}
+		})
+
+		for bump, result := range map[string]string{
+			"":      "1.2.3-rc.1+b1.a12b3c4d",
+			"final": "1.2.3+b1.a12b3c4d",
+			"patch": "1.2.4+b1.a12b3c4d",
+			"minor": "1.3.0+b1.a12b3c4d",
+			"major": "2.0.0+b1.a12b3c4d",
 		} {
 			bumpLocal := bump
 			resultLocal := result

@@ -20,11 +20,6 @@ var v2signing = os.Getenv("SEMVER_TESTING_V2_SIGNING") == "true"
 var _ = BeforeSuite(func() {
 	var err error
 
-	Expect(accessKeyID).NotTo(BeEmpty(), "must specify $SEMVER_TESTING_ACCESS_KEY_ID")
-	Expect(secretAccessKey).NotTo(BeEmpty(), "must specify $SEMVER_TESTING_SECRET_ACCESS_KEY")
-	Expect(bucketName).NotTo(BeEmpty(), "must specify $SEMVER_TESTING_BUCKET")
-	Expect(regionName).NotTo(BeEmpty(), "must specify $SEMVER_TESTING_REGION")
-
 	if _, err = os.Stat("/opt/resource/in"); err == nil {
 		inPath = "/opt/resource/in"
 	} else {
@@ -34,6 +29,14 @@ var _ = BeforeSuite(func() {
 })
 
 var _ = BeforeEach(func() {
+	if accessKeyID == "" || secretAccessKey == "" {
+		Skip("no bucket configuration; skipping")
+	}
+
+	Expect(accessKeyID).NotTo(BeEmpty(), "must specify $SEMVER_TESTING_ACCESS_KEY_ID")
+	Expect(secretAccessKey).NotTo(BeEmpty(), "must specify $SEMVER_TESTING_SECRET_ACCESS_KEY")
+	Expect(bucketName).NotTo(BeEmpty(), "must specify $SEMVER_TESTING_BUCKET")
+	Expect(regionName).NotTo(BeEmpty(), "must specify $SEMVER_TESTING_REGION")
 })
 
 var _ = AfterSuite(func() {

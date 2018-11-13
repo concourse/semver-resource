@@ -201,10 +201,6 @@ func (driver *GitDriver) setUpAuth() error {
 }
 
 func (driver *GitDriver) setUpKey() error {
-	if isPrivateKeyEncrypted() {
-		return ErrEncryptedKey
-	}
-
 	_, err := os.Stat(privateKeyPath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -217,12 +213,16 @@ func (driver *GitDriver) setUpKey() error {
 		}
 	}
 
+	if isPrivateKeyEncrypted(privateKeyPath) {
+		return ErrEncryptedKey
+	}
+
 	return os.Setenv("GIT_SSH_COMMAND", "ssh -o StrictHostKeyChecking=no -i "+privateKeyPath)
 }
 
-func isPrivateKeyEncrypted() bool {
+func isPrivateKeyEncrypted(path string) bool {
 	passphrase := ``
-	cmd := exec.Command(`ssh-keygen`, `-y`, `-f`, privateKeyPath, `-P`, passphrase)
+	cmd := exec.Command(`ssh-keygen`, `-y`, `-f`, path, `-P`, passphrase)
 	err := cmd.Run()
 
 	return err != nil
@@ -319,7 +319,7 @@ func (driver *GitDriver) writeVersion(newVersion semver.Version) (bool, error) {
 	}
 	var commitMessage string
 	if driver.CommitMessage == "" {
-		commitMessage = "bump to "+newVersion.String()
+		commitMessage = "bump to " + newVersion.String()
 	} else {
 		commitMessage = strings.Replace(driver.CommitMessage, "%version%", newVersion.String(), -1)
 		commitMessage = strings.Replace(commitMessage, "%file%", driver.File, -1)

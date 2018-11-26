@@ -1,6 +1,10 @@
 package version
 
-func BumpFromParams(bumpStr string, preStr string, buildStr string) Bump {
+import (
+	"strings"
+)
+
+func BumpFromParams(bumpStr string, preStr string, build string) Bump {
 	var semverBump Bump
 
 	switch bumpStr {
@@ -23,8 +27,8 @@ func BumpFromParams(bumpStr string, preStr string, buildStr string) Bump {
 		bump = append(bump, PreBump{preStr})
 	}
 
-	if buildStr != "" {
-		bump = append(bump, BuildBump{buildStr})
+	if build != "" {
+		bump = append(bump, BuildBump{strings.Split(build, ".")})
 	}
 
 	return bump

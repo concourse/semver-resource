@@ -27,6 +27,7 @@ var _ = Describe("MultiBump", func() {
 			version.PatchBump{},
 			version.PreBump{"beta"},
 			version.PreBump{"beta"},
+			version.BuildBump{[]string{"b1", "a12b3c4d"}},
 		}
 	})
 
@@ -43,6 +44,7 @@ var _ = Describe("MultiBump", func() {
 				{VersionStr: "beta"},
 				{VersionNum: 2, IsNum: true},
 			},
+			Build: []string{"b1", "a12b3c4d"},
 		}))
 	})
 })

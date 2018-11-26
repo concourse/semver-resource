@@ -52,6 +52,7 @@ var _ = Describe("PreBump", func() {
 			})
 
 			It("does not mutate the input version", func() {
+				inputVersion.Build = []string{"b1", "a12b3c4d"}
 				Expect(inputVersion).To(Equal(semver.Version{
 					Major: 1,
 					Minor: 2,
@@ -60,6 +61,7 @@ var _ = Describe("PreBump", func() {
 						{VersionStr: "alpha"},
 						{VersionNum: 1, IsNum: true},
 					},
+					Build: []string{"b1", "a12b3c4d"},
 				}))
 			})
 		})

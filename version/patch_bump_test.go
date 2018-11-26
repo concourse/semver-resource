@@ -21,6 +21,7 @@ var _ = Describe("PatchBump", func() {
 				{VersionStr: "beta"},
 				{VersionNum: 1, IsNum: true},
 			},
+			Build: []string{"b1", "a12b3c4d"},
 		}
 
 		bump = version.PatchBump{}
@@ -30,11 +31,12 @@ var _ = Describe("PatchBump", func() {
 		outputVersion = bump.Apply(inputVersion)
 	})
 
-	It("bumps patch and zeroes out the subsequent segments", func() {
+	It("bumps patch and zeroes out the subsequent segments while keeping build metadata", func() {
 		Expect(outputVersion).To(Equal(semver.Version{
 			Major: 1,
 			Minor: 2,
 			Patch: 4,
+			Build: []string{"b1", "a12b3c4d"},
 		}))
 	})
 })

@@ -172,7 +172,7 @@ var _ = Describe("BumpForParams", func() {
 
 	Context("when bumping the build metadata", func() {
 		BeforeEach(func() {
-			version.Build = []string{ "b1", "a12b3c4d"}
+			version.Build = []string{"b1", "a12b3c4d"}
 			version.Pre = []semver.PRVersion{
 				{VersionStr: "rc"},
 				{VersionNum: 1, IsNum: true},

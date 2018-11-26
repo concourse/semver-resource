@@ -7,9 +7,9 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("MinorBump", func() {
+var _ = Describe("BuildBump", func() {
 	var inputVersion semver.Version
-	var bump version.Bump
+	var bump version.BuildBump
 	var outputVersion semver.Version
 
 	BeforeEach(func() {
@@ -17,25 +17,20 @@ var _ = Describe("MinorBump", func() {
 			Major: 1,
 			Minor: 2,
 			Patch: 3,
-			Pre: []semver.PRVersion{
-				{VersionStr: "beta"},
-				{VersionNum: 1, IsNum: true},
-			},
-			Build: []string{"b1", "a12b3c4d"},
 		}
 
-		bump = version.MinorBump{}
+		bump = version.BuildBump{[]string{"b1","a12b3c4d"}}
 	})
 
 	JustBeforeEach(func() {
 		outputVersion = bump.Apply(inputVersion)
 	})
 
-	It("bumps minor and zeroes out the subsequent segments while keeping build metadata", func() {
+	It("appends the build metadata to the end of the version", func() {
 		Expect(outputVersion).To(Equal(semver.Version{
 			Major: 1,
-			Minor: 3,
-			Patch: 0,
+			Minor: 2,
+			Patch: 3,
 			Build: []string{"b1", "a12b3c4d"},
 		}))
 	})

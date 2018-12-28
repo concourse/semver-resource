@@ -1,3 +1,4 @@
 built-*
 assets
 .idea
+.DS_Store

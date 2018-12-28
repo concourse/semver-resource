@@ -3,6 +3,8 @@ package driver
 import (
 	"crypto/tls"
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds"
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"net/http"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -37,17 +39,28 @@ func FromSource(source models.Source) (Driver, error) {
 
 	switch source.Driver {
 	case models.DriverUnspecified, models.DriverS3:
-		var creds *credentials.Credentials
-
-		if source.AccessKeyID == "" && source.SecretAccessKey == "" {
-			creds = credentials.AnonymousCredentials
-		} else {
-			creds = credentials.NewStaticCredentials(source.AccessKeyID, source.SecretAccessKey, "")
-		}
 
 		regionName := source.RegionName
 		if len(regionName) == 0 {
 			regionName = "us-east-1"
+		}
+
+		session := session.Must(session.NewSession(&aws.Config{
+			Region: aws.String(regionName),
+		}))
+
+		var creds *credentials.Credentials
+		var credError error
+		if source.AccessKeyID == "" && source.SecretAccessKey == "" {
+			chain := credentials.NewChainCredentials(
+				[]credentials.Provider{
+					&credentials.EnvProvider{},
+					&ec2rolecreds.EC2RoleProvider{
+						Client: ec2metadata.New(session),
+					},
+				})
+		} else {
+			creds = credentials.NewStaticCredentials(source.AccessKeyID, source.SecretAccessKey, "")
 		}
 
 		var httpClient *http.Client

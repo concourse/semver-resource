@@ -50,9 +50,8 @@ func FromSource(source models.Source) (Driver, error) {
 		}))
 
 		var creds *credentials.Credentials
-		var credError error
 		if source.AccessKeyID == "" && source.SecretAccessKey == "" {
-			chain := credentials.NewChainCredentials(
+			creds = credentials.NewChainCredentials(
 				[]credentials.Provider{
 					&credentials.EnvProvider{},
 					&ec2rolecreds.EC2RoleProvider{

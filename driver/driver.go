@@ -45,7 +45,7 @@ func FromSource(source models.Source) (Driver, error) {
 			regionName = "us-east-1"
 		}
 
-		session := session.Must(session.NewSession(&aws.Config{
+		sess := session.Must(session.NewSession(&aws.Config{
 			Region: aws.String(regionName),
 		}))
 
@@ -56,7 +56,7 @@ func FromSource(source models.Source) (Driver, error) {
 				[]credentials.Provider{
 					&credentials.EnvProvider{},
 					&ec2rolecreds.EC2RoleProvider{
-						Client: ec2metadata.New(session),
+						Client: ec2metadata.New(sess),
 					},
 				})
 		} else {

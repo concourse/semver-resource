@@ -3,8 +3,7 @@ package driver
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds"
-	"github.com/aws/aws-sdk-go/aws/ec2metadata"
+	"github.com/aws/aws-sdk-go/aws/defaults"
 	"net/http"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -45,19 +44,10 @@ func FromSource(source models.Source) (Driver, error) {
 			regionName = "us-east-1"
 		}
 
-		sess := session.Must(session.NewSession(&aws.Config{
-			Region: aws.String(regionName),
-		}))
-
 		var creds *credentials.Credentials
 		if source.AccessKeyID == "" && source.SecretAccessKey == "" {
-			creds = credentials.NewChainCredentials(
-				[]credentials.Provider{
-					&credentials.EnvProvider{},
-					&ec2rolecreds.EC2RoleProvider{
-						Client: ec2metadata.New(sess),
-					},
-				})
+			// If nothing is provided use the default cred chain.
+			creds = defaults.Get().Config.Credentials
 		} else {
 			creds = credentials.NewStaticCredentials(source.AccessKeyID, source.SecretAccessKey, "")
 		}
@@ -91,8 +81,7 @@ func FromSource(source models.Source) (Driver, error) {
 		}
 
 		return &S3Driver{
-			InitialVersion: initialVersion,
-
+			InitialVersion:       initialVersion,
 			Svc:                  svc,
 			BucketName:           source.Bucket,
 			Key:                  source.Key,
@@ -102,15 +91,14 @@ func FromSource(source models.Source) (Driver, error) {
 	case models.DriverGit:
 		return &GitDriver{
 			InitialVersion: initialVersion,
-
-			URI:           source.URI,
-			Branch:        source.Branch,
-			PrivateKey:    source.PrivateKey,
-			Username:      source.Username,
-			Password:      source.Password,
-			File:          source.File,
-			GitUser:       source.GitUser,
-			CommitMessage: source.CommitMessage,
+			URI:            source.URI,
+			Branch:         source.Branch,
+			PrivateKey:     source.PrivateKey,
+			Username:       source.Username,
+			Password:       source.Password,
+			File:           source.File,
+			GitUser:        source.GitUser,
+			CommitMessage:  source.CommitMessage,
 		}, nil
 
 	case models.DriverSwift:

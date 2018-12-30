@@ -69,6 +69,8 @@ func FromSource(source models.Source) (Driver, error) {
 			// If nothing is provided use the default cred chain.
 			creds := credentials.NewStaticCredentials(source.AccessKeyID, source.SecretAccessKey, "")
 			awsConfig.Credentials = creds
+		} else {
+			println("Using default credential chain for authentication.")
 		}
 
 		svc := s3.New(sess, awsConfig)

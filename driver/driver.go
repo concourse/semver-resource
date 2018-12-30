@@ -3,10 +3,10 @@ package driver
 import (
 	"crypto/tls"
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"net/http"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/blang/semver"
@@ -43,14 +43,6 @@ func FromSource(source models.Source) (Driver, error) {
 			regionName = "us-east-1"
 		}
 
-		var creds *credentials.Credentials
-		if source.AccessKeyID == "" && source.SecretAccessKey == "" {
-			// If nothing is provided use the default cred chain.
-			creds = nil
-		} else {
-			creds = credentials.NewStaticCredentials(source.AccessKeyID, source.SecretAccessKey, "")
-		}
-
 		var httpClient *http.Client
 		if source.SkipSSLVerification {
 			httpClient = &http.Client{Transport: &http.Transport{
@@ -62,7 +54,6 @@ func FromSource(source models.Source) (Driver, error) {
 
 		awsConfig := &aws.Config{
 			Region:           aws.String(regionName),
-			Credentials:      creds,
 			S3ForcePathStyle: aws.Bool(true),
 			MaxRetries:       aws.Int(maxRetries),
 			DisableSSL:       aws.Bool(source.DisableSSL),
@@ -73,7 +64,14 @@ func FromSource(source models.Source) (Driver, error) {
 			awsConfig.Endpoint = aws.String(source.Endpoint)
 		}
 
-		svc := s3.New(session.New(awsConfig))
+		sess := session.Must(session.NewSession())
+		if source.AccessKeyID != "" && source.SecretAccessKey != "" {
+			// If nothing is provided use the default cred chain.
+			creds := credentials.NewStaticCredentials(source.AccessKeyID, source.SecretAccessKey, "")
+			awsConfig.Credentials = creds
+		}
+
+		svc := s3.New(sess, awsConfig)
 
 		if source.UseV2Signing {
 			setv2Handlers(svc)

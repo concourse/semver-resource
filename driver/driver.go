@@ -3,8 +3,6 @@ package driver
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws/defaults"
-	"log"
 	"net/http"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -48,8 +46,7 @@ func FromSource(source models.Source) (Driver, error) {
 		var creds *credentials.Credentials
 		if source.AccessKeyID == "" && source.SecretAccessKey == "" {
 			// If nothing is provided use the default cred chain.
-			creds = defaults.Get().Config.Credentials
-			log.Print(fmt.Sprintf("Credentials %v", creds))
+			creds = nil
 		} else {
 			creds = credentials.NewStaticCredentials(source.AccessKeyID, source.SecretAccessKey, "")
 		}

@@ -52,7 +52,13 @@ func FromSource(source models.Source) (Driver, error) {
 			httpClient = http.DefaultClient
 		}
 
-		awsConfig := aws.NewConfig().WithLogLevel(aws.LogDebugWithHTTPBody).WithRegion(regionName).WithMaxRetries(maxRetries).WithDisableSSL(source.DisableSSL).WithHTTPClient(httpClient).WithS3ForcePathStyle(true)
+		awsConfig := &aws.Config{
+			Region:           aws.String(regionName),
+			S3ForcePathStyle: aws.Bool(true),
+			MaxRetries:       aws.Int(maxRetries),
+			DisableSSL:       aws.Bool(source.DisableSSL),
+			HTTPClient:       httpClient,
+		}
 
 		if len(source.Endpoint) != 0 {
 			awsConfig.Endpoint = aws.String(source.Endpoint)

@@ -24,6 +24,8 @@ The `git` driver works by modifying a file in a repository with every bump. The
 
 * `branch`: *Required.* The branch the file lives on.
 
+* `remote_ref`: *Optional.* The name of an alternative ref to find the specified branch.
+
 * `file`: *Required.* The name of the file in the repository.
 
 * `private_key`: *Optional.* The SSH private key to use when pulling from/pushing to to the repository.
@@ -217,7 +219,7 @@ be one of:
   type, (e.g. `alpha` vs. `beta`), the type is switched and the prerelease
   version is reset to `1`. If the version is *not* already a pre-release, then
   `pre` is added, starting at `1`.
-  
+
   The value of `pre` can be anything you like; the value will be `pre`-pended (_hah_) to a numeric value. For example, `pre: build` will result in a semver of `x.y.z-build.<number>`, `pre: alpha` becomes `x.y.z-alpha.<number>`, and `pre: my-preferred-naming-convention` becomes `x.y.z-my-preferred-naming-convention.<number>`
 
 ### Running the tests

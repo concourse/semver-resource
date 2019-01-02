@@ -38,6 +38,7 @@ type GitDriver struct {
 	GitUser       string
 	Depth         string
 	CommitMessage string
+	RemoteRef     string
 }
 
 func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
@@ -136,34 +137,88 @@ func (driver *GitDriver) Check(cursor *semver.Version) ([]semver.Version, error)
 	return []semver.Version{}, nil
 }
 
+func (driver *GitDriver) localBranch() string {
+	if len(driver.RemoteRef) > 0 {
+		return driver.RemoteRef+"-"+driver.Branch
+	}
+	return driver.Branch
+}
+
+func (driver *GitDriver) fetchRef() string {
+	if len(driver.RemoteRef) > 0 {
+		return "refs/"+driver.RemoteRef+"/"+driver.Branch
+	}
+	return driver.Branch
+}
+
+func runRepoCommand(name string, args ...string) (output []byte, err error) {
+	command := exec.Command(name, args...)
+	command.Dir = gitRepoDir
+	return command.CombinedOutput()
+}
+
 func (driver *GitDriver) setUpRepo() error {
 	_, err := os.Stat(gitRepoDir)
 	if err != nil {
-		gitClone := exec.Command("git", "clone", driver.URI, "--branch", driver.Branch)
+		gitClone := exec.Command("git", "clone", driver.URI)
+		if len(driver.RemoteRef) == 0 {
+			gitClone.Args = append(gitClone.Args, "--branch", driver.Branch)
+		} else {
+			gitClone.Args = append(gitClone.Args, "-c", "remote.origin.fetch=+"+driver.fetchRef()+":"+driver.localBranch())
+		}
 		if len(driver.Depth) > 0 {
 			gitClone.Args = append(gitClone.Args, "--depth", driver.Depth)
 		}
 		gitClone.Args = append(gitClone.Args, "--single-branch", gitRepoDir)
-		gitClone.Stdout = os.Stderr
-		gitClone.Stderr = os.Stderr
-		if err := gitClone.Run(); err != nil {
+		// Perform the clone
+		if output, err := gitClone.CombinedOutput(); err != nil {
+			fmt.Fprintln(os.Stderr, fmt.Sprint(err) + ": " + string(output))
 			return err
 		}
+
+		// Remote refs can't be fetched with clone, so it needs done separately
+		if len(driver.RemoteRef) > 0 {
+			if output, err := runRepoCommand("git", "fetch", "-a", "--all"); err != nil {
+				// Ref might not exist yet as it's possible for us to init a new version
+				if strings.Contains(string(output), "Couldn't find remote ref "+driver.fetchRef()) == false {
+					fmt.Fprintln(os.Stderr, fmt.Sprint(err) + ": " + string(output))
+					return err
+				}
+				if output, err := runRepoCommand("git", "branch", driver.localBranch()); err != nil {
+					fmt.Fprintln(os.Stderr, fmt.Sprint(err) + ": " + string(output))
+					return err
+				}
+			}
+			if output, err := runRepoCommand("git", "checkout", driver.localBranch()); err != nil {
+				fmt.Fprintln(os.Stderr, fmt.Sprint(err) + ": " + string(output))
+				return err
+			}
+		}
 	} else {
-		gitFetch := exec.Command("git", "fetch", "origin", driver.Branch)
-		gitFetch.Dir = gitRepoDir
-		gitFetch.Stdout = os.Stderr
-		gitFetch.Stderr = os.Stderr
-		if err := gitFetch.Run(); err != nil {
+		if len(driver.RemoteRef) > 0 {
+			// We can't be on the branch of the remote ref when we fetch it
+			if output, err := runRepoCommand("git", "checkout", "master"); err != nil {
+				fmt.Fprintln(os.Stderr, fmt.Sprint(err) + ": " + string(output))
+				return err
+			}
+		}
+		if output, err := runRepoCommand("git", "fetch", "origin", driver.fetchRef()); err != nil {
+			fmt.Fprintln(os.Stderr, fmt.Sprint(err) + ": " + string(output))
+			return err
+		}
+		// Ensure we're on the branch
+		if output, err := runRepoCommand("git", "checkout", driver.localBranch()); err != nil {
+			fmt.Fprintln(os.Stderr, fmt.Sprint(err) + ": " + string(output))
 			return err
 		}
 	}
 
-	gitCheckout := exec.Command("git", "reset", "--hard", "origin/"+driver.Branch)
-	gitCheckout.Dir = gitRepoDir
-	gitCheckout.Stdout = os.Stderr
-	gitCheckout.Stderr = os.Stderr
-	if err := gitCheckout.Run(); err != nil {
+	resetRef := "origin/"+driver.Branch
+	if len(driver.RemoteRef) > 0 {
+		resetRef = "refs/heads/"+driver.localBranch()
+	}
+	if output, err := runRepoCommand("git", "reset", "--hard", resetRef); err != nil {
+		fmt.Fprintln(os.Stderr, fmt.Sprint(err) + ": " + string(output))
 		return err
 	}
 
@@ -339,7 +394,7 @@ func (driver *GitDriver) writeVersion(newVersion semver.Version) (bool, error) {
 		return false, err
 	}
 
-	gitPush := exec.Command("git", "push", "origin", "HEAD:"+driver.Branch)
+	gitPush := exec.Command("git", "push", "origin", "HEAD:"+driver.fetchRef())
 	gitPush.Dir = gitRepoDir
 
 	pushOutput, err := gitPush.CombinedOutput()

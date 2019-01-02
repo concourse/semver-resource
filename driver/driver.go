@@ -99,6 +99,7 @@ func FromSource(source models.Source) (Driver, error) {
 			File:          source.File,
 			GitUser:       source.GitUser,
 			CommitMessage: source.CommitMessage,
+			RemoteRef:     source.RemoteRef,
 		}, nil
 
 	case models.DriverSwift:

@@ -33,6 +33,19 @@ init_repo() {
   )
 }
 
+setup_ref() {
+  local repo=$1
+  local ref=$2
+  local branch=$3
+  local version=$4
+
+  git -C $repo checkout --orphan $ref-$branch
+  set_version_in_file_on_branch $repo some-file $ref-$branch $version
+  git -C $repo checkout master
+  mkdir $repo/.git/refs/${ref}
+  cp $repo/.git/refs/heads/${ref}-$branch $repo/.git/refs/${ref}/$branch
+}
+
 set_version_in_file_on_branch() {
   local repo=$1
   local file=$2
@@ -99,6 +112,17 @@ check_uri_with_key() {
   }" | ${resource_dir}/check | tee /dev/stderr
 }
 
+check_uri_with_ref() {
+  jq -n "{
+    source: {
+      driver: \"git\",
+      uri: $(echo $1 | jq -R .),
+      branch: \"master\",
+      file: \"some-file\",
+      remote_ref: \"myref\"
+    }
+  }" | ${resource_dir}/check | tee /dev/stderr
+}
 
 check_uri_with_credentials() {
   jq -n "{
@@ -142,6 +166,21 @@ put_uri() {
   }" | ${resource_dir}/out "$2" | tee /dev/stderr
 }
 
+put_uri_with_ref() {
+  jq -n "{
+    source: {
+      driver: \"git\",
+      uri: $(echo $1 | jq -R .),
+      branch: \"master\",
+      file: \"some-file\",
+      remote_ref: \"myref\"
+    },
+    params: {
+      file: $(echo $3 | jq -R .)
+    }
+  }" | ${resource_dir}/out "$2" | tee /dev/stderr
+}
+
 put_uri_with_bump() {
   jq -n "{
     source: {
@@ -149,6 +188,22 @@ put_uri_with_bump() {
       uri: $(echo $1 | jq -R .),
       branch: \"master\",
       file: \"some-file\"
+    },
+    params: {
+      bump: $(echo $3 | jq -R .),
+      pre: $(echo $4 | jq -R .)
+    }
+  }" | ${resource_dir}/out "$2" | tee /dev/stderr
+}
+
+put_uri_with_bump_with_ref() {
+  jq -n "{
+    source: {
+      driver: \"git\",
+      uri: $(echo $1 | jq -R .),
+      branch: \"master\",
+      file: \"some-file\",
+      remote_ref: \"myref\"
     },
     params: {
       bump: $(echo $3 | jq -R .),

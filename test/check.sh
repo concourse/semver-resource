@@ -117,10 +117,21 @@ it_can_check_from_a_version() {
   "
 }
 
+it_can_use_a_ref() {
+  local repo=$(init_repo)
+
+  setup_ref $repo myref master 1.2.3
+
+  check_uri_with_ref $repo | jq -e "
+    . == [{number: $(echo 1.2.3 | jq -R .)}]
+  "
+}
+
 run it_can_check_with_no_current_version
 run it_can_check_with_no_current_version_with_initial_set
 run it_can_check_with_current_version
 run it_fails_if_key_has_password
 run it_can_check_with_credentials
 run it_can_check_from_a_version
+run it_can_use_a_ref
 run it_clears_netrc_even_after_errors

@@ -225,7 +225,7 @@ func isPrivateKeyEncrypted(path string) bool {
 	cmd := exec.Command(`ssh-keygen`, `-y`, `-f`, path, `-P`, passphrase)
 	err := cmd.Run()
 
-	println("Error attempting to access private key: %v", err.Error())
+	println("Error attempting to access private key. ", err.Error())
 
 	return err != nil
 }

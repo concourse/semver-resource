@@ -157,6 +157,37 @@ put_uri_with_bump() {
   }" | ${resource_dir}/out "$2" | tee /dev/stderr
 }
 
+put_uri_with_bump_read_only() {
+  jq -n "{
+    source: {
+      driver: \"git\",
+      uri: $(echo $1 | jq -R .),
+      branch: \"master\",
+      file: \"some-file\",
+      driver_read_only: true
+    },
+    params: {
+      bump: $(echo $3 | jq -R .),
+      pre: $(echo $4 | jq -R .)
+    }
+  }" | ${resource_dir}/out "$2" | tee /dev/stderr
+}
+
+put_uri_with_bump_with_files() {
+  jq -n "{
+    source: {
+      driver: \"git\",
+      uri: $(echo $1 | jq -R .),
+      branch: \"master\",
+      file: \"some-file\"
+    },
+    params: {
+      bump_file: $(echo $5 | jq -R .),
+      pre_file: $(echo $6 | jq -R .)
+    }
+  }" | ${resource_dir}/out "$2" | tee /dev/stderr
+}
+
 put_uri_with_bump_and_initial() {
   jq -n "{
     source: {

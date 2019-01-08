@@ -28,6 +28,7 @@ func init() {
 
 type GitDriver struct {
 	InitialVersion semver.Version
+	DriverReadOnly bool
 
 	URI           string
 	Branch        string
@@ -70,8 +71,12 @@ func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
 
 		newVersion = bump.Apply(currentVersion)
 
-		wrote, err := driver.writeVersion(newVersion)
-		if wrote {
+		if driver.DriverReadOnly == false {
+			wrote, _ := driver.writeVersion(newVersion)
+			if wrote {
+				break
+			}
+		} else {
 			break
 		}
 	}

@@ -32,10 +32,14 @@ type OutResponse struct {
 }
 
 type OutParams struct {
-	File string `json:"file"`
+	File     string `json:"file"`
+	BumpFile string `json:"bump_file"`
+	PreFile  string `json:"pre_file"`
 
 	Bump string `json:"bump"`
 	Pre  string `json:"pre"`
+
+	DriverReadOnly *bool `json:"driver_read_only"`
 }
 
 type CheckRequest struct {
@@ -46,7 +50,8 @@ type CheckRequest struct {
 type CheckResponse []Version
 
 type Source struct {
-	Driver Driver `json:"driver"`
+	Driver         Driver `json:"driver"`
+	DriverReadOnly bool   `json:"driver_read_only"`
 
 	InitialVersion string `json:"initial_version"`
 

@@ -35,6 +35,8 @@ func FromSource(source models.Source) (Driver, error) {
 		initialVersion = semver.Version{Major: 0, Minor: 0, Patch: 0}
 	}
 
+	driverReadOnly := source.DriverReadOnly
+
 	switch source.Driver {
 	case models.DriverUnspecified, models.DriverS3:
 		var creds *credentials.Credentials
@@ -80,6 +82,7 @@ func FromSource(source models.Source) (Driver, error) {
 
 		return &S3Driver{
 			InitialVersion: initialVersion,
+			DriverReadOnly: driverReadOnly,
 
 			Svc:                  svc,
 			BucketName:           source.Bucket,
@@ -90,6 +93,7 @@ func FromSource(source models.Source) (Driver, error) {
 	case models.DriverGit:
 		return &GitDriver{
 			InitialVersion: initialVersion,
+			DriverReadOnly: driverReadOnly,
 
 			URI:           source.URI,
 			Branch:        source.Branch,
@@ -111,6 +115,7 @@ func FromSource(source models.Source) (Driver, error) {
 
 		return &GCSDriver{
 			InitialVersion: initialVersion,
+			DriverReadOnly: driverReadOnly,
 
 			Servicer:   servicer,
 			BucketName: source.Bucket,

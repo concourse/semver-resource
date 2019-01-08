@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -47,6 +48,8 @@ var _ = Describe("Out", func() {
 
 		var svc *s3.S3
 
+		var tmpfile *os.File
+
 		BeforeEach(func() {
 			guid, err := uuid.NewV4()
 			Expect(err).NotTo(HaveOccurred())
@@ -85,6 +88,10 @@ var _ = Describe("Out", func() {
 				Key:    aws.String(key),
 			})
 			Expect(err).NotTo(HaveOccurred())
+
+			if tmpfile != nil {
+				os.Remove(tmpfile.Name())
+			}
 		})
 
 		JustBeforeEach(func() {
@@ -150,6 +157,67 @@ var _ = Describe("Out", func() {
 			})
 		})
 
+		Context("when a valid version is in the file, read only", func() {
+			BeforeEach(func() {
+				err := ioutil.WriteFile(filepath.Join(source, "number"), []byte("1.2.3"), 0644)
+				Expect(err).NotTo(HaveOccurred())
+				trueValue := true
+				truePointer := &trueValue
+				request.Params.DriverReadOnly = truePointer
+				request.Params.File = "number"
+			})
+
+			It("reports the version as the resource's version", func() {
+				Expect(response.Version.Number).To(Equal("1.2.3"))
+			})
+
+			It("saves the contents of the file in the configured bucket", func() {
+				Expect(getVersion()).To(Equal("1.2.3"))
+			})
+		})
+
+		Context("when bumping the version from bump file", func() {
+			BeforeEach(func() {
+				putVersion("1.2.3")
+			})
+
+			for bump, result := range map[string]string{
+				"final": "1.2.3",
+				"patch": "1.2.4",
+				"minor": "1.3.0",
+				"major": "2.0.0",
+			} {
+				bumpLocal := bump
+				resultLocal := result
+
+				Context(fmt.Sprintf("when bumping %s", bumpLocal), func() {
+					BeforeEach(func() {
+						content := []byte(bumpLocal)
+						tmpfile, err := ioutil.TempFile("", "prefile")
+						if err != nil {
+							log.Fatal(err)
+						}
+						if _, err := tmpfile.Write(content); err != nil {
+							log.Fatal(err)
+						}
+						if err := tmpfile.Close(); err != nil {
+							log.Fatal(err)
+						}
+
+						request.Params.BumpFile = tmpfile.Name()
+					})
+
+					It("reports the bumped version as the version", func() {
+						Expect(response.Version.Number).To(Equal(resultLocal))
+					})
+
+					It("saves the contents of the file in the configured bucket", func() {
+						Expect(getVersion()).To(Equal(resultLocal))
+					})
+				})
+			}
+		})
+
 		Context("when bumping the version", func() {
 			BeforeEach(func() {
 				putVersion("1.2.3")
@@ -178,6 +246,34 @@ var _ = Describe("Out", func() {
 					})
 				})
 			}
+		})
+
+		Context("when bumping the version to a prerelease from file", func() {
+			BeforeEach(func() {
+				content := []byte("alpha")
+				tmpfile, err := ioutil.TempFile("", "prefile")
+				if err != nil {
+					log.Fatal(err)
+				}
+				if _, err := tmpfile.Write(content); err != nil {
+					log.Fatal(err)
+				}
+				if err := tmpfile.Close(); err != nil {
+					log.Fatal(err)
+				}
+
+				request.Params.PreFile = tmpfile.Name()
+			})
+
+			Context("when the version is not a prerelease", func() {
+				BeforeEach(func() {
+					putVersion("1.2.3")
+				})
+
+				It("reports the bumped version as the version", func() {
+					Expect(response.Version.Number).To(Equal("1.2.3-alpha.1"))
+				})
+			})
 		})
 
 		Context("when bumping the version to a prerelease", func() {

@@ -16,6 +16,7 @@ import (
 
 type GCSDriver struct {
 	InitialVersion semver.Version
+	DriverReadOnly bool
 
 	Servicer   IOServicer
 	BucketName string
@@ -34,10 +35,12 @@ func (d *GCSDriver) Bump(b version.Bump) (semver.Version, error) {
 	}
 
 	newVersion := b.Apply(versions[0])
-	err = d.Set(newVersion)
+	if d.DriverReadOnly == false {
+		err = d.Set(newVersion)
 
-	if err != nil {
-		return semver.Version{}, err
+		if err != nil {
+			return semver.Version{}, err
+		}
 	}
 	return newVersion, nil
 }

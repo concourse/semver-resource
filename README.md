@@ -11,6 +11,13 @@ bootstrapping, i.e. when there is not a version number present in the source.
 * `driver`: *Optional. Default `s3`.* The driver to use for tracking the
   version. Determines where the version is stored.
 
+* `driver_read_only`: *Optional. Default `false`.* Prevents driver from updating
+  defined backing source. This is useful for so that this resource can take input
+  files in a `put` (see `bump_file` and `pre_file`) and produce output files, but
+  not actually permanently bump the version. `driver_read_only` can also be defined
+  as a param to a `put` to override this setting on the resource `source`
+  configuration.
+
 There are four supported drivers, with their own sets of properties for
 configuring them.
 
@@ -187,6 +194,9 @@ One of the following must be specified:
 
 * `bump` and `pre`: *Optional.* See [Version Bumping
   Semantics](#version-bumping-semantics).
+* `bump_file` and `pre_file`: *Optional.* Files containing strings
+  to use for `bump` or `pre`. Specifying either of these will
+  will take precedence over `bump` and `pre` params.
 
 When `bump` and/or `pre` are used, the version bump will be applied atomically,
 if the driver supports it. That is, if we pull down version `N`, and bump to
@@ -217,7 +227,7 @@ be one of:
   type, (e.g. `alpha` vs. `beta`), the type is switched and the prerelease
   version is reset to `1`. If the version is *not* already a pre-release, then
   `pre` is added, starting at `1`.
-  
+
   The value of `pre` can be anything you like; the value will be `pre`-pended (_hah_) to a numeric value. For example, `pre: build` will result in a semver of `x.y.z-build.<number>`, `pre: alpha` becomes `x.y.z-alpha.<number>`, and `pre: my-preferred-naming-convention` becomes `x.y.z-my-preferred-naming-convention.<number>`
 
 ### Running the tests

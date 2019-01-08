@@ -17,6 +17,7 @@ type SwiftDriver struct {
 	Container          string
 	ItemName           string
 	InitialVersion     semver.Version
+	DriverReadOnly     bool
 	swiftServiceClient *gophercloud.ServiceClient
 }
 
@@ -115,9 +116,11 @@ func (driver *SwiftDriver) Bump(bump version.Bump) (semver.Version, error) {
 	}
 
 	newVersion := bump.Apply(currentVersion)
-	err = driver.Set(newVersion)
-	if err != nil {
-		return semver.Version{}, err
+	if driver.DriverReadOnly == false {
+		err = driver.Set(newVersion)
+		if err != nil {
+			return semver.Version{}, err
+		}
 	}
 
 	return newVersion, nil

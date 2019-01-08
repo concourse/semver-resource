@@ -20,6 +20,7 @@ type Servicer interface {
 
 type S3Driver struct {
 	InitialVersion semver.Version
+	DriverReadOnly bool
 
 	Svc                  Servicer
 	BucketName           string
@@ -54,9 +55,11 @@ func (driver *S3Driver) Bump(bump version.Bump) (semver.Version, error) {
 
 	newVersion := bump.Apply(currentVersion)
 
-	err = driver.Set(newVersion)
-	if err != nil {
-		return semver.Version{}, err
+	if driver.DriverReadOnly == false {
+		err = driver.Set(newVersion)
+		if err != nil {
+			return semver.Version{}, err
+		}
 	}
 
 	return newVersion, nil

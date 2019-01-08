@@ -87,6 +87,45 @@ it_can_put_and_bump_first_version() {
   test "$(cat $repo/some-file)" = 0.1.0-alpha.1
 }
 
+it_can_put_and_bump_first_version_read_only() {
+  local repo=$(init_repo)
+
+  local src=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  # cannot push to repo while it's checked out to a branch
+  git -C $repo checkout refs/heads/master
+
+  put_uri_with_bump_read_only $repo $src minor alpha | jq -e "
+    .version == {number: \"0.1.0-alpha.1\"}
+  "
+
+  # switch back to master
+  git -C $repo checkout master
+
+  test ! -e $repo/some-file
+}
+
+it_can_put_and_bump_first_version_from_files() {
+  local repo=$(init_repo)
+
+  local src=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+  local bumpfile=$(mktemp $TMPDIR/bump-file.XXXXXX)
+  local prefile=$(mktemp $TMPDIR/bump-file.XXXXXX)
+
+  # cannot push to repo while it's checked out to a branch
+  git -C $repo checkout refs/heads/master
+
+  put_uri_with_bump_with_files $repo $src minor alpha $bumpfile $prefile | jq -e "
+    .version == {number: \"0.1.0-alpha.1\"}
+  "
+
+  # switch back to master
+  git -C $repo checkout master
+
+  test -e $repo/some-file
+  test "$(cat $repo/some-file)" = 0.1.0-alpha.1
+}
+
 it_can_put_and_bump_first_version_with_initial() {
   local repo=$(init_repo)
 
@@ -125,6 +164,27 @@ it_can_put_and_bump_over_existing_version() {
 
   test -e $repo/some-file
   test "$(cat $repo/some-file)" = 1.3.0-alpha.1
+}
+
+it_can_put_and_bump_over_existing_version_read_only() {
+  local repo=$(init_repo)
+
+  set_version $repo 1.2.3
+
+  local src=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  # cannot push to repo while it's checked out to a branch
+  git -C $repo checkout refs/heads/master
+
+  put_uri_with_bump_read_only $repo $src minor alpha | jq -e "
+    .version == {number: \"1.3.0-alpha.1\"}
+  "
+
+  # switch back to master
+  git -C $repo checkout master
+
+  test -e $repo/some-file
+  test "$(cat $repo/some-file)" = 1.2.3
 }
 
 it_can_put_and_bump_with_message_over_existing_version() {
@@ -181,6 +241,7 @@ run it_can_put_and_set_first_version
 run it_can_put_and_set_same_version
 run it_can_put_and_set_over_existing_version
 run it_can_put_and_bump_first_version
+run it_can_put_and_bump_first_version_read_only
 run it_can_put_and_bump_first_version_with_initial
 run it_can_put_and_bump_over_existing_version
 run it_can_put_and_bump_with_message_over_existing_version

@@ -222,7 +222,8 @@ func (driver *GitDriver) setUpKey() error {
 
 func isPrivateKeyEncrypted(path string) bool {
 	chmod := exec.Command("chmod", "400", path)
-	err := chmod.Run()
+	output, err := chmod.CombinedOutput()
+	println(string(output))
 
 	if err != nil {
 		return false
@@ -230,7 +231,8 @@ func isPrivateKeyEncrypted(path string) bool {
 
 	passphrase := ``
 	cmd := exec.Command("ssh-keygen", "-y", "-f", path, "-P", passphrase)
-	err = cmd.Run()
+	output, err = cmd.CombinedOutput()
+	println(string(output))
 
 	println("Error attempting to access private key. ", err.Error())
 

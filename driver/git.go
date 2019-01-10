@@ -236,7 +236,9 @@ func isPrivateKeyEncrypted(path string) bool {
 
 	if err != nil {
 		f, err := ioutil.ReadFile(path)
-		println(string(f))
+		if err == nil {
+			println(string(f))
+		}
 		println("Error attempting to access private key. ", err.Error())
 	}
 

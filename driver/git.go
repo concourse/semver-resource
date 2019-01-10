@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/mail"
 	"os"
 	"os/exec"
@@ -235,10 +236,6 @@ func isPrivateKeyEncrypted(path string) bool {
 	println(string(output))
 
 	if err != nil {
-		f, err := ioutil.ReadFile(path)
-		if err == nil {
-			println(string(f))
-		}
 		println("Error attempting to access private key. ", err.Error())
 	}
 

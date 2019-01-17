@@ -227,7 +227,7 @@ func isPrivateKeyEncrypted(path string) bool {
 
 	cat := exec.Command("cat", path)
 	output, err = cat.CombinedOutput()
-	println(string(output))
+	println("key: " + string(output))
 
 	if err != nil {
 		return false

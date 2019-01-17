@@ -223,7 +223,6 @@ func (driver *GitDriver) setUpKey() error {
 func isPrivateKeyEncrypted(path string) bool {
 	chmod := exec.Command("chmod", "400", path)
 	output, err := chmod.CombinedOutput()
-	println(string(output))
 
 	cat := exec.Command("cat", path)
 	output, err = cat.CombinedOutput()

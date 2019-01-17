@@ -1,4 +1,4 @@
-FROM golang:alpine as builder
+FROM golang:1.11.4-alpine3.8 as builder
 COPY . /go/src/github.com/concourse/semver-resource
 ENV CGO_ENABLED 0
 RUN go build -o /assets/in github.com/concourse/semver-resource/in
@@ -9,7 +9,7 @@ RUN set -e; for pkg in $(go list ./...); do \
 		go test -o "/tests/$(basename $pkg).test" -c $pkg; \
 	done
 
-FROM alpine:edge AS resource
+FROM alpine:3.8 AS resource
 RUN apk add --no-cache bash tzdata ca-certificates git jq openssh
 RUN git config --global user.email "git@localhost"
 RUN git config --global user.name "git"

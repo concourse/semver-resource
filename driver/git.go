@@ -54,12 +54,7 @@ func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
 
 	var newVersion semver.Version
 
-	err = driver.skipSSLVerificationIfNeeded()
-	if err != nil {
-		return semver.Version{}, err
-	}
-
-	for {
+	for i := 1; i <= maxRetries; i++ {
 		err = driver.setUpRepo()
 		if err != nil {
 			return semver.Version{}, err
@@ -79,7 +74,10 @@ func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
 		wrote, err := driver.writeVersion(newVersion)
 		if wrote {
 			break
-		}
+		} 
+	}
+	if err != nil {
+		return semver.Version{}, err
 	}
 
 	return newVersion, nil

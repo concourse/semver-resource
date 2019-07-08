@@ -57,7 +57,10 @@ func main() {
 			fatal("setting version", err)
 		}
 	} else if request.Params.Bump != "" || request.Params.Pre != "" {
-		bump := version.BumpFromParams(request.Params.Bump, request.Params.Pre)
+		bump := version.BumpFromParams(
+			request.Params.Bump, 
+			request.Params.Pre, 
+			request.Params.PreWithoutVersion)
 
 		newVersion, err = driver.Bump(bump)
 		if err != nil {

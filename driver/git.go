@@ -139,11 +139,7 @@ func (driver *GitDriver) Check(cursor *semver.Version) ([]semver.Version, error)
 		return []semver.Version{driver.InitialVersion}, nil
 	}
 
-	if cursor == nil || currentVersion.GTE(*cursor) {
-		return []semver.Version{currentVersion}, nil
-	}
-
-	return []semver.Version{}, nil
+	return []semver.Version{currentVersion}, nil
 }
 
 func (driver *GitDriver) setUpRepo() error {

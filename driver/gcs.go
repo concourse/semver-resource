@@ -77,11 +77,7 @@ func (d *GCSDriver) Check(cursor *semver.Version) ([]semver.Version, error) {
 		return nil, fmt.Errorf("parsing number in bucket: %s", err)
 	}
 
-	if cursor == nil || v.GTE(*cursor) {
-		return []semver.Version{v}, nil
-	}
-
-	return nil, nil
+	return []semver.Version{v}, nil
 }
 
 type IOServicer interface {

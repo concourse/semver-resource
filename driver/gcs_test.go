@@ -148,7 +148,12 @@ var _ = Describe("GCS Driver", func() {
 				Expect(s.BucketName).To(Equal("fake-bucket"))
 				Expect(s.ObjectName).To(Equal("fake-object"))
 
-				Expect(versions).To(BeEmpty())
+				Expect(versions).To(HaveLen(1))				
+				Expect(versions[0]).To(Equal(semver.Version{
+					Major: 2,
+					Minor: 6,
+					Patch: 3,
+				}))
 			})
 		})
 

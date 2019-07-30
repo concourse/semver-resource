@@ -29,15 +29,16 @@ func init() {
 type GitDriver struct {
 	InitialVersion semver.Version
 
-	URI           string
-	Branch        string
-	PrivateKey    string
-	Username      string
-	Password      string
-	File          string
-	GitUser       string
-	Depth         string
-	CommitMessage string
+	URI                 string
+	Branch              string
+	PrivateKey          string
+	Username            string
+	Password            string
+	File                string
+	GitUser             string
+	Depth               string
+	CommitMessage       string
+	SkipSSLVerification bool
 }
 
 func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
@@ -138,6 +139,14 @@ func (driver *GitDriver) Check(cursor *semver.Version) ([]semver.Version, error)
 
 func (driver *GitDriver) setUpRepo() error {
 	_, err := os.Stat(gitRepoDir)
+	if driver.SkipSSLVerification {
+        gitSkipSSLVerification := exec.Command("git", "config", "http.sslVerify", "'false'")
+        gitSkipSSLVerification.Stdout = os.Stderr
+        gitSkipSSLVerification.Stderr = os.Stderr
+        if err := gitSkipSSLVerification.Run(); err != nil {
+            return err
+        }
+    }
 	if err != nil {
 		gitClone := exec.Command("git", "clone", driver.URI, "--branch", driver.Branch)
 		if len(driver.Depth) > 0 {

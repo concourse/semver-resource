@@ -167,6 +167,9 @@ Note that `bump` and `pre` don't update the version resource - they just
 modify the version that gets provided to the build. An output must be
 explicitly specified to actually update the version.
 
+* `pre_without_version`: *Optional.* By default `false`, once it's set to `true` 
+then PreRelease will be bumped without a version number.
+
 
 ### `out`: Set the version or bump the current one.
 
@@ -194,6 +197,9 @@ if the driver supports it. That is, if we pull down version `N`, and bump to
 because there's some new version `M`, the driver will re-apply the bump to get
 `M+1`, and try again (in a loop).
 
+* `pre_without_version`: *Optional.* By default `false`, once it's set to `true` 
+then PreRelease will be bumped without a version number.
+
 
 ## Version Bumping Semantics
 
@@ -219,6 +225,12 @@ be one of:
   `pre` is added, starting at `1`.
   
   The value of `pre` can be anything you like; the value will be `pre`-pended (_hah_) to a numeric value. For example, `pre: build` will result in a semver of `x.y.z-build.<number>`, `pre: alpha` becomes `x.y.z-alpha.<number>`, and `pre: my-preferred-naming-convention` becomes `x.y.z-my-preferred-naming-convention.<number>`
+
+  If `pre_without_version` is set as `true`, the value will be `pre` and no version number. So `SNAPSHOT` will still be as `SNAPSHOT`,
+  Examples:
+    * Major version bump: version file = 1.2.4-SNAPSHOT, release version = 2.0.0
+    * Minor version bump: version file = 1.2.4-SNAPSHOT, release version = 1.3.0
+    * Promote snapshot: version file = 1.2.4-SNAPSHOT, release version = 1.2.4
 
 ### Running the tests
 

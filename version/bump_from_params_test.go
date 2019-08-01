@@ -16,6 +16,7 @@ var _ = Describe("BumpForParams", func() {
 
 		bumpParam string
 		preParam  string
+		preWithoutVersionParam bool
 	)
 
 	BeforeEach(func() {
@@ -27,10 +28,11 @@ var _ = Describe("BumpForParams", func() {
 
 		bumpParam = ""
 		preParam = ""
+		preWithoutVersionParam = false
 	})
 
 	JustBeforeEach(func() {
-		version = BumpFromParams(bumpParam, preParam).Apply(version)
+		version = BumpFromParams(bumpParam, preParam, preWithoutVersionParam).Apply(version)
 	})
 
 	for bump, result := range map[string]string{

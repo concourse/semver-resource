@@ -25,8 +25,8 @@ var _ = Describe("MultiBump", func() {
 			version.PatchBump{},
 			version.PatchBump{},
 			version.PatchBump{},
-			version.PreBump{"beta"},
-			version.PreBump{"beta"},
+			version.PreBump{"beta", true},
+			version.PreBump{"beta", false},
 		}
 	})
 
@@ -41,7 +41,7 @@ var _ = Describe("MultiBump", func() {
 			Patch: 3,
 			Pre: []semver.PRVersion{
 				{VersionStr: "beta"},
-				{VersionNum: 2, IsNum: true},
+				{VersionNum: 1, IsNum: true},
 			},
 		}))
 	})

@@ -54,6 +54,11 @@ func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
 
 	var newVersion semver.Version
 
+	err = driver.skipSSLVerificationIfSet()
+    if err != nil {
+    	return semver.Version{}, err
+    }
+
 	for {
 		err = driver.setUpRepo()
 		if err != nil {
@@ -91,6 +96,11 @@ func (driver *GitDriver) Set(newVersion semver.Version) error {
 		return err
 	}
 
+	err = driver.skipSSLVerificationIfSet()
+    if err != nil {
+        return err
+    }
+
 	for {
 		err = driver.setUpRepo()
 		if err != nil {
@@ -121,6 +131,11 @@ func (driver *GitDriver) Check(cursor *semver.Version) ([]semver.Version, error)
 		return nil, err
 	}
 
+    err = driver.skipSSLVerificationIfSet()
+    if err != nil {
+        return nil, err
+    }
+
 	currentVersion, exists, err := driver.readVersion()
 	if err != nil {
 		return nil, err
@@ -139,14 +154,6 @@ func (driver *GitDriver) Check(cursor *semver.Version) ([]semver.Version, error)
 
 func (driver *GitDriver) setUpRepo() error {
 	_, err := os.Stat(gitRepoDir)
-	if driver.SkipSSLVerification {
-        gitSkipSSLVerification := exec.Command("git", "config", "http.sslVerify", "'false'")
-        gitSkipSSLVerification.Stdout = os.Stderr
-        gitSkipSSLVerification.Stderr = os.Stderr
-        if err := gitSkipSSLVerification.Run(); err != nil {
-            return err
-        }
-    }
 	if err != nil {
 		gitClone := exec.Command("git", "clone", driver.URI, "--branch", driver.Branch)
 		if len(driver.Depth) > 0 {
@@ -175,6 +182,19 @@ func (driver *GitDriver) setUpRepo() error {
 	if err := gitCheckout.Run(); err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func (driver *GitDriver) skipSSLVerificationIfNeeded() error {
+	if driver.SkipSSLVerification {
+        gitSkipSSLVerification := exec.Command("git", "config", "http.sslVerify", "'false'")
+        gitSkipSSLVerification.Stdout = os.Stderr
+        gitSkipSSLVerification.Stderr = os.Stderr
+        if err := gitSkipSSLVerification.Run(); err != nil {
+            return err
+        }
+    }
 
 	return nil
 }

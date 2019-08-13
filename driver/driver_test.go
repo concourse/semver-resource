@@ -46,3 +46,34 @@ var _ = Describe("Driver", func() {
 		})
 	})
 })
+
+var _ = Describe("Driver", func() {
+	Context("Git", func() {
+		var src models.Source
+		BeforeEach(func() {
+			src = models.Source{
+				Driver: models.DriverGit,
+			}
+		})
+		It("returns a default git driver", func() {
+			aDriver, err := driver.FromSource(src)
+			Expect(err).To(BeNil())
+			Expect(aDriver).ToNot(BeNil())
+			gitDriver, ok := aDriver.(*driver.GitDriver)
+			Expect(ok).To(BeTrue())
+			Expect(gitDriver.SkipSSLVerification).To(Not(BeNil()))
+			Expect(gitDriver.SkipSSLVerification).To(BeFalse())
+		})
+		It("returns a git driver with a transport that ignores ssl verification", func() {
+			src.SkipSSLVerification = true
+			aDriver, err := driver.FromSource(src)
+			Expect(err).To(BeNil())
+			Expect(aDriver).ToNot(BeNil())
+			gitDriver, ok := aDriver.(*driver.GitDriver)
+			Expect(ok).To(BeTrue())
+			Expect(gitDriver.SkipSSLVerification).To(Not(BeNil()))
+			Expect(gitDriver.SkipSSLVerification).To(BeTrue())
+
+		})
+	})
+})

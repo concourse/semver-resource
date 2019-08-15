@@ -19,6 +19,7 @@ var privateKeyPath string
 var netRcPath string
 
 var ErrEncryptedKey = errors.New("private keys with passphrases are not supported")
+var RetriesOnErrorWriteVersion = 3
 
 func init() {
 	gitRepoDir = filepath.Join(os.TempDir(), "semver-git-repo")
@@ -54,7 +55,7 @@ func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
 
 	var newVersion semver.Version
 
-	for i := 1; i <= maxRetries; i++ {
+	for i := 1; i <= RetriesOnErrorWriteVersion; i++ {
 		err = driver.setUpRepo()
 		if err != nil {
 			return semver.Version{}, err

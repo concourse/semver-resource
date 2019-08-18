@@ -42,7 +42,7 @@ func FromSource(source models.Source) (Driver, error) {
 		if source.AccessKeyID == "" && source.SecretAccessKey == "" {
 			creds = credentials.AnonymousCredentials
 		} else {
-			creds = credentials.NewStaticCredentials(source.AccessKeyID, source.SecretAccessKey, "")
+			creds = credentials.NewStaticCredentials(source.AccessKeyID, source.SecretAccessKey, source.SessionToken)
 		}
 
 		regionName := source.RegionName

@@ -94,7 +94,7 @@ func (driver *GitDriver) Set(newVersion semver.Version) error {
 		return err
 	}
 
-	for {
+	for i := 1; i <= RetriesOnErrorWriteVersion; i++ {
 		err = driver.setUpRepo()
 		if err != nil {
 			return err

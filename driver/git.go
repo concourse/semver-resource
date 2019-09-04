@@ -54,10 +54,10 @@ func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
 
 	var newVersion semver.Version
 
-	err = driver.skipSSLVerificationIfSet()
-    if err != nil {
-    	return semver.Version{}, err
-    }
+	err = driver.skipSSLVerificationIfNeeded()
+	if err != nil {
+		return semver.Version{}, err
+	}
 
 	for {
 		err = driver.setUpRepo()
@@ -96,10 +96,10 @@ func (driver *GitDriver) Set(newVersion semver.Version) error {
 		return err
 	}
 
-	err = driver.skipSSLVerificationIfSet()
-    if err != nil {
-        return err
-    }
+	err = driver.skipSSLVerificationIfNeeded()
+	if err != nil {
+		return err
+	}
 
 	for {
 		err = driver.setUpRepo()
@@ -131,10 +131,10 @@ func (driver *GitDriver) Check(cursor *semver.Version) ([]semver.Version, error)
 		return nil, err
 	}
 
-    err = driver.skipSSLVerificationIfSet()
-    if err != nil {
-        return nil, err
-    }
+	err = driver.skipSSLVerificationIfNeeded()
+	if err != nil {
+		return nil, err
+	}
 
 	currentVersion, exists, err := driver.readVersion()
 	if err != nil {
@@ -188,13 +188,13 @@ func (driver *GitDriver) setUpRepo() error {
 
 func (driver *GitDriver) skipSSLVerificationIfNeeded() error {
 	if driver.SkipSSLVerification {
-        gitSkipSSLVerification := exec.Command("git", "config", "http.sslVerify", "'false'")
-        gitSkipSSLVerification.Stdout = os.Stderr
-        gitSkipSSLVerification.Stderr = os.Stderr
-        if err := gitSkipSSLVerification.Run(); err != nil {
-            return err
-        }
-    }
+		gitSkipSSLVerification := exec.Command("git", "config", "http.sslVerify", "'false'")
+		gitSkipSSLVerification.Stdout = os.Stderr
+		gitSkipSSLVerification.Stderr = os.Stderr
+		if err := gitSkipSSLVerification.Run(); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }

@@ -334,6 +334,15 @@ const pushRejectedString = "[rejected]"
 const pushRemoteRejectedString = "[remote rejected]"
 
 func (driver *GitDriver) writeVersion(newVersion semver.Version) (bool, error) {
+
+    path := filepath.Dir(driver.File)
+    if path != "/" && path != "." {
+        err := os.MkdirAll(path, 0755)
+        if err != nil {
+           return false, err
+        }
+    }
+
 	err := ioutil.WriteFile(filepath.Join(gitRepoDir, driver.File), []byte(newVersion.String()+"\n"), 0644)
 	if err != nil {
 		return false, err

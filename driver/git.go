@@ -337,9 +337,9 @@ func (driver *GitDriver) writeVersion(newVersion semver.Version) (bool, error) {
 
     path := filepath.Dir(driver.File)
     if path != "/" && path != "." {
-        err := os.MkdirAll(path, 0755)
+        err := os.MkdirAll(filepath.Join(gitRepoDir, path), 0755)
         if err != nil {
-           return false, err
+            return false, err
         }
     }
 

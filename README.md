@@ -58,6 +58,9 @@ bucket.
 * `secret_access_key`: *Required.* The AWS secret key to use when accessing
 the bucket.
 
+* `session_token`: *Optional.* The AWS session token to use when accessing
+the bucket.
+
 * `region_name`: *Optional. Default `us-east-1`.* The region the bucket is in.
 
 * `endpoint`: *Optional.* Custom endpoint for using S3 compatible provider.

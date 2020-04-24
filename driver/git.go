@@ -363,6 +363,7 @@ func (driver *GitDriver) writeVersion(newVersion semver.Version) (bool, error) {
 	commitOutput, err := gitCommit.CombinedOutput()
 
 	if strings.Contains(string(commitOutput), nothingToCommitString) {
+		os.Stderr.Write([]byte("Nothing to commit, skipping version push\n"))
 		return true, nil
 	}
 
@@ -376,15 +377,10 @@ func (driver *GitDriver) writeVersion(newVersion semver.Version) (bool, error) {
 
 	pushOutput, err := gitPush.CombinedOutput()
 
-	if strings.Contains(string(pushOutput), falsePushString) {
-		return false, nil
-	}
-
-	if strings.Contains(string(pushOutput), pushRejectedString) {
-		return false, nil
-	}
-
-	if strings.Contains(string(pushOutput), pushRemoteRejectedString) {
+	if strings.Contains(string(pushOutput), falsePushString) ||
+		strings.Contains(string(pushOutput), pushRejectedString) ||
+		strings.Contains(string(pushOutput), pushRemoteRejectedString) {
+		os.Stderr.Write(pushOutput)
 		return false, nil
 	}
 

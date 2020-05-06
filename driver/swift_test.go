@@ -183,6 +183,16 @@ var _ = Describe("Swift", func() {
 		Expect(semVers).To(HaveLen(1))
 		Expect(semVers[0].String()).To(Equal("2.0.10"))
 	})
+
+	It("the initial version is optional", func() {
+		driver, err := newTestSwiftDriver("", "testitem4.txt")
+		defer deleteObject("testitem3.txt")
+		Expect(err).To(BeNil())
+
+		semVers, err := driver.Check(nil)
+		Expect(err).To(BeNil())
+		Expect(semVers).To(HaveLen(0))
+	})
 })
 
 func newTestSwiftDriver(initialVersion string, itemName string) (Driver, error) {

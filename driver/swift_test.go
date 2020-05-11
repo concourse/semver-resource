@@ -186,7 +186,7 @@ var _ = Describe("Swift", func() {
 
 	It("the initial version is optional", func() {
 		driver, err := newTestSwiftDriver("", "testitem4.txt")
-		defer deleteObject("testitem3.txt")
+		defer deleteObject("testitem4.txt")
 		Expect(err).To(BeNil())
 
 		semVers, err := driver.Check(nil)

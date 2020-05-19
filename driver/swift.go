@@ -58,9 +58,14 @@ func NewSwiftDriver(source *models.Source) (Driver, error) {
 		return nil, fmt.Errorf("Unable to get container by name '%s', inner error: %s", source.OpenStack.Container, err.Error())
 	}
 
-	initialVersion, err := semver.Parse(source.InitialVersion)
-	if err != nil {
-		return nil, fmt.Errorf("Initial version was not a valid sem ver: %s", err.Error())
+	var initialVersion semver.Version
+	if source.InitialVersion != "" {
+		initialVersion, err = semver.Parse(source.InitialVersion)
+		if err != nil {
+			return nil, fmt.Errorf("Initial version was not a valid sem ver: %s", err.Error())
+		}
+	} else {
+		initialVersion = semver.Version{Major: 0, Minor: 0, Patch: 0}
 	}
 
 	driver := &SwiftDriver{

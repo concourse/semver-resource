@@ -61,12 +61,15 @@ func main() {
 		}
 	}
 
-	json.NewEncoder(os.Stdout).Encode(models.InResponse{
+	err = json.NewEncoder(os.Stdout).Encode(models.InResponse{
 		Version: request.Version,
 		Metadata: models.Metadata{
 			{"number", request.Version.Number},
 		},
 	})
+	if err != nil {
+		fatal("encoding to json", err)
+	}
 }
 
 func fatal(doing string, err error) {

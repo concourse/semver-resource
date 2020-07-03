@@ -44,7 +44,10 @@ func main() {
 		})
 	}
 
-	json.NewEncoder(os.Stdout).Encode(delta)
+	err = json.NewEncoder(os.Stdout).Encode(delta)
+	if err != nil {
+		fatal("encoding to json", err)
+	}
 }
 
 func fatal(doing string, err error) {

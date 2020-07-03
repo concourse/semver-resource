@@ -75,12 +75,15 @@ func main() {
 		Number: newVersion.String(),
 	}
 
-	json.NewEncoder(os.Stdout).Encode(models.OutResponse{
+	err = json.NewEncoder(os.Stdout).Encode(models.OutResponse{
 		Version: outVersion,
 		Metadata: models.Metadata{
 			{"number", outVersion.Number},
 		},
 	})
+	if err != nil {
+		fatal("encoding to json", err)
+	}
 }
 
 func fatal(doing string, err error) {

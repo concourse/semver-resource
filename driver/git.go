@@ -19,7 +19,6 @@ var privateKeyPath string
 var netRcPath string
 
 var ErrEncryptedKey = errors.New("private keys with passphrases are not supported")
-var RetriesOnErrorWriteVersion = 3
 
 func init() {
 	gitRepoDir = filepath.Join(os.TempDir(), "semver-git-repo")
@@ -53,35 +52,35 @@ func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
 		return semver.Version{}, err
 	}
 
-	var newVersion semver.Version
+	lastError := fmt.Errorf("no more retries")
 
-	for i := 1; i <= RetriesOnErrorWriteVersion; i++ {
-		err = driver.setUpRepo()
-		if err != nil {
-			return semver.Version{}, err
+	for i := 0; i <= maxRetries; i++ {
+		if err := driver.setUpRepo(); err != nil {
+			lastError = err
+			continue
 		}
 
 		currentVersion, exists, err := driver.readVersion()
 		if err != nil {
-			return semver.Version{}, err
+			lastError = err
+			continue
 		}
 
 		if !exists {
 			currentVersion = driver.InitialVersion
 		}
 
-		newVersion = bump.Apply(currentVersion)
+		newVersion := bump.Apply(currentVersion)
 
-		wrote, err := driver.writeVersion(newVersion)
-		if wrote {
-			break
-		} 
-	}
-	if err != nil {
-		return semver.Version{}, err
+		if err := driver.writeVersion(newVersion); err != nil {
+			lastError = err
+			continue
+		}
+
+		return newVersion, nil
 	}
 
-	return newVersion, nil
+	return semver.Version{}, lastError
 }
 
 func (driver *GitDriver) Set(newVersion semver.Version) error {
@@ -95,23 +94,23 @@ func (driver *GitDriver) Set(newVersion semver.Version) error {
 		return err
 	}
 
-	for i := 1; i <= RetriesOnErrorWriteVersion; i++ {
-		err = driver.setUpRepo()
-		if err != nil {
-			return err
+	lastError := fmt.Errorf("no more retries")
+
+	for i := 0; i <= maxRetries; i++ {
+		if err = driver.setUpRepo(); err != nil {
+			lastError = err
+			continue
 		}
 
-		wrote, err := driver.writeVersion(newVersion)
-		if err != nil {
-			return err
+		if err := driver.writeVersion(newVersion); err != nil {
+			lastError = err
+			continue
 		}
 
-		if wrote {
-			break
-		}
+		return nil
 	}
 
-	return nil
+	return lastError
 }
 
 func (driver *GitDriver) Check(cursor *semver.Version) ([]semver.Version, error) {
@@ -327,19 +326,19 @@ const falsePushString = "Everything up-to-date"
 const pushRejectedString = "[rejected]"
 const pushRemoteRejectedString = "[remote rejected]"
 
-func (driver *GitDriver) writeVersion(newVersion semver.Version) (bool, error) {
+func (driver *GitDriver) writeVersion(newVersion semver.Version) error {
 
-    path := filepath.Dir(driver.File)
-    if path != "/" && path != "." {
-        err := os.MkdirAll(filepath.Join(gitRepoDir, path), 0755)
-        if err != nil {
-            return false, err
-        }
-    }
+	path := filepath.Dir(driver.File)
+	if path != "/" && path != "." {
+		err := os.MkdirAll(filepath.Join(gitRepoDir, path), 0755)
+		if err != nil {
+			return err
+		}
+	}
 
 	err := ioutil.WriteFile(filepath.Join(gitRepoDir, driver.File), []byte(newVersion.String()+"\n"), 0644)
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	gitAdd := exec.Command("git", "add", driver.File)
@@ -347,7 +346,7 @@ func (driver *GitDriver) writeVersion(newVersion semver.Version) (bool, error) {
 	gitAdd.Stdout = os.Stderr
 	gitAdd.Stderr = os.Stderr
 	if err := gitAdd.Run(); err != nil {
-		return false, err
+		return err
 	}
 	var commitMessage string
 	if driver.CommitMessage == "" {
@@ -364,12 +363,12 @@ func (driver *GitDriver) writeVersion(newVersion semver.Version) (bool, error) {
 
 	if strings.Contains(string(commitOutput), nothingToCommitString) {
 		os.Stderr.Write([]byte("Nothing to commit, skipping version push\n"))
-		return true, nil
+		return nil
 	}
 
 	if err != nil {
 		os.Stderr.Write(commitOutput)
-		return false, err
+		return err
 	}
 
 	gitPush := exec.Command("git", "push", "origin", "HEAD:"+driver.Branch)
@@ -381,13 +380,13 @@ func (driver *GitDriver) writeVersion(newVersion semver.Version) (bool, error) {
 		strings.Contains(string(pushOutput), pushRejectedString) ||
 		strings.Contains(string(pushOutput), pushRemoteRejectedString) {
 		os.Stderr.Write(pushOutput)
-		return false, nil
+		return fmt.Errorf("failed to push")
 	}
 
 	if err != nil {
 		os.Stderr.Write(pushOutput)
-		return false, err
+		return err
 	}
 
-	return true, nil
+	return nil
 }

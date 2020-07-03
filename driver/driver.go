@@ -20,6 +20,7 @@ type Driver interface {
 	Check(*semver.Version) ([]semver.Version, error)
 }
 
+// maxTries is maxRetries + 1
 const maxRetries = 12
 
 func FromSource(source models.Source) (Driver, error) {

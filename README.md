@@ -218,6 +218,7 @@ be one of:
   * `minor`: Bump the minor version number, e.g. `0.1.0` -> `0.2.0`.
   * `patch`: Bump the patch version number, e.g. `0.0.1` -> `0.0.2`.
   * `final`: Promote the version to a final version, e.g. `1.0.0-rc.1` -> `1.0.0`.
+  * `rc` (with `pre` set to `rc` also): Bump the pre-release version, e.g. `0.0.1-rc.1` -> `0.0.1-rc.2`.
 
 
 * `pre`: *Optional.* When bumping, bump to a prerelease (e.g. `rc` or

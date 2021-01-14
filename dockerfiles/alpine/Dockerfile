@@ -1,4 +1,7 @@
-FROM golang:alpine as builder
+ARG base_image=alpine:latest
+ARG builder_image=concourse/golang-builder
+
+FROM ${builder_image} as builder
 COPY . /src
 WORKDIR /src
 ENV CGO_ENABLED 0
@@ -10,7 +13,7 @@ RUN set -e; for pkg in $(go list ./...); do \
 		go test -o "/tests/$(basename $pkg).test" -c $pkg; \
 	done
 
-FROM alpine:edge AS resource
+FROM ${base_image} AS resource
 RUN apk add --no-cache bash tzdata ca-certificates git jq openssh
 RUN git config --global user.email "git@localhost"
 RUN git config --global user.name "git"

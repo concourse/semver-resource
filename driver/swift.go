@@ -148,11 +148,7 @@ func (driver *SwiftDriver) Check(cursor *semver.Version) ([]semver.Version, erro
 		return nil, err
 	}
 
-	if cursor == nil || itemVersion.GTE(*cursor) {
-		return []semver.Version{itemVersion}, nil
-	}
-
-	return []semver.Version{}, nil
+	return []semver.Version{itemVersion}, nil
 }
 
 func (driver *SwiftDriver) getCurrentVersion() (semver.Version, error) {

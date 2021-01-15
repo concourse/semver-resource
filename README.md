@@ -154,7 +154,7 @@ plan:
 
 ### `check`: Report the current version number.
 
-Detects new versions by reading the file from the specified source. If the file is empty, it returns the `initial_version`. If the file is not empty, it returns the version specified in the file if it is equal to or greater than current version, otherwise it returns no versions.
+Detects new versions by reading the file from the specified source. If the file is empty, it returns the `initial_version`. If the file is not empty, it returns the version specified in the file.
 
 ### `in`: Provide the version as a file, optionally bumping it.
 

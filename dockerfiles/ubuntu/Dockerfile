@@ -1,4 +1,7 @@
-FROM concourse/golang-builder as builder
+ARG base_image
+ARG builder_image=concourse/golang-builder
+
+FROM ${builder_image} as builder
 COPY . /src
 WORKDIR /src
 ENV CGO_ENABLED 0
@@ -10,7 +13,7 @@ RUN set -e; for pkg in $(go list ./...); do \
 		go test -o "/tests/$(basename $pkg).test" -c $pkg; \
 	done
 
-FROM ubuntu:bionic AS resource
+FROM ${base_image} AS resource
 RUN apt-get update \
       && DEBIAN_FRONTEND=noninteractive \
       apt-get install -y --no-install-recommends \

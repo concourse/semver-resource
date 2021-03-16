@@ -247,8 +247,8 @@ will stop the build.
 Run the tests with the following commands for both `alpine` and `ubuntu` images:
 
 ```sh
-docker build -t semver-resource -f dockerfiles/alpine/Dockerfile .
-docker build -t semver-resource -f dockerfiles/ubuntu/Dockerfile .
+docker build -t semver-resource --target tests -f dockerfiles/alpine/Dockerfile .
+docker build -t semver-resource --target tests -f dockerfiles/ubuntu/Dockerfile .
 ```
 
 #### Integration tests
@@ -265,13 +265,13 @@ You will need:
 Run the tests with the following command, replacing each `build-arg` value with your own values:
 
 ```sh
-docker build . -t semver-resource -f dockerfiles/alpine/Dockerfile \
+docker build . -t semver-resource --target tests -f dockerfiles/alpine/Dockerfile \
   --build-arg SEMVER_TESTING_ACCESS_KEY_ID="some-key" \
   --build-arg SEMVER_TESTING_SECRET_ACCESS_KEY="some-secret" \
   --build-arg SEMVER_TESTING_BUCKET="some-bucket" \
   --build-arg SEMVER_TESTING_REGION="some-region"
 
-docker build . -t semver-resource -f dockerfiles/ubuntu/Dockerfile \
+docker build . -t semver-resource --target tests -f dockerfiles/ubuntu/Dockerfile \
   --build-arg SEMVER_TESTING_ACCESS_KEY_ID="some-key" \
   --build-arg SEMVER_TESTING_SECRET_ACCESS_KEY="some-secret" \
   --build-arg SEMVER_TESTING_BUCKET="some-bucket" \

@@ -47,9 +47,11 @@ func (d *GCSDriver) Set(v semver.Version) error {
 	if err != nil {
 		return err
 	}
-	defer w.Close()
 	_, err = w.Write([]byte(v.String()))
-	return err
+	if err != nil {
+		return err
+	}
+	return w.Close()
 }
 
 func (d *GCSDriver) Check(cursor *semver.Version) ([]semver.Version, error) {

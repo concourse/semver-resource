@@ -184,7 +184,9 @@ func (v2 *signer) Sign() error {
 		xamz + canonicalPath,
 	}, "\n")
 	hash := hmac.New(sha1.New, []byte(credValue.SecretAccessKey))
-	hash.Write([]byte(v2.stringToSign))
+	if _, err := hash.Write([]byte(v2.stringToSign)); err != nil {
+		return err
+	}
 	v2.signature = base64.StdEncoding.EncodeToString(hash.Sum(nil))
 
 	if expires {

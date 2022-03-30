@@ -223,7 +223,8 @@ func (driver *GitDriver) setUpKey() error {
 	_, err := os.Stat(privateKeyPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			err := ioutil.WriteFile(privateKeyPath, []byte(driver.PrivateKey), 0600)
+			privateKey := strings.TrimSuffix(driver.PrivateKey, "\n")
+			err := ioutil.WriteFile(privateKeyPath, []byte(privateKey+"\n"), 0600)
 			if err != nil {
 				return err
 			}

@@ -15,7 +15,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/concourse/semver-resource/models"
-	"github.com/nu7hatch/gouuid"
+	uuid "github.com/nu7hatch/gouuid"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
@@ -266,6 +266,143 @@ var _ = Describe("Out", func() {
 					It("saves the contents of the file in the configured bucket", func() {
 						Expect(getVersion()).To(Equal("1.3.0-alpha.1"))
 					})
+				})
+			})
+		})
+
+		Context("when bumping the version to a build", func() {
+			BeforeEach(func() {
+				request.Params.Build = "build"
+			})
+
+			Context("when the version is not a build", func() {
+				BeforeEach(func() {
+					putVersion("1.2.3")
+				})
+
+				It("reports the bumped version as the version", func() {
+					Expect(response.Version.Number).To(Equal("1.2.3+build.1"))
+				})
+
+				It("saves the contents of the file in the configured bucket", func() {
+					Expect(getVersion()).To(Equal("1.2.3+build.1"))
+				})
+
+				Context("when doing a semantic bump at the same time", func() {
+					BeforeEach(func() {
+						request.Params.Bump = "minor"
+					})
+
+					It("reports the bumped version as the version", func() {
+						Expect(response.Version.Number).To(Equal("1.3.0+build.1"))
+					})
+
+					It("saves the contents of the file in the configured bucket", func() {
+						Expect(getVersion()).To(Equal("1.3.0+build.1"))
+					})
+				})
+			})
+
+			Context("when the version is the same build", func() {
+				BeforeEach(func() {
+					putVersion("1.2.3+build.2")
+				})
+
+				It("reports the bumped version as the version", func() {
+					Expect(response.Version.Number).To(Equal("1.2.3+build.3"))
+				})
+
+				It("saves the contents of the file in the configured bucket", func() {
+					Expect(getVersion()).To(Equal("1.2.3+build.3"))
+				})
+
+				Context("when doing a semantic bump at the same time", func() {
+					BeforeEach(func() {
+						request.Params.Bump = "minor"
+					})
+
+					It("reports the bumped version as the version", func() {
+						Expect(response.Version.Number).To(Equal("1.3.0+build.1"))
+					})
+
+					It("saves the contents of the file in the configured bucket", func() {
+						Expect(getVersion()).To(Equal("1.3.0+build.1"))
+					})
+				})
+			})
+
+			Context("when the version is a different build", func() {
+				BeforeEach(func() {
+					putVersion("1.2.3-beta.2")
+				})
+
+				It("reports the bumped version as the version", func() {
+					Expect(response.Version.Number).To(Equal("1.2.3+build.1"))
+				})
+
+				It("saves the contents of the file in the configured bucket", func() {
+					Expect(getVersion()).To(Equal("1.2.3+build.1"))
+				})
+
+				Context("when doing a semantic bump at the same time", func() {
+					BeforeEach(func() {
+						request.Params.Bump = "minor"
+					})
+
+					It("reports the bumped version as the version", func() {
+						Expect(response.Version.Number).To(Equal("1.3.0+build.1"))
+					})
+
+					It("saves the contents of the file in the configured bucket", func() {
+						Expect(getVersion()).To(Equal("1.3.0+build.1"))
+					})
+				})
+			})
+		})
+
+		Context("when bumping the version to a prerelease and build", func() {
+			BeforeEach(func() {
+				request.Params.Pre = "alpha"
+				request.Params.Build = "build"
+			})
+
+			Context("when the version is just a base version", func() {
+				BeforeEach(func() {
+					putVersion("1.2.3")
+				})
+
+				It("reports the bumped version as the version", func() {
+					Expect(response.Version.Number).To(Equal("1.2.3-alpha.1+build.1"))
+				})
+			})
+
+			Context("when the version has a prerelease", func() {
+				BeforeEach(func() {
+					putVersion("1.2.3-alpha.1")
+				})
+
+				It("reports the bumped version as the version", func() {
+					Expect(response.Version.Number).To(Equal("1.2.3-alpha.2+build.1"))
+				})
+			})
+
+			Context("when the version has a build", func() {
+				BeforeEach(func() {
+					putVersion("1.2.3+build.1")
+				})
+
+				It("reports the bumped version as the version", func() {
+					Expect(response.Version.Number).To(Equal("1.2.3-alpha.1+build.2"))
+				})
+			})
+
+			Context("when the version has a build and prerelease", func() {
+				BeforeEach(func() {
+					putVersion("1.2.3-alpha.1+build.1")
+				})
+
+				It("reports the bumped version as the version", func() {
+					Expect(response.Version.Number).To(Equal("1.2.3-alpha.2+build.2"))
 				})
 			})
 		})

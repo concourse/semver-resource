@@ -152,7 +152,8 @@ put_uri_with_bump() {
     },
     params: {
       bump: $(echo $3 | jq -R .),
-      pre: $(echo $4 | jq -R .)
+      pre: $(echo $4 | jq -R .),
+      build: $(echo $5 | jq -R .)
     }
   }" | ${resource_dir}/out "$2" | tee /dev/stderr
 }
@@ -168,7 +169,8 @@ put_uri_with_bump_and_initial() {
     },
     params: {
       bump: $(echo $4 | jq -R .),
-      pre: $(echo $5 | jq -R .)
+      pre: $(echo $5 | jq -R .),
+      build: $(echo $6 | jq -R .)
     }
   }" | ${resource_dir}/out "$2" | tee /dev/stderr
 }
@@ -180,11 +182,12 @@ put_uri_with_bump_and_message() {
       uri: $(echo $1 | jq -R .),
       branch: \"master\",
       file: \"some-file\",
-      commit_message: \"$(echo $5)\"
+      commit_message: \"$(echo $6)\"
     },
     params: {
       bump: $(echo $3 | jq -R .),
-      pre: $(echo $4 | jq -R .)
+      pre: $(echo $4 | jq -R .),
+      build: $(echo $5 | jq -R .)
     }
   }" | ${resource_dir}/out "$2" | tee /dev/stderr
 }

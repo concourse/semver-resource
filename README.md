@@ -228,10 +228,17 @@ be one of:
   type, (e.g. `alpha` vs. `beta`), the type is switched and the prerelease
   version is reset to `1`. If the version is *not* already a pre-release, then
   `pre` is added, starting at `1`.
-  
-  The value of `pre` can be anything you like; the value will be `pre`-pended (_hah_) to a numeric value. For example, `pre: build` will result in a semver of `x.y.z-build.<number>`, `pre: alpha` becomes `x.y.z-alpha.<number>`, and `pre: my-preferred-naming-convention` becomes `x.y.z-my-preferred-naming-convention.<number>`
 
-  If `pre_without_version` is set as `true`, the value will be `pre` and no version number. So `SNAPSHOT` will still be as `SNAPSHOT`,
+  The value of `pre` can be anything you like; the value will be `pre`-pended (_hah_) to a numeric value. For example, `pre: foo` will result in a semver of `x.y.z-foo.<number>`, `pre: alpha` becomes `x.y.z-alpha.<number>`, and `pre: my-preferred-naming-convention` becomes `x.y.z-my-preferred-naming-convention.<number>`
+
+* `build`: *Optional.* Same as `pre` but for build labels (e.g. `build: foo`
+  will result in a semver of `x.y.z+foo.<number>`, `build: alpha` becomes
+  `x.y.z+alpha.<number>`.
+
+  It is valid for a semver to be both a prerelease and a build, for example,
+  `pre: alpha, build: test` results in `x.y.z-alpha.<number>+test.<number>`
+* `pre_without_version`: *Optional.* When bumping to a prerelease, drop the
+  version if set to `true`.
   Examples:
     * Major version bump: version file = 1.2.4-SNAPSHOT, release version = 2.0.0
     * Minor version bump: version file = 1.2.4-SNAPSHOT, release version = 1.3.0

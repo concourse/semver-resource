@@ -76,15 +76,15 @@ it_can_put_and_bump_first_version() {
   # cannot push to repo while it's checked out to a branch
   git -C $repo checkout refs/heads/master
 
-  put_uri_with_bump $repo $src minor alpha | jq -e "
-    .version == {number: \"0.1.0-alpha.1\"}
+  put_uri_with_bump $repo $src minor alpha build | jq -e "
+    .version == {number: \"0.1.0-alpha.1+build.1\"}
   "
 
   # switch back to master
   git -C $repo checkout master
 
   test -e $repo/some-file
-  test "$(cat $repo/some-file)" = 0.1.0-alpha.1
+  test "$(cat $repo/some-file)" = 0.1.0-alpha.1+build.1
 }
 
 it_can_put_and_bump_first_version_with_initial() {
@@ -95,15 +95,15 @@ it_can_put_and_bump_first_version_with_initial() {
   # cannot push to repo while it's checked out to a branch
   git -C $repo checkout refs/heads/master
 
-  put_uri_with_bump_and_initial $repo $src 1.2.3 minor alpha | jq -e "
-    .version == {number: \"1.3.0-alpha.1\"}
+  put_uri_with_bump_and_initial $repo $src 1.2.3 minor alpha build | jq -e "
+    .version == {number: \"1.3.0-alpha.1+build.1\"}
   "
 
   # switch back to master
   git -C $repo checkout master
 
   test -e $repo/some-file
-  test "$(cat $repo/some-file)" = 1.3.0-alpha.1
+  test "$(cat $repo/some-file)" = 1.3.0-alpha.1+build.1
 }
 
 it_can_put_and_bump_over_existing_version() {
@@ -116,15 +116,15 @@ it_can_put_and_bump_over_existing_version() {
   # cannot push to repo while it's checked out to a branch
   git -C $repo checkout refs/heads/master
 
-  put_uri_with_bump $repo $src minor alpha | jq -e "
-    .version == {number: \"1.3.0-alpha.1\"}
+  put_uri_with_bump $repo $src minor alpha build | jq -e "
+    .version == {number: \"1.3.0-alpha.1+build.1\"}
   "
 
   # switch back to master
   git -C $repo checkout master
 
   test -e $repo/some-file
-  test "$(cat $repo/some-file)" = 1.3.0-alpha.1
+  test "$(cat $repo/some-file)" = 1.3.0-alpha.1+build.1
 }
 
 it_can_put_and_bump_with_message_over_existing_version() {
@@ -139,15 +139,15 @@ it_can_put_and_bump_with_message_over_existing_version() {
   # cannot push to repo while it's checked out to a branch
   git -C $repo checkout refs/heads/master
 
-  put_uri_with_bump_and_message $repo $src minor alpha "$message" | jq -e "
-    .version == {number: \"1.3.0-alpha.1\"}
+  put_uri_with_bump_and_message $repo $src minor alpha build "$message" | jq -e "
+    .version == {number: \"1.3.0-alpha.1+build.1\"}
   "
 
   # switch back to master
   git -C $repo checkout master
 
   test -e $repo/some-file
-  test "$(cat $repo/some-file)" = 1.3.0-alpha.1
+  test "$(cat $repo/some-file)" = 1.3.0-alpha.1+build.1
   test "$(git -C $repo log -n1 --pretty=%B)" = "$message"
 }
 
@@ -163,17 +163,17 @@ it_can_put_and_bump_with_message_and_replace_over_existing_version() {
   # cannot push to repo while it's checked out to a branch
   git -C $repo checkout refs/heads/master
 
-  put_uri_with_bump_and_message $repo $src minor alpha "$message" | jq -e "
-    .version == {number: \"1.3.0-alpha.1\"}
+  put_uri_with_bump_and_message $repo $src minor alpha build "$message" | jq -e "
+    .version == {number: \"1.3.0-alpha.1+build.1\"}
   "
 
   # switch back to master
   git -C $repo checkout master
 
-  local expected_message="This is a commit message on some-file with 1.3.0-alpha.1"
+  local expected_message="This is a commit message on some-file with 1.3.0-alpha.1+build.1"
 
   test -e $repo/some-file
-  test "$(cat $repo/some-file)" = 1.3.0-alpha.1
+  test "$(cat $repo/some-file)" = 1.3.0-alpha.1+build.1
   test "$(git -C $repo log -n1 --pretty=%B)" = "$expected_message"
 }
 

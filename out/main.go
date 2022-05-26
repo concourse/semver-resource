@@ -58,9 +58,12 @@ func main() {
 		}
 	} else if request.Params.Bump != "" || request.Params.Pre != "" {
 		bump := version.BumpFromParams(
-			request.Params.Bump, 
-			request.Params.Pre, 
-			request.Params.PreWithoutVersion)
+			request.Params.Bump,
+			request.Params.Pre,
+			request.Params.PreWithoutVersion,
+			request.Params.Build,
+			request.Params.BuildWithoutVersion,
+		)
 
 		newVersion, err = driver.Bump(bump)
 		if err != nil {

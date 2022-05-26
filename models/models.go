@@ -16,9 +16,11 @@ type InResponse struct {
 }
 
 type InParams struct {
-	Bump string `json:"bump"`
-	Pre  string `json:"pre"`
-	PreWithoutVersion bool `json:"pre_without_version"`
+	Bump                string `json:"bump"`
+	Pre                 string `json:"pre"`
+	Build               string `json:"build"`
+	PreWithoutVersion   bool   `json:"pre_without_version"`
+	BuildWithoutVersion bool   `json:"build_without_version"`
 }
 
 type OutRequest struct {
@@ -35,9 +37,11 @@ type OutResponse struct {
 type OutParams struct {
 	File string `json:"file"`
 
-	Bump string `json:"bump"`
-	Pre  string `json:"pre"`
-	PreWithoutVersion bool `json:"pre_without_version"`
+	Bump                string `json:"bump"`
+	Pre                 string `json:"pre"`
+	Build               string `json:"build"`
+	PreWithoutVersion   bool   `json:"pre_without_version"`
+	BuildWithoutVersion bool   `json:"build_without_version"`
 }
 
 type CheckRequest struct {

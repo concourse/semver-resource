@@ -37,9 +37,12 @@ func main() {
 	}
 
 	bumped := version.BumpFromParams(
-		request.Params.Bump, 
+		request.Params.Bump,
 		request.Params.Pre,
-		request.Params.PreWithoutVersion).Apply(inputVersion)
+		request.Params.PreWithoutVersion,
+		request.Params.Build,
+		request.Params.BuildWithoutVersion,
+	).Apply(inputVersion)
 
 	if !bumped.Equals(inputVersion) {
 		fmt.Fprintf(os.Stderr, "bumped locally from %s to %s\n", inputVersion, bumped)

@@ -14,9 +14,11 @@ var _ = Describe("BumpForParams", func() {
 	var (
 		version semver.Version
 
-		bumpParam string
-		preParam  string
-		preWithoutVersionParam bool
+		bumpParam                string
+		preParam                 string
+		buildParam               string
+		preWithoutVersionParam   bool
+		buildWithoutVersionParam bool
 	)
 
 	BeforeEach(func() {
@@ -28,11 +30,13 @@ var _ = Describe("BumpForParams", func() {
 
 		bumpParam = ""
 		preParam = ""
+		buildParam = ""
 		preWithoutVersionParam = false
+		buildWithoutVersionParam = false
 	})
 
 	JustBeforeEach(func() {
-		version = BumpFromParams(bumpParam, preParam, preWithoutVersionParam).Apply(version)
+		version = BumpFromParams(bumpParam, preParam, preWithoutVersionParam, buildParam, buildWithoutVersionParam).Apply(version)
 	})
 
 	for bump, result := range map[string]string{

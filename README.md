@@ -243,6 +243,8 @@ be one of:
     * Major version bump: version file = 1.2.4-SNAPSHOT, release version = 2.0.0
     * Minor version bump: version file = 1.2.4-SNAPSHOT, release version = 1.3.0
     * Promote snapshot: version file = 1.2.4-SNAPSHOT, release version = 1.2.4
+* `build_without_version`: *Optional.* Same as `pre_without_version` but for
+  build labels.
 
 ### Running the tests
 

@@ -75,7 +75,7 @@ func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
 		wrote, err := driver.writeVersion(newVersion)
 		if wrote {
 			break
-		} 
+		}
 	}
 	if err != nil {
 		return semver.Version{}, err
@@ -326,13 +326,13 @@ const pushRemoteRejectedString = "[remote rejected]"
 
 func (driver *GitDriver) writeVersion(newVersion semver.Version) (bool, error) {
 
-    path := filepath.Dir(driver.File)
-    if path != "/" && path != "." {
-        err := os.MkdirAll(filepath.Join(gitRepoDir, path), 0755)
-        if err != nil {
-            return false, err
-        }
-    }
+	path := filepath.Dir(driver.File)
+	if path != "/" && path != "." {
+		err := os.MkdirAll(filepath.Join(gitRepoDir, path), 0755)
+		if err != nil {
+			return false, err
+		}
+	}
 
 	err := ioutil.WriteFile(filepath.Join(gitRepoDir, driver.File), []byte(newVersion.String()+"\n"), 0644)
 	if err != nil {
@@ -366,6 +366,12 @@ func (driver *GitDriver) writeVersion(newVersion semver.Version) (bool, error) {
 
 	if err != nil {
 		os.Stderr.Write(commitOutput)
+		return false, err
+	}
+
+	//run a "git pull -r" before push
+	gitPull := exec.Command("git", "pull", "-r")
+	if err := gitPull.Run(); err != nil {
 		return false, err
 	}
 

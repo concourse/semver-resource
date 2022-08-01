@@ -369,9 +369,8 @@ func (driver *GitDriver) writeVersion(newVersion semver.Version) (bool, error) {
 		return false, err
 	}
 
-	//run a "git pull -r" before push
-	gitPull := exec.Command("git", "pull", "-r")
-	if err := gitPull.Run(); err != nil {
+	if err != nil {
+		os.Stderr.Write(pullOutput)
 		return false, err
 	}
 

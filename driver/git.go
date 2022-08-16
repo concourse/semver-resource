@@ -376,7 +376,7 @@ func (driver *GitDriver) writeVersion(newVersion semver.Version) (bool, error) {
 
 	if strings.Contains(string(pushOutput), pushRejectedString) ||
 		strings.Contains(string(pushOutput), pushRemoteRejectedString) {
-		//run a "git pull -r" before push
+
 		gitPull := exec.Command("git", "pull", "-r")
 		if err := gitPull.Run(); err != nil {
 			return false, err

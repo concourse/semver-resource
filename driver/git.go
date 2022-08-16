@@ -369,15 +369,23 @@ func (driver *GitDriver) writeVersion(newVersion semver.Version) (bool, error) {
 		return false, err
 	}
 
-	if err != nil {
-		os.Stderr.Write(pullOutput)
-		return false, err
-	}
-
 	gitPush := exec.Command("git", "push", "origin", "HEAD:"+driver.Branch)
 	gitPush.Dir = gitRepoDir
 
 	pushOutput, err := gitPush.CombinedOutput()
+
+	if strings.Contains(string(pushOutput), pushRejectedString) ||
+		strings.Contains(string(pushOutput), pushRemoteRejectedString) {
+		//run a "git pull -r" before push
+		gitPull := exec.Command("git", "pull", "-r")
+		if err := gitPull.Run(); err != nil {
+			return false, err
+		}
+		gitPush = exec.Command("git", "push", "-f", "origin", "HEAD:"+driver.Branch)
+		gitPush.Dir = gitRepoDir
+
+		pushOutput, err = gitPush.CombinedOutput()
+	}
 
 	if strings.Contains(string(pushOutput), falsePushString) ||
 		strings.Contains(string(pushOutput), pushRejectedString) ||

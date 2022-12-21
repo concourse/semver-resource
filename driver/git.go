@@ -72,10 +72,11 @@ func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
 
 		newVersion = bump.Apply(currentVersion)
 
-		wrote, err := driver.writeVersion(newVersion)
+		var wrote bool
+		wrote, err = driver.writeVersion(newVersion)
 		if wrote {
 			break
-		} 
+		}
 	}
 	if err != nil {
 		return semver.Version{}, err
@@ -101,14 +102,14 @@ func (driver *GitDriver) Set(newVersion semver.Version) error {
 			return err
 		}
 
-		wrote, err := driver.writeVersion(newVersion)
-		if err != nil {
-			return err
-		}
-
+		var wrote bool
+		wrote, err = driver.writeVersion(newVersion)
 		if wrote {
 			break
 		}
+	}
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -321,18 +322,18 @@ func (driver *GitDriver) readVersion() (semver.Version, bool, error) {
 
 const nothingToCommitString = "nothing to commit"
 const falsePushString = "Everything up-to-date"
-const pushRejectedString = "[rejected]"
-const pushRemoteRejectedString = "[remote rejected]"
+//const pushRejectedString = "[rejected]"
+//const pushRemoteRejectedString = "[remote rejected]"
 
 func (driver *GitDriver) writeVersion(newVersion semver.Version) (bool, error) {
 
-    path := filepath.Dir(driver.File)
-    if path != "/" && path != "." {
-        err := os.MkdirAll(filepath.Join(gitRepoDir, path), 0755)
-        if err != nil {
-            return false, err
-        }
-    }
+	path := filepath.Dir(driver.File)
+	if path != "/" && path != "." {
+		err := os.MkdirAll(filepath.Join(gitRepoDir, path), 0755)
+		if err != nil {
+			return false, err
+		}
+	}
 
 	err := ioutil.WriteFile(filepath.Join(gitRepoDir, driver.File), []byte(newVersion.String()+"\n"), 0644)
 	if err != nil {
@@ -374,11 +375,9 @@ func (driver *GitDriver) writeVersion(newVersion semver.Version) (bool, error) {
 
 	pushOutput, err := gitPush.CombinedOutput()
 
-	if strings.Contains(string(pushOutput), falsePushString) ||
-		strings.Contains(string(pushOutput), pushRejectedString) ||
-		strings.Contains(string(pushOutput), pushRemoteRejectedString) {
+	if strings.Contains(string(pushOutput), falsePushString) {
 		os.Stderr.Write(pushOutput)
-		return false, nil
+		return true, nil
 	}
 
 	if err != nil {

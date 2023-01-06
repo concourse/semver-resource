@@ -280,10 +280,9 @@ jobs:
 ```
 
 In above classic mode, Concourse will run periodic checks against the `semver` 
-resource `version`. Each check will do a `git clone` as the driver is `git`. On
-a large deployment that hosts thousands of pipelines, when there are a lot of
-`semver` resources, checks on `semver` resources may also bring burden to the
-git system as each check will invoke a `git clone`.
+resource `version`. Each check will do a `git clone` as the driver is `git`. 
+When there are a lot of `semver` resources, checks on `semver` resources may 
+also bring burden to the git system as each check will invoke a `git clone`.
 
 Given each `semver` resource requires a parameter `file` in `source`, `semver`
 resources are hard to enjoy [benefits of global resources](https://concourse-ci.org/global-resources.html#benefits-of-global-resources).
@@ -310,8 +309,8 @@ jobs:
 You may have noticed that, original `get: version` is changed to `put: version`.
 Now resource `version` is put-only, then Concourse will no longer run check on
 it. Param `get_latest: true` tells the `put` step to only fetch the latest version
-without bumping anything. Then the implied `get` will make a bump as the original
-`get: version`.
+without bumping anything. Then the implied `get` will fetch a version as a typical
+`get` step.
 
 If your Concourse or Git (e.g. Gitlab) systems are exhausted by `semver` resources' 
 checks, you may consider reforming pipelines to use this check-less usage.

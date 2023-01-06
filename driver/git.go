@@ -3,7 +3,6 @@ package driver
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/mail"
 	"os"
 	"os/exec"
@@ -225,7 +224,7 @@ func (driver *GitDriver) setUpKey() error {
 	if err != nil {
 		if os.IsNotExist(err) {
 			privateKey := strings.TrimSuffix(driver.PrivateKey, "\n")
-			err := ioutil.WriteFile(privateKeyPath, []byte(privateKey+"\n"), 0600)
+			err := os.WriteFile(privateKeyPath, []byte(privateKey+"\n"), 0600)
 			if err != nil {
 				return err
 			}
@@ -254,7 +253,7 @@ func (driver *GitDriver) setUpUsernamePassword() error {
 	if err != nil {
 		if os.IsNotExist(err) {
 			content := fmt.Sprintf("default login %s password %s", driver.Username, driver.Password)
-			err := ioutil.WriteFile(netRcPath, []byte(content), 0600)
+			err := os.WriteFile(netRcPath, []byte(content), 0600)
 			if err != nil {
 				return err
 			}
@@ -322,8 +321,6 @@ func (driver *GitDriver) readVersion() (semver.Version, bool, error) {
 
 const nothingToCommitString = "nothing to commit"
 const falsePushString = "Everything up-to-date"
-//const pushRejectedString = "[rejected]"
-//const pushRemoteRejectedString = "[remote rejected]"
 
 func (driver *GitDriver) writeVersion(newVersion semver.Version) (bool, error) {
 
@@ -335,7 +332,7 @@ func (driver *GitDriver) writeVersion(newVersion semver.Version) (bool, error) {
 		}
 	}
 
-	err := ioutil.WriteFile(filepath.Join(gitRepoDir, driver.File), []byte(newVersion.String()+"\n"), 0644)
+	err := os.WriteFile(filepath.Join(gitRepoDir, driver.File), []byte(newVersion.String()+"\n"), 0644)
 	if err != nil {
 		return false, err
 	}

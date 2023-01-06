@@ -3,7 +3,6 @@ package driver
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/mail"
 	"os"
 	"os/exec"
@@ -72,10 +71,11 @@ func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
 
 		newVersion = bump.Apply(currentVersion)
 
-		wrote, err := driver.writeVersion(newVersion)
+		var wrote bool
+		wrote, err = driver.writeVersion(newVersion)
 		if wrote {
 			break
-		} 
+		}
 	}
 	if err != nil {
 		return semver.Version{}, err
@@ -101,14 +101,14 @@ func (driver *GitDriver) Set(newVersion semver.Version) error {
 			return err
 		}
 
-		wrote, err := driver.writeVersion(newVersion)
-		if err != nil {
-			return err
-		}
-
+		var wrote bool
+		wrote, err = driver.writeVersion(newVersion)
 		if wrote {
 			break
 		}
+	}
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -224,7 +224,7 @@ func (driver *GitDriver) setUpKey() error {
 	if err != nil {
 		if os.IsNotExist(err) {
 			privateKey := strings.TrimSuffix(driver.PrivateKey, "\n")
-			err := ioutil.WriteFile(privateKeyPath, []byte(privateKey+"\n"), 0600)
+			err := os.WriteFile(privateKeyPath, []byte(privateKey+"\n"), 0600)
 			if err != nil {
 				return err
 			}
@@ -253,7 +253,7 @@ func (driver *GitDriver) setUpUsernamePassword() error {
 	if err != nil {
 		if os.IsNotExist(err) {
 			content := fmt.Sprintf("default login %s password %s", driver.Username, driver.Password)
-			err := ioutil.WriteFile(netRcPath, []byte(content), 0600)
+			err := os.WriteFile(netRcPath, []byte(content), 0600)
 			if err != nil {
 				return err
 			}
@@ -321,20 +321,18 @@ func (driver *GitDriver) readVersion() (semver.Version, bool, error) {
 
 const nothingToCommitString = "nothing to commit"
 const falsePushString = "Everything up-to-date"
-const pushRejectedString = "[rejected]"
-const pushRemoteRejectedString = "[remote rejected]"
 
 func (driver *GitDriver) writeVersion(newVersion semver.Version) (bool, error) {
 
-    path := filepath.Dir(driver.File)
-    if path != "/" && path != "." {
-        err := os.MkdirAll(filepath.Join(gitRepoDir, path), 0755)
-        if err != nil {
-            return false, err
-        }
-    }
+	path := filepath.Dir(driver.File)
+	if path != "/" && path != "." {
+		err := os.MkdirAll(filepath.Join(gitRepoDir, path), 0755)
+		if err != nil {
+			return false, err
+		}
+	}
 
-	err := ioutil.WriteFile(filepath.Join(gitRepoDir, driver.File), []byte(newVersion.String()+"\n"), 0644)
+	err := os.WriteFile(filepath.Join(gitRepoDir, driver.File), []byte(newVersion.String()+"\n"), 0644)
 	if err != nil {
 		return false, err
 	}
@@ -374,11 +372,9 @@ func (driver *GitDriver) writeVersion(newVersion semver.Version) (bool, error) {
 
 	pushOutput, err := gitPush.CombinedOutput()
 
-	if strings.Contains(string(pushOutput), falsePushString) ||
-		strings.Contains(string(pushOutput), pushRejectedString) ||
-		strings.Contains(string(pushOutput), pushRemoteRejectedString) {
+	if strings.Contains(string(pushOutput), falsePushString) {
 		os.Stderr.Write(pushOutput)
-		return false, nil
+		return true, nil
 	}
 
 	if err != nil {

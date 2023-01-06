@@ -33,7 +33,13 @@ func main() {
 	}
 
 	var newVersion semver.Version
-	if request.Params.File != "" {
+	if request.Params.GetLatest {
+		versions, err := driver.Check(nil)
+		if err != nil {
+			fatal("checking latest version", err)
+		}
+		newVersion = versions[0]
+	} else if request.Params.File != "" {
 		versionFile, err := os.Open(filepath.Join(sources, request.Params.File))
 		if err != nil {
 			fatal("opening version file", err)

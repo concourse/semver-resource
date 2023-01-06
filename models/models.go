@@ -42,6 +42,8 @@ type OutParams struct {
 	Build               string `json:"build"`
 	PreWithoutVersion   bool   `json:"pre_without_version"`
 	BuildWithoutVersion bool   `json:"build_without_version"`
+
+	GetLatest bool `json:"get_latest,omitempty"`
 }
 
 type CheckRequest struct {

@@ -154,7 +154,9 @@ plan:
 
 ### `check`: Report the current version number.
 
-Detects new versions by reading the file from the specified source. If the file is empty, it returns the `initial_version`. If the file is not empty, it returns the version specified in the file.
+Detects new versions by reading the file from the specified source. If the
+file is empty, it returns the `initial_version`. If the file is not empty, it
+returns the version specified in the file.
 
 ### `in`: Provide the version as a file, optionally bumping it.
 
@@ -205,6 +207,7 @@ because there's some new version `M`, the driver will re-apply the bump to get
 * `pre_without_version`: *Optional.* By default `false`, once it's set to `true` 
 then PreRelease will be bumped without a version number.
 
+* `get_latest`: *Optional.* See [Check-less Usage](#check-less-usage).
 
 ## Version Bumping Semantics
 
@@ -229,7 +232,10 @@ be one of:
   version is reset to `1`. If the version is *not* already a pre-release, then
   `pre` is added, starting at `1`.
 
-  The value of `pre` can be anything you like; the value will be `pre`-pended (_hah_) to a numeric value. For example, `pre: foo` will result in a semver of `x.y.z-foo.<number>`, `pre: alpha` becomes `x.y.z-alpha.<number>`, and `pre: my-preferred-naming-convention` becomes `x.y.z-my-preferred-naming-convention.<number>`
+  The value of `pre` can be anything you like; the value will be `pre`-pended (_hah_)
+  to a numeric value. For example, `pre: foo` will result in a semver of
+  `x.y.z-foo.<number>`, `pre: alpha` becomes `x.y.z-alpha.<number>`, and
+  `pre: my-preferred-naming-convention` becomes `x.y.z-my-preferred-naming-convention.<number>`
 
 * `build`: *Optional.* Same as `pre` but for build labels (e.g. `build: foo`
   will result in a semver of `x.y.z+foo.<number>`, `build: alpha` becomes
@@ -246,7 +252,76 @@ be one of:
 * `build_without_version`: *Optional.* Same as `pre_without_version` but for
   build labels.
 
-### Running the tests
+## Check-less Usage
+
+A classic usage of semver resource is like:
+
+```yaml
+resources:
+- name: version
+  type: semver
+  source:
+    driver: git
+    uri: git@github.com:concourse/concourse.git
+    branch: version
+    file: version
+    private_key: {{concourse-repo-private-key}}
+
+jobs:
+- name: some-job
+  plan:
+  - get: trigger-resource
+    trigger: true
+  - get: version
+    param: {bump: major}
+  - task: a-thing-that-needs-a-version
+  - put: version
+    params: {file: version/version}
+```
+
+In above classic mode, Concourse will run periodic checks against the `semver` 
+resource `version`. Each check will do a `git clone` as the driver is `git`. 
+When there are a lot of `semver` resources, checks on `semver` resources may 
+also bring burden to the git system as each check will invoke a `git clone`.
+
+Given each `semver` resource requires a parameter `file` in `source`, `semver`
+resources are hard to enjoy [benefits of global resources](https://concourse-ci.org/global-resources.html#benefits-of-global-resources).
+
+To mitigate the burden of checks, if a `semver` resource is not a job trigger,
+check-less mode can be used. The above sample then can be rewritten as:
+
+```yaml
+jobs:
+- name: some-job
+  plan:
+  - get: trigger-resource
+    trigger: true
+  - put: version # change `get` to `put`
+    param:
+      get_latest: true # and set `get_latest: true`
+    get_params:
+      bump: major
+  - task: a-thing-that-needs-a-version
+  - put: version
+    params: {file: version/version}
+```
+
+You may have noticed that, original `get: version` is changed to `put: version`.
+Now resource `version` is put-only, then Concourse will no longer run check on
+it. Param `get_latest: true` tells the `put` step to only fetch the latest version
+without bumping anything. Then the implied `get` will fetch a version as a typical
+`get` step.
+
+If your Concourse or Git (e.g. Gitlab) systems are exhausted by `semver` resources' 
+checks, you may consider reforming pipelines to use this check-less usage.
+
+The cons of check-less usage are:
+
+* you cannot use `put` step as a job trigger.
+* `put` step with `get_latest: true` will always fetch the latest version, thus
+  you are not able to pin an old version.
+
+## Running the tests
 
 The tests have been embedded with the `Dockerfile`; ensuring that the testing
 environment is consistent across any `docker` enabled platform. When the docker
@@ -260,7 +335,7 @@ docker build -t semver-resource --target tests -f dockerfiles/alpine/Dockerfile 
 docker build -t semver-resource --target tests -f dockerfiles/ubuntu/Dockerfile .
 ```
 
-#### Integration tests
+### Integration tests
 
 The integration requires two AWS S3 buckets, one without versioning and another
 with. The `docker build` step requires setting `--build-args` so the
@@ -287,7 +362,7 @@ docker build . -t semver-resource --target tests -f dockerfiles/ubuntu/Dockerfil
   --build-arg SEMVER_TESTING_REGION="some-region"
 ```
 
-### Contributing
+## Contributing
 
 Please make all pull requests to the `master` branch and ensure tests pass
 locally.

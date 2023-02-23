@@ -297,9 +297,8 @@ jobs:
   - get: trigger-resource
     trigger: true
   - put: version # change `get` to `put`
-    param:
+    params:
       get_latest: true # and set `get_latest: true`
-    get_params:
       bump: major
   - task: a-thing-that-needs-a-version
   - put: version

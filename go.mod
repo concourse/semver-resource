@@ -14,7 +14,7 @@ require (
 	github.com/onsi/gomega v0.0.0-20160305213952-7ce781ea776b
 	github.com/rackspace/gophercloud v1.0.1-0.20160229015950-f3d053460f7c
 	golang.org/x/oauth2 v0.0.0-20170807180024-9a379c6b3e95 // indirect
-	golang.org/x/text v0.3.6 // indirect
+	golang.org/x/text v0.3.8 // indirect
 	google.golang.org/api v0.0.0-20170901000407-955a3ae66b42
 	google.golang.org/appengine v1.6.5 // indirect
 	google.golang.org/genproto v0.0.0-20170818010345-ee236bd376b0 // indirect

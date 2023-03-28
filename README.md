@@ -174,7 +174,7 @@ Note that `bump` and `pre` don't update the version resource - they just
 modify the version that gets provided to the build. An output must be
 explicitly specified to actually update the version.
 
-* `pre_without_version`: *Optional.* By default `false`, once it's set to `true` 
+* `pre_without_version`: *Optional.* By default `false`, once it's set to `true`
 then PreRelease will be bumped without a version number.
 
 
@@ -204,7 +204,7 @@ if the driver supports it. That is, if we pull down version `N`, and bump to
 because there's some new version `M`, the driver will re-apply the bump to get
 `M+1`, and try again (in a loop).
 
-* `pre_without_version`: *Optional.* By default `false`, once it's set to `true` 
+* `pre_without_version`: *Optional.* By default `false`, once it's set to `true`
 then PreRelease will be bumped without a version number.
 
 * `get_latest`: *Optional.* See [Check-less Usage](#check-less-usage).
@@ -279,9 +279,9 @@ jobs:
     params: {file: version/version}
 ```
 
-In above classic mode, Concourse will run periodic checks against the `semver` 
-resource `version`. Each check will do a `git clone` as the driver is `git`. 
-When there are a lot of `semver` resources, checks on `semver` resources may 
+In above classic mode, Concourse will run periodic checks against the `semver`
+resource `version`. Each check will do a `git clone` as the driver is `git`.
+When there are a lot of `semver` resources, checks on `semver` resources may
 also bring burden to the git system as each check will invoke a `git clone`.
 
 Given each `semver` resource requires a parameter `file` in `source`, `semver`
@@ -311,12 +311,13 @@ it. Param `get_latest: true` tells the `put` step to only fetch the latest versi
 without bumping anything. Then the implied `get` will fetch a version as a typical
 `get` step.
 
-If your Concourse or Git (e.g. Gitlab) systems are exhausted by `semver` resources' 
+If your Concourse or Git (e.g. Gitlab) systems are exhausted by `semver` resources'
 checks, you may consider reforming pipelines to use this check-less usage.
 
 The cons of check-less usage are:
 
 * you cannot use `put` step as a job trigger.
+* you cannot use `passed` in a `put` step
 * `put` step with `get_latest: true` will always fetch the latest version, thus
   you are not able to pin an old version.
 

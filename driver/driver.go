@@ -7,6 +7,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/blang/semver"
@@ -72,7 +73,17 @@ func FromSource(source models.Source) (Driver, error) {
 			awsConfig.Endpoint = aws.String(source.Endpoint)
 		}
 
-		svc := s3.New(session.New(awsConfig))
+		s3Session := session.New(awsConfig)
+
+		var s3Client *s3.S3
+		if source.RoleArn != "" {
+			creds := stscreds.NewCredentials(s3Session, source.RoleArn)
+			s3Client = s3.New(s3Session, &aws.Config{Credentials: creds})
+		} else {
+			s3Client = s3.New(s3Session)
+		}
+
+		svc := s3Client
 
 		if source.UseV2Signing {
 			setv2Handlers(svc)

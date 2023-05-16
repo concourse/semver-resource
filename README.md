@@ -58,6 +58,8 @@ bucket.
 * `secret_access_key`: *Required.* The AWS secret key to use when accessing
 the bucket.
 
+* `assume_role_arn`: *Optional.* The AWS role to assume when using access keys.
+
 * `session_token`: *Optional.* The AWS session token to use when accessing
 the bucket.
 

@@ -62,6 +62,7 @@ type Source struct {
 	Key                  string `json:"key"`
 	AccessKeyID          string `json:"access_key_id"`
 	SecretAccessKey      string `json:"secret_access_key"`
+	AssumeRoleArn        string `json:"assume_role_arn"`
 	SessionToken         string `json:"session_token"`
 	RegionName           string `json:"region_name"`
 	Endpoint             string `json:"endpoint"`

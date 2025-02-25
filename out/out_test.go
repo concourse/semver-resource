@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -15,7 +15,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/concourse/semver-resource/models"
-	uuid "github.com/nu7hatch/gouuid"
+	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
@@ -31,7 +31,7 @@ var _ = Describe("Out", func() {
 	BeforeEach(func() {
 		var err error
 
-		source, err = ioutil.TempDir("", "out-source")
+		source, err = os.MkdirTemp("", "out-source")
 		Expect(err).NotTo(HaveOccurred())
 
 		outCmd = exec.Command(outPath, source)
@@ -48,7 +48,7 @@ var _ = Describe("Out", func() {
 		var svc *s3.S3
 
 		BeforeEach(func() {
-			guid, err := uuid.NewV4()
+			guid, err := uuid.NewRandom()
 			Expect(err).NotTo(HaveOccurred())
 
 			key = guid.String()
@@ -61,7 +61,9 @@ var _ = Describe("Out", func() {
 				MaxRetries:       aws.Int(12),
 			}
 
-			svc = s3.New(session.New(awsConfig))
+			sess, err := session.NewSession(awsConfig)
+			Expect(err).NotTo(HaveOccurred())
+			svc = s3.New(sess)
 
 			request = models.OutRequest{
 				Version: models.Version{},
@@ -111,7 +113,7 @@ var _ = Describe("Out", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			contents, err := ioutil.ReadAll(resp.Body)
+			contents, err := io.ReadAll(resp.Body)
 			Expect(err).NotTo(HaveOccurred())
 			defer resp.Body.Close()
 
@@ -136,7 +138,7 @@ var _ = Describe("Out", func() {
 
 			Context("when a valid version is in the file", func() {
 				BeforeEach(func() {
-					err := ioutil.WriteFile(filepath.Join(source, "number"), []byte("1.2.3"), 0644)
+					err := os.WriteFile(filepath.Join(source, "number"), []byte("1.2.3"), 0644)
 					Expect(err).NotTo(HaveOccurred())
 				})
 

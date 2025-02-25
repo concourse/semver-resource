@@ -3,7 +3,6 @@ package main_test
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -14,7 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/concourse/semver-resource/models"
-	"github.com/nu7hatch/gouuid"
+	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
@@ -31,7 +30,7 @@ var _ = Describe("Check", func() {
 	BeforeEach(func() {
 		var err error
 
-		tmpdir, err = ioutil.TempDir("", "in-destination")
+		tmpdir, err = os.MkdirTemp("", "in-destination")
 		Expect(err).NotTo(HaveOccurred())
 
 		destination = path.Join(tmpdir, "in-dir")
@@ -49,7 +48,7 @@ var _ = Describe("Check", func() {
 		var svc *s3.S3
 
 		BeforeEach(func() {
-			guid, err := uuid.NewV4()
+			guid, err := uuid.NewRandom()
 			Expect(err).NotTo(HaveOccurred())
 
 			key = guid.String()
@@ -61,8 +60,9 @@ var _ = Describe("Check", func() {
 				S3ForcePathStyle: aws.Bool(true),
 				MaxRetries:       aws.Int(12),
 			}
-
-			svc = s3.New(session.New(awsConfig))
+			sess, err := session.NewSession(awsConfig)
+			Expect(err).NotTo(HaveOccurred())
+			svc = s3.New(sess)
 
 			request = models.CheckRequest{
 				Version: models.Version{},

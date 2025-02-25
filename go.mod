@@ -8,7 +8,7 @@ require (
 	cloud.google.com/go/storage v1.39.1
 	github.com/aws/aws-sdk-go v1.55.6
 	github.com/blang/semver v3.5.1+incompatible
-	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
+	github.com/google/uuid v1.6.0
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.36.2
 	github.com/rackspace/gophercloud v1.0.1-0.20160229015950-f3d053460f7c
@@ -28,7 +28,6 @@ require (
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.4 // indirect
 	github.com/googleapis/gax-go/v2 v2.14.1 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect

@@ -301,6 +301,7 @@ jobs:
   - put: version # change `get` to `put`
     params:
       get_latest: true # and set `get_latest: true`
+    get_params: # and put the `bump` param in `get_params`
       bump: major
   - task: a-thing-that-needs-a-version
   - put: version

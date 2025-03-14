@@ -2,7 +2,6 @@ package driver_test
 
 import (
 	"io"
-	"io/ioutil"
 	"strings"
 
 	"cloud.google.com/go/storage"
@@ -213,7 +212,7 @@ func (s *FakeIOServicer) GetObject(bucketName, objectName string) (io.ReadCloser
 	s.BucketName = bucketName
 	s.ObjectName = objectName
 
-	return ioutil.NopCloser(strings.NewReader(s.Body)), s.GetError
+	return io.NopCloser(strings.NewReader(s.Body)), s.GetError
 }
 
 func (s *FakeIOServicer) PutObject(bucketName, objectName string) (io.WriteCloser, error) {

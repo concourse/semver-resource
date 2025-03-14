@@ -3,7 +3,7 @@ package driver
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -35,7 +35,7 @@ func (driver *S3Driver) Bump(bump version.Bump) (semver.Version, error) {
 		Key:    aws.String(driver.Key),
 	})
 	if err == nil {
-		bucketNumberPayload, err := ioutil.ReadAll(resp.Body)
+		bucketNumberPayload, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return semver.Version{}, err
 		}
@@ -87,7 +87,7 @@ func (driver *S3Driver) Check(cursor *semver.Version) ([]semver.Version, error) 
 		Key:    aws.String(driver.Key),
 	})
 	if err == nil {
-		bucketNumberPayload, err := ioutil.ReadAll(resp.Body)
+		bucketNumberPayload, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return []semver.Version{}, err
 		}

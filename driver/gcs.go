@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 
 	"os"
 
@@ -69,7 +68,7 @@ func (d *GCSDriver) Check(cursor *semver.Version) ([]semver.Version, error) {
 	}
 	defer r.Close()
 
-	b, err := ioutil.ReadAll(r)
+	b, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +91,7 @@ type GCSIOServicer struct {
 }
 
 func (s *GCSIOServicer) GetObject(bucketName, objectName string) (io.ReadCloser, error) {
-	temp, err := ioutil.TempFile("", "auth-credentials.json")
+	temp, err := os.CreateTemp("", "auth-credentials.json")
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +117,7 @@ func (s *GCSIOServicer) GetObject(bucketName, objectName string) (io.ReadCloser,
 }
 
 func (s *GCSIOServicer) PutObject(bucketName, objectName string) (io.WriteCloser, error) {
-	temp, err := ioutil.TempFile("", "auth-credentials.json")
+	temp, err := os.CreateTemp("", "auth-credentials.json")
 	if err != nil {
 		return nil, err
 	}

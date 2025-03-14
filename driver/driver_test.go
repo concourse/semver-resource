@@ -6,7 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/concourse/semver-resource/driver"
 	"github.com/concourse/semver-resource/models"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

@@ -11,13 +11,12 @@ import (
 	"github.com/rackspace/gophercloud/openstack/objectstorage/v1/containers"
 	"github.com/rackspace/gophercloud/openstack/objectstorage/v1/objects"
 
-	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/config"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
 var client *gophercloud.ServiceClient
-var containerName = fmt.Sprintf("test_container_%d", config.GinkgoConfig.ParallelNode)
+var containerName = fmt.Sprintf("test_container_%d", GinkgoParallelProcess())
 
 var _ = Describe("Swift", func() {
 	BeforeSuite(func() {

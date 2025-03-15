@@ -11,16 +11,15 @@ import (
 	"github.com/rackspace/gophercloud/openstack/objectstorage/v1/containers"
 	"github.com/rackspace/gophercloud/openstack/objectstorage/v1/objects"
 
-	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/config"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
 var client *gophercloud.ServiceClient
-var containerName = fmt.Sprintf("test_container_%d", config.GinkgoConfig.ParallelNode)
+var containerName = fmt.Sprintf("test_container_%d", GinkgoParallelProcess())
 
-var _ = Describe("Swift", func() {
-	BeforeSuite(func() {
+var _ = Describe("Swift", Ordered, func() {
+	BeforeAll(func() {
 		identityEndpoint := os.Getenv("OS_AUTH_URL")
 		tenantID := os.Getenv("OS_TENANT_ID")
 		tenantName := os.Getenv("OS_TENANT_NAME")
@@ -45,7 +44,7 @@ var _ = Describe("Swift", func() {
 		}
 	})
 
-	AfterSuite(func() {
+	AfterAll(func() {
 		if client != nil {
 			err := deleteContainer(containerName)
 			Expect(err).To(BeNil())

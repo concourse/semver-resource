@@ -2,7 +2,6 @@ package driver_test
 
 import (
 	"io"
-	"io/ioutil"
 	"strings"
 
 	"cloud.google.com/go/storage"
@@ -10,7 +9,7 @@ import (
 	. "github.com/concourse/semver-resource/driver"
 	"github.com/concourse/semver-resource/version"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
 )
@@ -148,7 +147,7 @@ var _ = Describe("GCS Driver", func() {
 				Expect(s.BucketName).To(Equal("fake-bucket"))
 				Expect(s.ObjectName).To(Equal("fake-object"))
 
-				Expect(versions).To(HaveLen(1))				
+				Expect(versions).To(HaveLen(1))
 				Expect(versions[0]).To(Equal(semver.Version{
 					Major: 2,
 					Minor: 6,
@@ -213,7 +212,7 @@ func (s *FakeIOServicer) GetObject(bucketName, objectName string) (io.ReadCloser
 	s.BucketName = bucketName
 	s.ObjectName = objectName
 
-	return ioutil.NopCloser(strings.NewReader(s.Body)), s.GetError
+	return io.NopCloser(strings.NewReader(s.Body)), s.GetError
 }
 
 func (s *FakeIOServicer) PutObject(bucketName, objectName string) (io.WriteCloser, error) {

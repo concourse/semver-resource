@@ -19,7 +19,7 @@ var client *gophercloud.ServiceClient
 var containerName = fmt.Sprintf("test_container_%d", GinkgoParallelProcess())
 
 var _ = Describe("Swift", func() {
-	BeforeSuite(func() {
+	BeforeAll(func() {
 		identityEndpoint := os.Getenv("OS_AUTH_URL")
 		tenantID := os.Getenv("OS_TENANT_ID")
 		tenantName := os.Getenv("OS_TENANT_NAME")
@@ -44,7 +44,7 @@ var _ = Describe("Swift", func() {
 		}
 	})
 
-	AfterSuite(func() {
+	AfterAll(func() {
 		if client != nil {
 			err := deleteContainer(containerName)
 			Expect(err).To(BeNil())

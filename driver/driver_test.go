@@ -3,7 +3,7 @@ package driver_test
 import (
 	"net/http"
 
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/concourse/semver-resource/driver"
 	"github.com/concourse/semver-resource/models"
 	. "github.com/onsi/ginkgo/v2"
@@ -25,9 +25,9 @@ var _ = Describe("Driver", func() {
 			s3Driver, ok := aDriver.(*driver.S3Driver)
 			Expect(ok).To(BeTrue())
 			Expect(s3Driver.Svc).To(Not(BeNil()))
-			svc, ok := s3Driver.Svc.(*s3.S3)
+			svc, ok := s3Driver.Svc.(*s3.Client)
 			Expect(ok).To(BeTrue())
-			Expect(svc.Client.Config.HTTPClient).Should(BeEquivalentTo(http.DefaultClient))
+			Expect(svc.Options().HTTPClient).Should(BeEquivalentTo(http.DefaultClient))
 		})
 		It("returns a s3 driver with a transport that ignores ssl verification", func() {
 			src.SkipSSLVerification = true
@@ -37,10 +37,11 @@ var _ = Describe("Driver", func() {
 			s3Driver, ok := aDriver.(*driver.S3Driver)
 			Expect(ok).To(BeTrue())
 			Expect(s3Driver.Svc).To(Not(BeNil()))
-			svc, ok := s3Driver.Svc.(*s3.S3)
+			svc, ok := s3Driver.Svc.(*s3.Client)
 			Expect(ok).To(BeTrue())
-			Expect(svc.Client.Config.HTTPClient.Transport).ToNot(BeNil())
-			transport, ok := svc.Client.Config.HTTPClient.Transport.(*http.Transport)
+			httpClient, ok := svc.Options().HTTPClient.(*http.Client)
+			Expect(httpClient.Transport).ToNot(BeNil())
+			transport, ok := httpClient.Transport.(*http.Transport)
 			Expect(ok).To(BeTrue())
 			Expect(transport.TLSClientConfig.InsecureSkipVerify).Should(BeTrue())
 		})

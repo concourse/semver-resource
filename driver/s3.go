@@ -2,20 +2,22 @@ package driver
 
 import (
 	"bytes"
+	"context"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/blang/semver"
 	"github.com/concourse/semver-resource/version"
 )
 
 type Servicer interface {
-	GetObject(*s3.GetObjectInput) (*s3.GetObjectOutput, error)
-	PutObject(*s3.PutObjectInput) (*s3.PutObjectOutput, error)
+	GetObject(context.Context, *s3.GetObjectInput, ...func(*s3.Options)) (*s3.GetObjectOutput, error)
+	PutObject(context.Context, *s3.PutObjectInput, ...func(*s3.Options)) (*s3.PutObjectOutput, error)
 }
 
 type S3Driver struct {
@@ -30,10 +32,11 @@ type S3Driver struct {
 func (driver *S3Driver) Bump(bump version.Bump) (semver.Version, error) {
 	var currentVersion semver.Version
 
-	resp, err := driver.Svc.GetObject(&s3.GetObjectInput{
-		Bucket: aws.String(driver.BucketName),
-		Key:    aws.String(driver.Key),
-	})
+	resp, err := driver.Svc.GetObject(context.TODO(),
+		&s3.GetObjectInput{
+			Bucket: aws.String(driver.BucketName),
+			Key:    aws.String(driver.Key),
+		})
 	if err == nil {
 		bucketNumberPayload, err := io.ReadAll(resp.Body)
 		if err != nil {
@@ -46,10 +49,13 @@ func (driver *S3Driver) Bump(bump version.Bump) (semver.Version, error) {
 		if err != nil {
 			return semver.Version{}, err
 		}
-	} else if s3err, ok := err.(awserr.RequestFailure); ok && s3err.StatusCode() == 404 {
-		currentVersion = driver.InitialVersion
 	} else {
-		return semver.Version{}, err
+		var noSuchKey *types.NoSuchKey
+		if errors.As(err, &noSuchKey) {
+			currentVersion = driver.InitialVersion
+		} else {
+			return semver.Version{}, err
+		}
 	}
 
 	newVersion := bump.Apply(currentVersion)
@@ -68,21 +74,20 @@ func (driver *S3Driver) Set(newVersion semver.Version) error {
 		Key:         aws.String(driver.Key),
 		ContentType: aws.String("text/plain"),
 		Body:        bytes.NewReader([]byte(newVersion.String())),
-		ACL:         aws.String(s3.ObjectCannedACLPrivate),
 	}
 
 	if len(driver.ServerSideEncryption) > 0 {
-		params.ServerSideEncryption = aws.String(driver.ServerSideEncryption)
+		params.ServerSideEncryption = types.ServerSideEncryption(driver.ServerSideEncryption)
 	}
 
-	_, err := driver.Svc.PutObject(params)
+	_, err := driver.Svc.PutObject(context.TODO(), params)
 	return err
 }
 
 func (driver *S3Driver) Check(cursor *semver.Version) ([]semver.Version, error) {
 	var bucketNumber string
 
-	resp, err := driver.Svc.GetObject(&s3.GetObjectInput{
+	resp, err := driver.Svc.GetObject(context.TODO(), &s3.GetObjectInput{
 		Bucket: aws.String(driver.BucketName),
 		Key:    aws.String(driver.Key),
 	})
@@ -94,14 +99,17 @@ func (driver *S3Driver) Check(cursor *semver.Version) ([]semver.Version, error) 
 		defer resp.Body.Close()
 
 		bucketNumber = string(bucketNumberPayload)
-	} else if s3err, ok := err.(awserr.RequestFailure); ok && s3err.StatusCode() == 404 {
-		if cursor == nil {
-			return []semver.Version{driver.InitialVersion}, nil
-		} else {
-			return []semver.Version{}, nil
-		}
 	} else {
-		return nil, err
+		var noSuchKey *types.NoSuchKey
+		if errors.As(err, &noSuchKey) {
+			if cursor == nil {
+				return []semver.Version{driver.InitialVersion}, nil
+			} else {
+				return []semver.Version{}, nil
+			}
+		} else {
+			return nil, err
+		}
 	}
 
 	bucketVersion, err := semver.Parse(bucketNumber)

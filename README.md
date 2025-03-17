@@ -65,7 +65,7 @@ the bucket.
 
 * `region_name`: *Optional. Default `us-east-1`.* The region the bucket is in.
 
-* `endpoint`: *Optional.* Custom endpoint for using S3 compatible provider.
+* `endpoint`: *Optional.* Custom endpoint for using S3 compatible provider. Can be a hostname or URL.
 
 * `disable_ssl`: *Optional.* Disable SSL for the endpoint, useful for S3 compatible providers without SSL.
 
@@ -74,7 +74,7 @@ the bucket.
 * `server_side_encryption`: *Optional.* The server-side encryption algorithm
 used when storing the version object (e.g. `AES256`, `aws:kms`).
 
-* `use_v2_signing`: *Optional.* Use v2 signing, default false.
+* `use_v2_signing`: *Deprecated.* No longer used after upgrading to v2 of the AWS Go SDK.
 
 ### `swift` Driver
 

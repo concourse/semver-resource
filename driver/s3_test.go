@@ -1,7 +1,10 @@
 package driver_test
 
 import (
-	"github.com/aws/aws-sdk-go/service/s3"
+	"context"
+
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/blang/semver"
 	"github.com/concourse/semver-resource/driver"
 	. "github.com/onsi/ginkgo/v2"
@@ -17,7 +20,7 @@ var _ = Describe("S3 Driver", func() {
 				ServerSideEncryption: "my-encryption-schema",
 			}
 			d.Set(semver.Version{})
-			Expect(*s.params.ServerSideEncryption).To(Equal("my-encryption-schema"))
+			Expect(s.params.ServerSideEncryption).To(Equal(types.ServerSideEncryption("my-encryption-schema")))
 		})
 		It("leaves it empty when disabled", func() {
 			s := &service{}
@@ -25,7 +28,7 @@ var _ = Describe("S3 Driver", func() {
 				Svc: s,
 			}
 			d.Set(semver.Version{})
-			Expect(s.params.ServerSideEncryption).To(BeNil())
+			Expect(s.params.ServerSideEncryption).To(BeEmpty())
 		})
 	})
 })
@@ -34,11 +37,11 @@ type service struct {
 	params *s3.PutObjectInput
 }
 
-func (*service) GetObject(*s3.GetObjectInput) (*s3.GetObjectOutput, error) {
+func (*service) GetObject(ctx context.Context, p *s3.GetObjectInput, opts ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
 	return nil, nil
 }
 
-func (s *service) PutObject(p *s3.PutObjectInput) (*s3.PutObjectOutput, error) {
+func (s *service) PutObject(ctx context.Context, p *s3.PutObjectInput, opts ...func(*s3.Options)) (*s3.PutObjectOutput, error) {
 	s.params = p
 	return nil, nil
 }

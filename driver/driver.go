@@ -1,15 +1,18 @@
 package driver
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"net/url"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/blang/semver"
 	"github.com/concourse/semver-resource/models"
 	"github.com/concourse/semver-resource/version"
@@ -38,16 +41,14 @@ func FromSource(source models.Source) (Driver, error) {
 
 	switch source.Driver {
 	case models.DriverUnspecified, models.DriverS3:
-		var creds *credentials.Credentials
+		var credsProvider aws.CredentialsProvider
 
-		if source.AccessKeyID == "" && source.SecretAccessKey == "" {
-			creds = credentials.AnonymousCredentials
-		} else {
-			creds = credentials.NewStaticCredentials(source.AccessKeyID, source.SecretAccessKey, source.SessionToken)
+		if source.AccessKeyID != "" && source.SecretAccessKey != "" {
+			credsProvider = credentials.NewStaticCredentialsProvider(source.AccessKeyID, source.SecretAccessKey, source.SessionToken)
 		}
 
 		regionName := source.RegionName
-		if len(regionName) == 0 {
+		if regionName == "" {
 			regionName = "us-east-1"
 		}
 
@@ -60,39 +61,67 @@ func FromSource(source models.Source) (Driver, error) {
 			httpClient = http.DefaultClient
 		}
 
-		awsConfig := &aws.Config{
-			Region:           aws.String(regionName),
-			Credentials:      creds,
-			S3ForcePathStyle: aws.Bool(true),
-			MaxRetries:       aws.Int(maxRetries),
-			DisableSSL:       aws.Bool(source.DisableSSL),
-			HTTPClient:       httpClient,
+		cfg, err := config.LoadDefaultConfig(context.TODO(),
+			config.WithRegion(regionName),
+			config.WithHTTPClient(httpClient),
+			config.WithRetryMaxAttempts(maxRetries),
+			config.WithCredentialsProvider(credsProvider),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error loading default aws config: %w", err)
 		}
 
-		if len(source.Endpoint) != 0 {
-			awsConfig.Endpoint = aws.String(source.Endpoint)
-		}
-
-		s3Session := session.New(awsConfig)
-
-		var s3Client *s3.S3
 		if source.AssumeRoleArn != "" {
-			creds := stscreds.NewCredentials(s3Session, source.AssumeRoleArn)
-			s3Client = s3.New(s3Session, &aws.Config{Credentials: creds})
-		} else {
-			s3Client = s3.New(s3Session)
+			stsClient := sts.NewFromConfig(cfg)
+			roleCreds := stscreds.NewAssumeRoleProvider(stsClient, source.AssumeRoleArn)
+			creds, err := roleCreds.Retrieve(context.TODO())
+			if err != nil {
+				return nil, fmt.Errorf("error assuming role: %w", err)
+			}
+
+			cfg.Credentials = aws.NewCredentialsCache(credentials.NewStaticCredentialsProvider(
+				creds.AccessKeyID,
+				creds.SecretAccessKey,
+				creds.SessionToken,
+			))
 		}
 
-		svc := s3Client
+		s3Opts := []func(*s3.Options){
+			func(o *s3.Options) {
+				o.UsePathStyle = true
+			},
+		}
+
+		if source.Endpoint != "" {
+			endpoint := source.Endpoint
+			u, err := url.Parse(source.Endpoint)
+			if err != nil {
+				return nil, fmt.Errorf("error parsing given endpoint: %w", err)
+			}
+			if u.Scheme == "" {
+				// source.Endpoint is a hostname
+				scheme := "https://"
+				if source.DisableSSL {
+					scheme = "http://"
+				}
+				endpoint = scheme + source.Endpoint
+			}
+
+			s3Opts = append(s3Opts, func(o *s3.Options) {
+				o.BaseEndpoint = &endpoint
+			})
+		}
+
+		s3Client := s3.NewFromConfig(cfg, s3Opts...)
 
 		if source.UseV2Signing {
-			setv2Handlers(svc)
+			//TODO: warn this setting is deprecated. The SDK only has v4 signing
 		}
 
 		return &S3Driver{
 			InitialVersion: initialVersion,
 
-			Svc:                  svc,
+			Svc:                  s3Client,
 			BucketName:           source.Bucket,
 			Key:                  source.Key,
 			ServerSideEncryption: source.ServerSideEncryption,

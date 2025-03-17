@@ -2,16 +2,17 @@ package main_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"os"
 	"os/exec"
 	"path"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/concourse/semver-resource/models"
 	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
@@ -45,7 +46,7 @@ var _ = Describe("Check", func() {
 	Context("when executed", func() {
 		var request models.CheckRequest
 		var response models.CheckResponse
-		var svc *s3.S3
+		var svc *s3.Client
 
 		BeforeEach(func() {
 			guid, err := uuid.NewRandom()
@@ -53,16 +54,16 @@ var _ = Describe("Check", func() {
 
 			key = guid.String()
 
-			creds := credentials.NewStaticCredentials(accessKeyID, secretAccessKey, "")
-			awsConfig := &aws.Config{
-				Region:           aws.String(regionName),
-				Credentials:      creds,
-				S3ForcePathStyle: aws.Bool(true),
-				MaxRetries:       aws.Int(12),
-			}
-			sess, err := session.NewSession(awsConfig)
+			creds := credentials.NewStaticCredentialsProvider(accessKeyID, secretAccessKey, "")
+			cfg, err := config.LoadDefaultConfig(context.TODO(),
+				config.WithRegion(regionName),
+				config.WithRetryMaxAttempts(12),
+				config.WithCredentialsProvider(creds),
+			)
 			Expect(err).NotTo(HaveOccurred())
-			svc = s3.New(sess)
+			svc = s3.NewFromConfig(cfg, func(o *s3.Options) {
+				o.UsePathStyle = true
+			})
 
 			request = models.CheckRequest{
 				Version: models.Version{},
@@ -80,7 +81,7 @@ var _ = Describe("Check", func() {
 		})
 
 		AfterEach(func() {
-			_, err := svc.DeleteObject(&s3.DeleteObjectInput{
+			_, err := svc.DeleteObject(context.TODO(), &s3.DeleteObjectInput{
 				Bucket: aws.String(bucketName),
 				Key:    aws.String(key),
 			})
@@ -105,12 +106,11 @@ var _ = Describe("Check", func() {
 		})
 
 		putVersion := func(version string) {
-			_, err := svc.PutObject(&s3.PutObjectInput{
+			_, err := svc.PutObject(context.TODO(), &s3.PutObjectInput{
 				Bucket:      aws.String(bucketName),
 				Key:         aws.String(key),
 				ContentType: aws.String("text/plain"),
 				Body:        bytes.NewReader([]byte(version)),
-				ACL:         aws.String(s3.ObjectCannedACLPrivate),
 			})
 			Expect(err).NotTo(HaveOccurred())
 		}

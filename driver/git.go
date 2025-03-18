@@ -348,8 +348,8 @@ func (driver *GitDriver) writeVersion(newVersion semver.Version) (bool, error) {
 	if driver.CommitMessage == "" {
 		commitMessage = "bump to " + newVersion.String()
 	} else {
-		commitMessage = strings.Replace(driver.CommitMessage, "%version%", newVersion.String(), -1)
-		commitMessage = strings.Replace(commitMessage, "%file%", driver.File, -1)
+		commitMessage = strings.ReplaceAll(driver.CommitMessage, "%version%", newVersion.String())
+		commitMessage = strings.ReplaceAll(commitMessage, "%file%", driver.File)
 	}
 
 	gitCommit := exec.Command("git", "commit", "-m", commitMessage)

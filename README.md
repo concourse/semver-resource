@@ -76,6 +76,13 @@ used when storing the version object (e.g. `AES256`, `aws:kms`).
 
 * `use_v2_signing`: *Deprecated.* No longer used after upgrading to v2 of the AWS Go SDK.
 
+The following IAM permissions are required with a resource ARN like
+`"arn:aws:s3:::BUCKET_NAME/*"`. You could use the exact key instead of `/*` if
+you wish:
+
+* `s3:PutObject`
+* `s3:GetObject`
+
 ### `swift` Driver
 
 The `swift` driver works by modifying a file in a container.

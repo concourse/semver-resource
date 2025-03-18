@@ -139,5 +139,7 @@ func (s *GCSIOServicer) PutObject(bucketName, objectName string) (io.WriteCloser
 	bkt := client.Bucket(bucketName)
 	obj := bkt.Object(objectName)
 
-	return obj.NewWriter(context.Background()), nil
+	w := obj.NewWriter(context.Background())
+	w.CacheControl = "private"
+	return w, nil
 }

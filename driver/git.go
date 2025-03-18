@@ -178,7 +178,7 @@ func (driver *GitDriver) setUpRepo() error {
 
 func (driver *GitDriver) skipSSLVerificationIfNeeded() error {
 	if driver.SkipSSLVerification {
-		gitSkipSSLVerification := exec.Command("git", "config", "--global", "http.sslVerify", "'false'")
+		gitSkipSSLVerification := exec.Command("git", "config", "--global", "http.sslVerify", "false")
 		gitSkipSSLVerification.Stdout = os.Stderr
 		gitSkipSSLVerification.Stderr = os.Stderr
 		if err := gitSkipSSLVerification.Run(); err != nil {

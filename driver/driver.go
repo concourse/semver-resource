@@ -44,7 +44,11 @@ func FromSource(source models.Source) (Driver, error) {
 		var credsProvider aws.CredentialsProvider
 
 		if source.AccessKeyID != "" && source.SecretAccessKey != "" {
-			credsProvider = credentials.NewStaticCredentialsProvider(source.AccessKeyID, source.SecretAccessKey, source.SessionToken)
+			credsProvider = aws.NewCredentialsCache(credentials.NewStaticCredentialsProvider(source.AccessKeyID, source.SecretAccessKey, source.SessionToken))
+			_, err := credsProvider.Retrieve(context.Background())
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		regionName := source.RegionName
@@ -113,10 +117,6 @@ func FromSource(source models.Source) (Driver, error) {
 		}
 
 		s3Client := s3.NewFromConfig(cfg, s3Opts...)
-
-		if source.UseV2Signing {
-			//TODO: warn this setting is deprecated. The SDK only has v4 signing
-		}
 
 		return &S3Driver{
 			InitialVersion: initialVersion,

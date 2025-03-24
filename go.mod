@@ -13,10 +13,10 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.33.17
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/google/uuid v1.6.0
-	github.com/onsi/ginkgo/v2 v2.23.0
-	github.com/onsi/gomega v1.36.2
+	github.com/onsi/ginkgo/v2 v2.23.3
+	github.com/onsi/gomega v1.36.3
 	github.com/rackspace/gophercloud v1.0.1-0.20160229015950-f3d053460f7c
-	google.golang.org/api v0.226.0
+	google.golang.org/api v0.227.0
 )
 
 require (

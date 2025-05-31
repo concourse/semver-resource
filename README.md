@@ -2,6 +2,10 @@
 
 A resource for managing a version number. Persists the version number in one of several backing stores.
 
+<a href="https://ci.concourse-ci.org/teams/main/pipelines/resource/jobs/build?vars.type=%22semver%22">
+  <img src="https://ci.concourse-ci.org/api/v1/teams/main/pipelines/resource/jobs/build/badge?vars.type=%22semver%22" alt="Build Status">
+</a>
+
 
 ## Source Configuration
 

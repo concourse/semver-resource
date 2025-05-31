@@ -1,40 +1,39 @@
-ARG base_image
+ARG base_image=cgr.dev/chainguard/wolfi-base
 ARG builder_image=concourse/golang-builder
 
-FROM ${builder_image} as builder
+ARG BUILDPLATFORM
+FROM --platform=${BUILDPLATFORM} ${builder_image} AS builder
+
+ARG TARGETOS
+ARG TARGETARCH
+ENV GOOS=$TARGETOS
+ENV GOARCH=$TARGETARCH
+
 COPY . /src
 WORKDIR /src
-ENV CGO_ENABLED 0
-
-ARG goproxy
-ENV GOPROXY=$goproxy
-
-RUN go get -d ./...
+ENV CGO_ENABLED=0
+RUN go mod download
 RUN go build -o /assets/in ./in
 RUN go build -o /assets/out ./out
 RUN go build -o /assets/check ./check
 RUN set -e; for pkg in $(go list ./...); do \
-		go test -o "/tests/$(basename $pkg).test" -c $pkg; \
-	done
+    go test -o "/tests/$(basename $pkg).test" -c $pkg; \
+    done
 
 FROM ${base_image} AS resource
-USER root
-RUN apt update && apt upgrade -y -o Dpkg::Options::="--force-confdef"
-RUN apt update \
-      && DEBIAN_FRONTEND=noninteractive \
-      apt install -y --no-install-recommends \
-        tzdata \
-        ca-certificates \
-        git \
-        jq \
-        openssh-client \
-      && rm -rf /var/lib/apt/lists/*
+RUN apk --no-cache add \
+    tzdata \
+    ca-certificates \
+    git \
+    jq \
+    openssh-client
 RUN git config --global user.email "git@localhost"
 RUN git config --global user.name "git"
 COPY --from=builder assets/ /opt/resource/
 RUN chmod +x /opt/resource/*
 
 FROM resource AS tests
+RUN apk --no-cache add bash cmd:ssh-keygen
 ARG SEMVER_TESTING_ACCESS_KEY_ID
 ARG SEMVER_TESTING_SECRET_ACCESS_KEY
 ARG SEMVER_TESTING_BUCKET
@@ -43,8 +42,8 @@ ARG SEMVER_TESTING_V2_SIGNING
 COPY --from=builder /tests /go-tests
 WORKDIR /go-tests
 RUN set -e; for test in /go-tests/*.test; do \
-		$test; \
-	done
+    $test; \
+    done
 COPY test/ /opt/resource-tests
 RUN /opt/resource-tests/all.sh
 

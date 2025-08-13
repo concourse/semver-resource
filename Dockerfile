@@ -26,14 +26,15 @@ RUN apk --no-cache add \
     ca-certificates \
     git \
     jq \
-    openssh-client
+    openssh-client \
+    cmd:ssh-keygen
 RUN git config --global user.email "git@localhost"
 RUN git config --global user.name "git"
 COPY --from=builder assets/ /opt/resource/
 RUN chmod +x /opt/resource/*
 
 FROM resource AS tests
-RUN apk --no-cache add bash cmd:ssh-keygen
+RUN apk --no-cache add bash
 ARG SEMVER_TESTING_ACCESS_KEY_ID
 ARG SEMVER_TESTING_SECRET_ACCESS_KEY
 ARG SEMVER_TESTING_BUCKET

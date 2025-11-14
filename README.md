@@ -41,8 +41,6 @@ The `git` driver works by modifying a file in a repository with every bump. The
 * `git_user`: *Optional.* The git identity to use when pushing to the
   repository support RFC 5322 address of the form "Gogh Fir \<gf@example.com\>" or "foo@example.com".
 
-* `depth`: *Optional.* If a positive integer is given, shallow clone the repository using the --depth option.
-
 * `skip_ssl_verification`: *Optional.* Skip SSL verification for git endpoint. Useful for git compatible providers using self-signed SSL certificates.
 
 * `commit_message`: *Optional.* If specified overides the default commit message with the one provided. The user can use %version% and %file% to get them replaced automatically with the correct values.

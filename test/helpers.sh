@@ -128,6 +128,17 @@ check_uri_from() {
   }" | ${resource_dir}/check | tee /dev/stderr
 }
 
+check_uri_with_file() {
+  jq -n "{
+    source: {
+      driver: \"git\",
+      uri: $(echo $1 | jq -R .),
+      branch: \"master\",
+      file: $(echo $2 | jq -R .)
+    }
+  }" | ${resource_dir}/check | tee /dev/stderr
+}
+
 put_uri() {
   jq -n "{
     source: {

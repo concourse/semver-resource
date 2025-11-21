@@ -36,7 +36,6 @@ type GitDriver struct {
 	Password            string
 	File                string
 	GitUser             string
-	Depth               string
 	CommitMessage       string
 	SkipSSLVerification bool
 }
@@ -145,14 +144,45 @@ func (driver *GitDriver) Check(cursor *semver.Version) ([]semver.Version, error)
 func (driver *GitDriver) setUpRepo() error {
 	_, err := os.Stat(gitRepoDir)
 	if err != nil {
-		gitClone := exec.Command("git", "clone", driver.URI, "--branch", driver.Branch)
-		if len(driver.Depth) > 0 {
-			gitClone.Args = append(gitClone.Args, "--depth", driver.Depth)
-		}
-		gitClone.Args = append(gitClone.Args, "--single-branch", gitRepoDir)
+		// Use sparse checkout to only fetch the version file
+		gitClone := exec.Command("git", "clone", "--no-checkout", "--filter=blob:none", driver.URI, gitRepoDir)
 		gitClone.Stdout = os.Stderr
 		gitClone.Stderr = os.Stderr
 		if err := gitClone.Run(); err != nil {
+			return err
+		}
+
+		// Initialize sparse checkout
+		gitSparseInit := exec.Command("git", "sparse-checkout", "init", "--cone")
+		gitSparseInit.Dir = gitRepoDir
+		gitSparseInit.Stdout = os.Stderr
+		gitSparseInit.Stderr = os.Stderr
+		if err := gitSparseInit.Run(); err != nil {
+			return err
+		}
+
+		// Set sparse checkout to include only the version file
+		gitSparseSet := exec.Command("git", "sparse-checkout", "set", filepath.Dir(driver.File))
+		gitSparseSet.Dir = gitRepoDir
+		gitSparseSet.Stdout = os.Stderr
+		gitSparseSet.Stderr = os.Stderr
+		if err := gitSparseSet.Run(); err != nil {
+			// If directory is root, set the file directly
+			gitSparseSet = exec.Command("git", "sparse-checkout", "set", driver.File)
+			gitSparseSet.Dir = gitRepoDir
+			gitSparseSet.Stdout = os.Stderr
+			gitSparseSet.Stderr = os.Stderr
+			if err := gitSparseSet.Run(); err != nil {
+				return err
+			}
+		}
+
+		// Checkout the branch
+		gitCheckout := exec.Command("git", "checkout", driver.Branch)
+		gitCheckout.Dir = gitRepoDir
+		gitCheckout.Stdout = os.Stderr
+		gitCheckout.Stderr = os.Stderr
+		if err := gitCheckout.Run(); err != nil {
 			return err
 		}
 	} else {

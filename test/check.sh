@@ -114,6 +114,23 @@ it_can_check_from_a_version() {
 
   check_uri_from $repo 1.2.4 | jq -e "
     . == [
+      {number: $(echo 1.2.5 | jq -R .)},
+      {number: $(echo 2.0.0 | jq -R .)}
+    ]
+  "
+
+  check_uri_from $repo 1.2.3 | jq -e "
+    . == [
+      {number: $(echo 1.2.3 | jq -R .)},
+      {number: $(echo 1.2.5 | jq -R .)},
+      {number: $(echo 2.0.0 | jq -R .)}
+    ]
+  "
+
+  check_uri_from $repo 0.1.0 | jq -e "
+    . == [
+      {number: $(echo 1.2.3 | jq -R .)},
+      {number: $(echo 1.2.5 | jq -R .)},
       {number: $(echo 2.0.0 | jq -R .)}
     ]
   "

@@ -7,6 +7,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/blang/semver"
@@ -136,6 +138,11 @@ func (driver *GitDriver) Check(cursor *semver.Version) ([]semver.Version, error)
 
 	if !exists {
 		return []semver.Version{driver.InitialVersion}, nil
+	}
+
+	// Handle a "fly check-resource --from <cursor>" to bring back old versions
+	if cursor != nil {
+		return driver.getOldVersions(cursor, currentVersion)
 	}
 
 	return []semver.Version{currentVersion}, nil
@@ -413,4 +420,55 @@ func (driver *GitDriver) writeVersion(newVersion semver.Version) (bool, error) {
 	}
 
 	return true, nil
+}
+
+// getOldVersions() goes back in git history to find all versions newer than the cursor
+// The loop ends when we find a version older than the cursor or reach the beginning of history
+func (driver *GitDriver) getOldVersions(cursor *semver.Version, currentVersion semver.Version) ([]semver.Version, error) {
+	// Supplied cursor version is newer or equal to current, so we do not need to go back in history
+	if cursor.GTE(currentVersion) {
+		return []semver.Version{currentVersion}, nil
+	}
+
+	oldVersions := []semver.Version{currentVersion}
+	counter := 1
+	for {
+		// Use git log to get the previous commit hash
+		gitLogPreviousCommit := exec.Command("git", "log", "--pretty=format:%H", "-n", "1", "--skip", strconv.Itoa(counter), driver.File)
+		gitLogPreviousCommit.Dir = gitRepoDir
+		commitHashBytes, err := gitLogPreviousCommit.Output()
+		if err != nil {
+			return nil, err
+		}
+		commitHash := strings.TrimSpace(string(commitHashBytes))
+
+		// We have reached the beginning of history with a non-existing commit, so early return what we have
+		if len(commitHash) == 0 {
+			slices.Reverse(oldVersions)
+			return oldVersions, nil
+		}
+
+		// Use git show to view the file content at that commit
+		gitShowPreviousVersion := exec.Command("git", "show", commitHash+":"+driver.File)
+		gitShowPreviousVersion.Dir = gitRepoDir
+		previousVersionBytes, err := gitShowPreviousVersion.Output()
+		if err != nil {
+			return nil, err
+		}
+		previousVersionStr := strings.TrimSpace(string(previousVersionBytes))
+		previousVersion, err := semver.Parse(previousVersionStr)
+		if err != nil {
+			return nil, err
+		}
+
+		// If cursor is newer than previous version, we've found all versions between cursor and current
+		if cursor.GT(previousVersion) {
+			slices.Reverse(oldVersions)
+			return oldVersions, nil
+		}
+
+		// Cursor is older or equal to previous version, so include previous version and continue
+		oldVersions = append(oldVersions, previousVersion)
+		counter++
+	}
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/blang/semver"
 	"github.com/concourse/semver-resource/models"
@@ -96,6 +97,13 @@ func FromSource(source models.Source) (Driver, error) {
 			},
 		}
 
+		if source.SkipS3Checksums {
+			s3Opts = append(s3Opts, func(o *s3.Options) {
+				o.RequestChecksumCalculation = aws.RequestChecksumCalculationWhenRequired
+				o.ResponseChecksumValidation = aws.ResponseChecksumValidationWhenRequired
+			})
+		}
+
 		if source.Endpoint != "" {
 			endpoint := source.Endpoint
 			u, err := url.Parse(source.Endpoint)
@@ -118,6 +126,11 @@ func FromSource(source models.Source) (Driver, error) {
 
 		s3Client := s3.NewFromConfig(cfg, s3Opts...)
 
+		var checksumAlgorithm types.ChecksumAlgorithm
+		if source.ChecksumAlgorithm != "" && !source.SkipS3Checksums {
+			checksumAlgorithm = types.ChecksumAlgorithm(source.ChecksumAlgorithm)
+		}
+
 		return &S3Driver{
 			InitialVersion: initialVersion,
 
@@ -125,6 +138,7 @@ func FromSource(source models.Source) (Driver, error) {
 			BucketName:           source.Bucket,
 			Key:                  source.Key,
 			ServerSideEncryption: source.ServerSideEncryption,
+			ChecksumAlgorithm:    checksumAlgorithm,
 		}, nil
 
 	case models.DriverGit:

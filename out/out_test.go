@@ -73,7 +73,6 @@ var _ = Describe("Out", func() {
 					AccessKeyID:     accessKeyID,
 					SecretAccessKey: secretAccessKey,
 					RegionName:      regionName,
-					UseV2Signing:    v2signing,
 				},
 				Params: models.OutParams{},
 			}

@@ -69,7 +69,8 @@ type Source struct {
 	DisableSSL           bool   `json:"disable_ssl"`
 	SkipSSLVerification  bool   `json:"skip_ssl_verification"`
 	ServerSideEncryption string `json:"server_side_encryption"`
-	UseV2Signing         bool   `json:"use_v2_signing"`
+	SkipS3Checksums      bool   `json:"skip_s3_checksums"`
+	ChecksumAlgorithm    string `json:"checksum_algorithm"`
 
 	URI           string `json:"uri"`
 	Branch        string `json:"branch"`

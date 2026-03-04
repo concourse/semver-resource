@@ -27,6 +27,7 @@ type S3Driver struct {
 	BucketName           string
 	Key                  string
 	ServerSideEncryption string
+	ChecksumAlgorithm    types.ChecksumAlgorithm
 }
 
 func (driver *S3Driver) Bump(bump version.Bump) (semver.Version, error) {
@@ -78,6 +79,10 @@ func (driver *S3Driver) Set(newVersion semver.Version) error {
 
 	if len(driver.ServerSideEncryption) > 0 {
 		params.ServerSideEncryption = types.ServerSideEncryption(driver.ServerSideEncryption)
+	}
+
+	if len(driver.ChecksumAlgorithm) > 0 {
+		params.ChecksumAlgorithm = driver.ChecksumAlgorithm
 	}
 
 	_, err := driver.Svc.PutObject(context.TODO(), params)

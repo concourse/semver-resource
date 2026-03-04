@@ -2,15 +2,16 @@ package driver
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
-
 	"os"
 
 	"cloud.google.com/go/storage"
 	"github.com/blang/semver"
-	"github.com/concourse/semver-resource/version"
 	"google.golang.org/api/option"
+
+	"github.com/concourse/semver-resource/version"
 )
 
 type GCSDriver struct {
@@ -56,14 +57,12 @@ func (d *GCSDriver) Set(v semver.Version) error {
 func (d *GCSDriver) Check(cursor *semver.Version) ([]semver.Version, error) {
 	r, err := d.Servicer.GetObject(d.BucketName, d.Key)
 
-	switch err {
-	case storage.ErrObjectNotExist:
+	if errors.Is(err, storage.ErrObjectNotExist) {
 		if cursor == nil {
 			return []semver.Version{d.InitialVersion}, nil
 		}
 		return []semver.Version{}, nil
-	case nil:
-	default:
+	} else if err != nil {
 		return nil, err
 	}
 	defer r.Close()

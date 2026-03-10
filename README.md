@@ -79,6 +79,18 @@ the bucket.
 * `server_side_encryption`: *Optional.* The server-side encryption algorithm
 used when storing the version object (e.g. `AES256`, `aws:kms`, `aws:kms:dsse`).
 
+* `skip_s3_checksums`: *Optional.* Disables automatic checksum validation
+  for S3 operations. The AWS SDK v2 enables checksum validation by default,
+  which may not be supported by all S3-compatible providers. When set to
+  `true`, checksums are only calculated and validated when explicitly
+  required by the S3 API. Defaults to `false` (automatic checksums enabled).
+
+* `checksum_algorithm`: *Optional.* Specifies the checksum algorithm to use
+  when uploading objects to S3. Valid values are `CRC32`, `CRC32C`, `SHA1`,
+  `SHA256`, or `CRC64NVME`. If not specified, S3 will use its default algorithm.
+  This setting is ignored if `skip_s3_checksums` is set to `true`. Note that
+  not all S3-compatible providers support all algorithms.
+
 The following IAM permissions are required with a resource ARN like
 `"arn:aws:s3:::BUCKET_NAME/*"`. You could use the exact key instead of `/*` if
 you wish:

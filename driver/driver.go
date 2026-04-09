@@ -128,7 +128,16 @@ func FromSource(source models.Source) (Driver, error) {
 
 		var checksumAlgorithm types.ChecksumAlgorithm
 		if source.ChecksumAlgorithm != "" && !source.SkipS3Checksums {
-			checksumAlgorithm = types.ChecksumAlgorithm(source.ChecksumAlgorithm)
+			for _, c := range types.ChecksumAlgorithm("").Values() {
+				if string(c) == source.ChecksumAlgorithm {
+					checksumAlgorithm = types.ChecksumAlgorithm(source.ChecksumAlgorithm)
+					break
+				}
+			}
+
+			if checksumAlgorithm == "" {
+				return nil, fmt.Errorf("unknown value provided for ChecksumAlgorithm. Must be one of: %q", types.ChecksumAlgorithm("").Values())
+			}
 		}
 
 		return &S3Driver{

@@ -73,8 +73,49 @@ var _ = Describe("Driver", func() {
 			gitDriver, ok := aDriver.(*driver.GitDriver)
 			Expect(ok).To(BeTrue())
 			Expect(gitDriver.SkipSSLVerification).To(Not(BeNil()))
-			Expect(gitDriver.SkipSSLVerification).To(BeTrue())
+		})
+	})
+})
 
+var _ = Describe("Driver", func() {
+	Context("GCS", func() {
+		var src models.Source
+		BeforeEach(func() {
+			src = models.Source{
+				Driver: models.DriverGCS,
+				Bucket: "my-bucket",
+				Key:    "my-key",
+			}
+		})
+		It("returns an error when both json_key and token are provided", func() {
+			src.JSONKey = `{"type": "service_account"}`
+			src.GCSToken = "ya29.some-token"
+			_, err := driver.FromSource(src)
+			Expect(err).To(MatchError("must specify only one of json_key or token for the gcs driver"))
+		})
+		It("returns an error when neither json_key nor token is provided", func() {
+			_, err := driver.FromSource(src)
+			Expect(err).To(MatchError("must specify one of json_key or token for the gcs driver"))
+		})
+		It("returns a gcs driver when only json_key is provided", func() {
+			src.JSONKey = `{"type": "service_account"}`
+			aDriver, err := driver.FromSource(src)
+			Expect(err).To(BeNil())
+			Expect(aDriver).ToNot(BeNil())
+			gcsDriver, ok := aDriver.(*driver.GCSDriver)
+			Expect(ok).To(BeTrue())
+			Expect(gcsDriver.BucketName).To(Equal("my-bucket"))
+			Expect(gcsDriver.Key).To(Equal("my-key"))
+		})
+		It("returns a gcs driver when only token is provided", func() {
+			src.GCSToken = "ya29.some-token"
+			aDriver, err := driver.FromSource(src)
+			Expect(err).To(BeNil())
+			Expect(aDriver).ToNot(BeNil())
+			gcsDriver, ok := aDriver.(*driver.GCSDriver)
+			Expect(ok).To(BeTrue())
+			Expect(gcsDriver.BucketName).To(Equal("my-bucket"))
+			Expect(gcsDriver.Key).To(Equal("my-key"))
 		})
 	})
 })

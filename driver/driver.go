@@ -169,8 +169,17 @@ func FromSource(source models.Source) (Driver, error) {
 		return NewSwiftDriver(&source)
 
 	case models.DriverGCS:
+		if source.JSONKey != "" && source.GCSToken != "" {
+			return nil, fmt.Errorf("must specify only one of json_key or token for the gcs driver")
+		}
+
+		if source.JSONKey == "" && source.GCSToken == "" {
+			return nil, fmt.Errorf("must specify one of json_key or token for the gcs driver")
+		}
+
 		servicer := &GCSIOServicer{
 			JSONCredentials: source.JSONKey,
+			Token:           source.GCSToken,
 		}
 
 		return &GCSDriver{

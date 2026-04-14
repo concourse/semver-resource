@@ -142,9 +142,8 @@ The `gcs` driver works by modifying a file in a Google Cloud Storage bucket.
 
 * `token`: *Optional.* A GCP OAuth2 access token (e.g. from `gcloud auth
   print-access-token`). One of `json_key` or `token` must be provided. Cannot
-  be used together with `json_key`. Note that access tokens are short-lived and
-  will expire, so this option is best suited for short-lived pipelines or
-  testing. Example:
+  be used together with `json_key`.
+  Example:
 
   ```yaml
   token: ya29.c.c0AY...

@@ -1,16 +1,14 @@
 package driver
 
 import (
+	"cloud.google.com/go/storage"
 	"context"
 	"errors"
 	"fmt"
-	"io"
-	"os"
-
-	"cloud.google.com/go/storage"
 	"github.com/blang/semver"
 	"golang.org/x/oauth2"
 	"google.golang.org/api/option"
+	"io"
 
 	"github.com/concourse/semver-resource/version"
 )
@@ -99,19 +97,7 @@ func (s *GCSIOServicer) authOption() (option.ClientOption, error) {
 		return option.WithTokenSource(tokenSource), nil
 	}
 
-	temp, err := os.CreateTemp("", "auth-credentials.json")
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = temp.WriteString(s.JSONCredentials)
-	if err != nil {
-		return nil, err
-	}
-	// Close the file so the credentials can be read by the client
-	temp.Close()
-
-	return option.WithCredentialsFile(temp.Name()), nil
+	return option.WithAuthCredentialsJSON(option.ServiceAccount, []byte(s.JSONCredentials)), nil
 }
 
 func (s *GCSIOServicer) GetObject(bucketName, objectName string) (io.ReadCloser, error) {

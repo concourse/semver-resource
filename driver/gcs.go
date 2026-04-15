@@ -1,15 +1,14 @@
 package driver
 
 import (
+	"cloud.google.com/go/storage"
 	"context"
 	"errors"
 	"fmt"
-	"io"
-	"os"
-
-	"cloud.google.com/go/storage"
 	"github.com/blang/semver"
+	"golang.org/x/oauth2"
 	"google.golang.org/api/option"
+	"io"
 
 	"github.com/concourse/semver-resource/version"
 )
@@ -87,24 +86,28 @@ type IOServicer interface {
 
 type GCSIOServicer struct {
 	JSONCredentials string
+	Token           string
+}
+
+func (s *GCSIOServicer) authOption() (option.ClientOption, error) {
+	if s.Token != "" {
+		tokenSource := oauth2.StaticTokenSource(&oauth2.Token{
+			AccessToken: s.Token,
+		})
+		return option.WithTokenSource(tokenSource), nil
+	}
+
+	return option.WithAuthCredentialsJSON(option.ServiceAccount, []byte(s.JSONCredentials)), nil
 }
 
 func (s *GCSIOServicer) GetObject(bucketName, objectName string) (io.ReadCloser, error) {
-	temp, err := os.CreateTemp("", "auth-credentials.json")
+	authOpt, err := s.authOption()
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = temp.WriteString(s.JSONCredentials)
-	if err != nil {
-		return nil, err
-	}
-	defer os.Remove(temp.Name())
 	ctx := context.Background()
-
-	authOption := option.WithCredentialsFile(temp.Name())
-	client, err := storage.NewClient(ctx, authOption)
-
+	client, err := storage.NewClient(ctx, authOpt)
 	if err != nil {
 		return nil, err
 	}
@@ -116,21 +119,13 @@ func (s *GCSIOServicer) GetObject(bucketName, objectName string) (io.ReadCloser,
 }
 
 func (s *GCSIOServicer) PutObject(bucketName, objectName string) (io.WriteCloser, error) {
-	temp, err := os.CreateTemp("", "auth-credentials.json")
+	authOpt, err := s.authOption()
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = temp.WriteString(s.JSONCredentials)
-	if err != nil {
-		return nil, err
-	}
-	defer os.Remove(temp.Name())
 	ctx := context.Background()
-
-	authOption := option.WithCredentialsFile(temp.Name())
-	client, err := storage.NewClient(ctx, authOption)
-
+	client, err := storage.NewClient(ctx, authOpt)
 	if err != nil {
 		return nil, err
 	}

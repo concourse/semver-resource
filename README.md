@@ -125,7 +125,9 @@ The `gcs` driver works by modifying a file in a Google Cloud Storage bucket.
 
 * `key`: *Required.* The key to use for the object in the bucket tracking the version.
 
-* `json_key`: *Required.* The contents of your GCP Account JSON Key. Example:
+* `json_key`: *Optional.* The contents of your GCP Account JSON Key. One of
+  `json_key` or `token` must be provided. Cannot be used together with `token`.
+  Example:
 
   ```yaml
   json_key: |
@@ -136,6 +138,15 @@ The `gcs` driver works by modifying a file in a Google Cloud Storage bucket.
       "client_id": "...",
       "type": "service_account"
     }
+  ```
+
+* `token`: *Optional.* A GCP OAuth2 access token (e.g. from `gcloud auth
+  print-access-token`). One of `json_key` or `token` must be provided. Cannot
+  be used together with `json_key`.
+  Example:
+
+  ```yaml
+  token: ya29.c.c0AY...
   ```
 
 ### Example

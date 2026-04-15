@@ -83,7 +83,8 @@ type Source struct {
 
 	OpenStack OpenStackOptions `json:"openstack"`
 
-	JSONKey string `json:"json_key"`
+	JSONKey  string `json:"json_key"`
+	GCSToken string `json:"token"`
 }
 
 // OpenStackOptions contains properties for authenticating and accessing

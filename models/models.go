@@ -101,7 +101,6 @@ type OpenStackOptions struct {
 	Username         string `json:"username"`
 	UserID           string `json:"user_id"`
 	Password         string `json:"password"`
-	APIKey           string `json:"api_key"`
 	DomainID         string `json:"domain_id"`
 	DomainName       string `json:"domain_name"`
 	TenantID         string `json:"tenant_id"`

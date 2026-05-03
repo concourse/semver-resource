@@ -1,16 +1,17 @@
 package driver
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/blang/semver"
 	"github.com/concourse/semver-resource/models"
 	"github.com/concourse/semver-resource/version"
-	"github.com/rackspace/gophercloud"
-	"github.com/rackspace/gophercloud/openstack"
-	"github.com/rackspace/gophercloud/openstack/objectstorage/v1/containers"
-	"github.com/rackspace/gophercloud/openstack/objectstorage/v1/objects"
+	"github.com/gophercloud/gophercloud/v2"
+	"github.com/gophercloud/gophercloud/v2/openstack"
+	"github.com/gophercloud/gophercloud/v2/openstack/objectstorage/v1/containers"
+	"github.com/gophercloud/gophercloud/v2/openstack/objectstorage/v1/objects"
 )
 
 type SwiftDriver struct {
@@ -39,7 +40,6 @@ func NewSwiftDriver(source *models.Source) (Driver, error) {
 		Username:         os.Username,
 		UserID:           os.UserID,
 		Password:         os.Password,
-		APIKey:           os.APIKey,
 		DomainID:         os.DomainID,
 		DomainName:       os.DomainName,
 		TenantID:         os.TenantID,
@@ -53,7 +53,7 @@ func NewSwiftDriver(source *models.Source) (Driver, error) {
 		return nil, err
 	}
 
-	_, err = containers.Get(swiftServiceClient, source.OpenStack.Container).ExtractMetadata()
+	_, err = containers.Get(context.TODO(), swiftServiceClient, source.OpenStack.Container, containers.GetOpts{}).ExtractMetadata()
 	if err != nil {
 		return nil, fmt.Errorf("Unable to get container by name '%s', inner error: %s", source.OpenStack.Container, err.Error())
 	}
@@ -79,7 +79,7 @@ func NewSwiftDriver(source *models.Source) (Driver, error) {
 }
 
 func getSwiftClient(opts gophercloud.AuthOptions, region string) (*gophercloud.ServiceClient, error) {
-	provider, err := openstack.AuthenticatedClient(opts)
+	provider, err := openstack.AuthenticatedClient(context.TODO(), opts)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to Authenticate, inner error: %s", err.Error())
 	}
@@ -101,7 +101,6 @@ func createOpts(os models.OpenStackOptions) gophercloud.AuthOptions {
 		Username:         os.Username,
 		UserID:           os.UserID,
 		Password:         os.Password,
-		APIKey:           os.APIKey,
 		DomainID:         os.DomainID,
 		DomainName:       os.DomainName,
 		TenantID:         os.TenantID,
@@ -131,14 +130,15 @@ func (driver *SwiftDriver) Bump(bump version.Bump) (semver.Version, error) {
 func (driver *SwiftDriver) Set(newVersion semver.Version) error {
 	content := strings.NewReader(newVersion.String())
 	opts := objects.CreateOpts{
+		Content:            content,
 		ContentDisposition: fmt.Sprintf(`attachment; filename="%s"`, driver.ItemName),
 	}
 
 	// Now execute the upload
-	res := objects.Create(driver.swiftServiceClient, driver.Container, driver.ItemName, content, opts)
+	res := objects.Create(context.TODO(), driver.swiftServiceClient, driver.Container, driver.ItemName, opts)
 
 	// We have the option of extracting the resulting headers from the response
-	_, err := res.ExtractHeader()
+	_, err := res.Extract()
 	return err
 }
 
@@ -152,8 +152,9 @@ func (driver *SwiftDriver) Check(cursor *semver.Version) ([]semver.Version, erro
 }
 
 func (driver *SwiftDriver) getCurrentVersion() (semver.Version, error) {
-	bytes, err := objects.Download(driver.swiftServiceClient, driver.Container, driver.ItemName, nil).ExtractContent()
-	unexpectedResponseCodeError, isType := err.(*gophercloud.UnexpectedResponseCodeError)
+	downloader := objects.Download(context.TODO(), driver.swiftServiceClient, driver.Container, driver.ItemName, nil)
+	bytes, err := downloader.ExtractContent()
+	unexpectedResponseCodeError, isType := err.(*gophercloud.ErrUnexpectedResponseCode)
 	if isType && unexpectedResponseCodeError.Actual == 404 {
 		return driver.InitialVersion, nil
 	}

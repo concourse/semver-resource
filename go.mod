@@ -11,9 +11,9 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.42.1
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/google/uuid v1.6.0
+	github.com/gophercloud/gophercloud/v2 v2.12.0
 	github.com/onsi/ginkgo/v2 v2.28.3
 	github.com/onsi/gomega v1.40.0
-	github.com/rackspace/gophercloud v1.0.1-0.20160229015950-f3d053460f7c
 	golang.org/x/oauth2 v0.36.0
 	google.golang.org/api v0.277.0
 )
@@ -57,7 +57,6 @@ require (
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.15 // indirect
 	github.com/googleapis/gax-go/v2 v2.22.0 // indirect
-	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
 	github.com/spiffe/go-spiffe/v2 v2.6.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect

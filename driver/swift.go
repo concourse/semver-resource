@@ -36,16 +36,20 @@ func NewSwiftDriver(source *models.Source) (Driver, error) {
 	}
 
 	opts := gophercloud.AuthOptions{
-		IdentityEndpoint: os.IdentityEndpoint,
-		Username:         os.Username,
-		UserID:           os.UserID,
-		Password:         os.Password,
-		DomainID:         os.DomainID,
-		DomainName:       os.DomainName,
-		TenantID:         os.TenantID,
-		TenantName:       os.TenantName,
-		AllowReauth:      os.AllowReauth,
-		TokenID:          os.TokenID,
+		IdentityEndpoint:            os.IdentityEndpoint,
+		Username:                    os.Username,
+		UserID:                      os.UserID,
+		Password:                    os.Password,
+		DomainID:                    os.DomainID,
+		DomainName:                  os.DomainName,
+		TenantID:                    os.TenantID,
+		TenantName:                  os.TenantName,
+		AllowReauth:                 os.AllowReauth,
+		TokenID:                     os.TokenID,
+		Scope:                       (*gophercloud.AuthScope)(&os.Scope),
+		ApplicationCredentialID:     os.ApplicationCredentialID,
+		ApplicationCredentialName:   os.ApplicationCredentialName,
+		ApplicationCredentialSecret: os.ApplicationCredentialSecret,
 	}
 
 	swiftServiceClient, err := getSwiftClient(opts, os.Region)

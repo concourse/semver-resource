@@ -1,15 +1,16 @@
 package driver
 
 import (
+	"context"
 	"fmt"
 	"os"
 
 	"github.com/blang/semver"
 	"github.com/concourse/semver-resource/models"
 	"github.com/concourse/semver-resource/version"
-	"github.com/rackspace/gophercloud"
-	"github.com/rackspace/gophercloud/openstack/objectstorage/v1/containers"
-	"github.com/rackspace/gophercloud/openstack/objectstorage/v1/objects"
+	"github.com/gophercloud/gophercloud/v2"
+	"github.com/gophercloud/gophercloud/v2/openstack/objectstorage/v1/containers"
+	"github.com/gophercloud/gophercloud/v2/openstack/objectstorage/v1/objects"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -223,7 +224,7 @@ func createContainer(containerName string) error {
 		return fmt.Errorf("Can't create a container because swift client is nil")
 	}
 
-	res := containers.Create(client, containerName, nil)
+	res := containers.Create(context.TODO(), client, containerName, nil)
 
 	_, err := res.Extract()
 	return err
@@ -234,7 +235,7 @@ func deleteContainer(containerName string) error {
 		return fmt.Errorf("Can't delete a container because swift client is nil")
 	}
 
-	res := containers.Delete(client, containerName)
+	res := containers.Delete(context.TODO(), client, containerName)
 
 	_, err := res.Extract()
 	return err
@@ -245,7 +246,7 @@ func deleteObject(objectName string) error {
 		return fmt.Errorf("Can't delete an object because swift client is nil")
 	}
 
-	res := objects.Delete(client, containerName, objectName, nil)
+	res := objects.Delete(context.TODO(), client, containerName, objectName, nil)
 
 	_, err := res.Extract()
 	return err

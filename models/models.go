@@ -101,13 +101,24 @@ type OpenStackOptions struct {
 	Username         string `json:"username"`
 	UserID           string `json:"user_id"`
 	Password         string `json:"password"`
-	APIKey           string `json:"api_key"`
+	Passcode         string `json:"passcode"`
 	DomainID         string `json:"domain_id"`
 	DomainName       string `json:"domain_name"`
 	TenantID         string `json:"tenant_id"`
 	TenantName       string `json:"tenant_name"`
 	AllowReauth      bool   `json:"allow_reauth"`
 	TokenID          string `json:"token_id"`
+	Scope            struct {
+		ProjectID   string `json:"project_id"`
+		ProjectName string `json:"project_name"`
+		DomainID    string `json:"domain_id"`
+		DomainName  string `json:"domain_name"`
+		System      bool   `json:"system"`
+		TrustID     string `json:"trust_id"`
+	} `json:"scope"`
+	ApplicationCredentialID     string `json:"application_credential_id"`
+	ApplicationCredentialName   string `json:"application_credential_name"`
+	ApplicationCredentialSecret string `json:"application_credential_secretj"`
 }
 
 type Metadata []MetadataField

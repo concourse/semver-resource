@@ -348,7 +348,7 @@ func (driver *GitDriver) readVersion() (semver.Version, bool, error) {
 		return semver.Version{}, false, err
 	}
 
-	currentVersion, err := semver.Parse(currentVersionStr)
+	currentVersion, err := semver.Parse(strings.TrimSpace(currentVersionStr))
 	if err != nil {
 		return semver.Version{}, false, err
 	}

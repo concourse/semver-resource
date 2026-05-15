@@ -1,14 +1,16 @@
 package driver
 
 import (
-	"cloud.google.com/go/storage"
 	"context"
 	"errors"
 	"fmt"
+	"io"
+	"strings"
+
+	"cloud.google.com/go/storage"
 	"github.com/blang/semver"
 	"golang.org/x/oauth2"
 	"google.golang.org/api/option"
-	"io"
 
 	"github.com/concourse/semver-resource/version"
 )
@@ -71,7 +73,7 @@ func (d *GCSDriver) Check(cursor *semver.Version) ([]semver.Version, error) {
 		return nil, err
 	}
 
-	v, err := semver.Parse(string(b))
+	v, err := semver.Parse(strings.TrimSpace(string(b)))
 	if err != nil {
 		return nil, fmt.Errorf("parsing number in bucket: %s", err)
 	}

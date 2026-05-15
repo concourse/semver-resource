@@ -117,7 +117,9 @@ func (driver *S3Driver) Check(cursor *semver.Version) ([]semver.Version, error) 
 		}
 	}
 
-	bucketVersion, err := semver.Parse(bucketNumber)
+	// especially when manually fixing versions, extraneous newlines can
+	// be ended to the bucket file
+	bucketVersion, err := semver.Parse(strings.TrimSpace(bucketNumber))
 	if err != nil {
 		return nil, fmt.Errorf("parsing number in bucket: %s", err)
 	}

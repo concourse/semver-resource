@@ -77,6 +77,21 @@ var _ = Describe("GCS Driver", func() {
 				Expect(s.Buf).To(gbytes.Say("0.0.1"))
 			})
 		})
+
+		Describe("when the object has a trailing newline", func() {
+			It("still bumps the version", func() {
+				s.Body = "2.3.4\n"
+
+				newV, err := driver.Bump(version.PatchBump{})
+
+				Expect(err).NotTo(HaveOccurred())
+				Expect(newV.String()).To(Equal("2.3.5"))
+
+				Expect(s.BucketName).To(Equal("fake-bucket"))
+				Expect(s.ObjectName).To(Equal("fake-object"))
+				Expect(s.Buf).To(gbytes.Say("2.3.5"))
+			})
+		})
 	})
 
 	Describe("Set", func() {

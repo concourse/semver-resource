@@ -45,6 +45,8 @@ The `git` driver works by modifying a file in a repository with every bump. The
 
 * `commit_message`: *Optional.* If specified overides the default commit message with the one provided. The user can use %version% and %file% to get them replaced automatically with the correct values.
 
+* `debug`: *Optional.* Sets `GIT_TRACE`, `GIT_TRACE_PACKFILE`, and `GIT_CURL_VERBOSE` to get verbose output from calls to the git CLI
+
 ### `s3` Driver
 
 The `s3` driver works by modifying a file in an S3 compatible bucket.

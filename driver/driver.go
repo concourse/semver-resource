@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -151,6 +152,12 @@ func FromSource(source models.Source) (Driver, error) {
 		}, nil
 
 	case models.DriverGit:
+		if source.Debug {
+			fmt.Fprintln(os.Stderr, "Debug mode enabled")
+			os.Setenv("GIT_TRACE", "1")
+			os.Setenv("GIT_TRACE_PACKFILE", "1")
+			os.Setenv("GIT_CURL_VERBOSE", "1")
+		}
 		return &GitDriver{
 			InitialVersion: initialVersion,
 

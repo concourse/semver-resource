@@ -85,6 +85,8 @@ type Source struct {
 
 	JSONKey  string `json:"json_key"`
 	GCSToken string `json:"token"`
+
+	Debug bool `json:"debug"`
 }
 
 // OpenStackOptions contains properties for authenticating and accessing

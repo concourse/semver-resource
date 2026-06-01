@@ -45,12 +45,12 @@ type GitDriver struct {
 func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
 	err := driver.setUpAuth()
 	if err != nil {
-		return semver.Version{}, err
+		return semver.Version{}, fmt.Errorf("setup auth: %w", err)
 	}
 
 	err = driver.setUserInfo()
 	if err != nil {
-		return semver.Version{}, err
+		return semver.Version{}, fmt.Errorf("set user info: %w", err)
 	}
 
 	var newVersion semver.Version
@@ -58,12 +58,12 @@ func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
 	for range RetriesOnErrorWriteVersion {
 		err = driver.setUpRepo()
 		if err != nil {
-			return semver.Version{}, err
+			return semver.Version{}, fmt.Errorf("setup repo: %w", err)
 		}
 
 		currentVersion, exists, err := driver.readVersion()
 		if err != nil {
-			return semver.Version{}, err
+			return semver.Version{}, fmt.Errorf("read version: %w", err)
 		}
 
 		if !exists {
@@ -79,7 +79,7 @@ func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
 		}
 	}
 	if err != nil {
-		return semver.Version{}, err
+		return semver.Version{}, fmt.Errorf("write version: %w", err)
 	}
 
 	return newVersion, nil
@@ -88,18 +88,18 @@ func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
 func (driver *GitDriver) Set(newVersion semver.Version) error {
 	err := driver.setUpAuth()
 	if err != nil {
-		return err
+		return fmt.Errorf("setup auth: %w", err)
 	}
 
 	err = driver.setUserInfo()
 	if err != nil {
-		return err
+		return fmt.Errorf("set user info: %w", err)
 	}
 
 	for range RetriesOnErrorWriteVersion {
 		err = driver.setUpRepo()
 		if err != nil {
-			return err
+			return fmt.Errorf("setup repo: %w", err)
 		}
 
 		var wrote bool
@@ -109,7 +109,7 @@ func (driver *GitDriver) Set(newVersion semver.Version) error {
 		}
 	}
 	if err != nil {
-		return err
+		return fmt.Errorf("write version: %w", err)
 	}
 
 	return nil
@@ -118,22 +118,22 @@ func (driver *GitDriver) Set(newVersion semver.Version) error {
 func (driver *GitDriver) Check(cursor *semver.Version) ([]semver.Version, error) {
 	err := driver.setUpAuth()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("setup auth: %w", err)
 	}
 
 	err = driver.skipSSLVerificationIfNeeded()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("skip ssl verification: %w", err)
 	}
 
 	err = driver.setUpRepo()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("setup repo: %w", err)
 	}
 
 	currentVersion, exists, err := driver.readVersion()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("read version: %w", err)
 	}
 
 	if !exists {
@@ -280,6 +280,8 @@ func (driver *GitDriver) setUpKey() error {
 func isPrivateKeyEncrypted(path string) bool {
 	passphrase := ``
 	cmd := exec.Command(`ssh-keygen`, `-y`, `-f`, path, `-P`, passphrase)
+	cmd.Stdout = os.Stderr
+	cmd.Stderr = os.Stderr
 	err := cmd.Run()
 
 	return err != nil
@@ -317,7 +319,7 @@ func (driver *GitDriver) setUserInfo() error {
 		gitName.Stdout = os.Stderr
 		gitName.Stderr = os.Stderr
 		if err := gitName.Run(); err != nil {
-			return err
+			return fmt.Errorf("setting user.name: %w", err)
 		}
 	}
 
@@ -325,7 +327,7 @@ func (driver *GitDriver) setUserInfo() error {
 	gitEmail.Stdout = os.Stderr
 	gitEmail.Stderr = os.Stderr
 	if err := gitEmail.Run(); err != nil {
-		return err
+		return fmt.Errorf("setting user.email: %w", err)
 	}
 	return nil
 }
@@ -436,6 +438,7 @@ func (driver *GitDriver) getOldVersions(cursor *semver.Version, currentVersion s
 		// Use git log to get the previous commit hash
 		gitLogPreviousCommit := exec.Command("git", "log", "--pretty=format:%H", "-n", "1", "--skip", strconv.Itoa(counter), driver.File)
 		gitLogPreviousCommit.Dir = gitRepoDir
+		gitLogPreviousCommit.Stderr = os.Stderr
 		commitHashBytes, err := gitLogPreviousCommit.Output()
 		if err != nil {
 			return nil, err
@@ -451,6 +454,7 @@ func (driver *GitDriver) getOldVersions(cursor *semver.Version, currentVersion s
 		// Use git show to view the file content at that commit
 		gitShowPreviousVersion := exec.Command("git", "show", commitHash+":"+driver.File)
 		gitShowPreviousVersion.Dir = gitRepoDir
+		gitShowPreviousVersion.Stderr = os.Stderr
 		previousVersionBytes, err := gitShowPreviousVersion.Output()
 		if err != nil {
 			return nil, err

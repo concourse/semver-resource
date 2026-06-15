@@ -436,7 +436,7 @@ func (driver *GitDriver) getOldVersions(cursor *semver.Version, currentVersion s
 	counter := 1
 	for {
 		// Use git log to get the previous commit hash
-		gitLogPreviousCommit := exec.Command("git", "log", "--pretty=format:%H", "-n", "1", "--skip", strconv.Itoa(counter), driver.File)
+		gitLogPreviousCommit := exec.Command("git", "log", "--pretty=format:%H", "-n", "1", "--skip", strconv.Itoa(counter), "--", driver.File)
 		gitLogPreviousCommit.Dir = gitRepoDir
 		gitLogPreviousCommit.Stderr = os.Stderr
 		commitHashBytes, err := gitLogPreviousCommit.Output()

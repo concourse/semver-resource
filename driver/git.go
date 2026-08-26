@@ -61,7 +61,9 @@ func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
 			return semver.Version{}, fmt.Errorf("setup repo: %w", err)
 		}
 
-		currentVersion, exists, err := driver.readVersion()
+		var currentVersion semver.Version
+		var exists bool
+		currentVersion, exists, err = driver.readVersion()
 		if err != nil {
 			return semver.Version{}, fmt.Errorf("read version: %w", err)
 		}

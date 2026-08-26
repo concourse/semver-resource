@@ -177,6 +177,36 @@ it_can_put_and_bump_with_message_and_replace_over_existing_version() {
   test "$(git -C $repo log -n1 --pretty=%B)" = "$expected_message"
 }
 
+it_fails_to_put_when_the_version_cannot_be_written() {
+  local repo=$(init_repo)
+
+  set_version $repo 1.2.3
+
+  local src=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  # cannot push to repo while it's checked out to a branch
+  git -C $repo checkout refs/heads/master
+
+  # reject every push, so writing the bumped version always fails
+  cat > $repo/.git/hooks/pre-receive <<'EOF'
+#!/bin/bash
+echo "push rejected"
+exit 1
+EOF
+  chmod +x $repo/.git/hooks/pre-receive
+
+  # the failure must be reported rather than swallowed
+  if put_uri_with_bump $repo $src minor alpha build; then
+    echo "expected put to fail, but it succeeded"
+    return 1
+  fi
+
+  # switch back to master
+  git -C $repo checkout master
+
+  test "$(cat $repo/some-file)" = 1.2.3
+}
+
 run it_can_put_and_set_first_version
 run it_can_put_and_set_same_version
 run it_can_put_and_set_over_existing_version
@@ -185,3 +215,4 @@ run it_can_put_and_bump_first_version_with_initial
 run it_can_put_and_bump_over_existing_version
 run it_can_put_and_bump_with_message_over_existing_version
 run it_can_put_and_bump_with_message_and_replace_over_existing_version
+run it_fails_to_put_when_the_version_cannot_be_written
